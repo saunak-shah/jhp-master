@@ -1,0 +1,22 @@
+/* Header.css */
+/* .header-menu-item {
+    position: relative;
+  }
+  
+  .header-menu-item:hover {
+    color: blue !important;
+  } */
+  
+  /* .header-menu-item:hover::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 40px;
+    width: 100%;
+    height: 3px;
+    background-color: blue;
+  } */
+
+  .ant-menu-title-content{
+    color: white;
+  }

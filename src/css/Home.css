@@ -1,0 +1,69 @@
+/* Home.css */
+.carousel-content {
+    margin: 0;
+    height: auto;
+    text-align: center;
+    background: #364d79;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .carousel-image {
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+  }
+  
+  .slick-prev, .slick-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    padding: 15px; /* Increase padding to make the button larger */
+    cursor: pointer;
+    z-index: 1;
+    border-radius: 50%;
+    width: 60px; /* Increase width */
+    height: 60px; /* Increase height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .slick-prev {
+    left: 10px;
+  }
+  
+  .slick-next {
+    right: 10px;
+  }
+  
+  .slick-prev::before, .slick-next::before {
+    content: '';
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-style: solid;
+  }
+  
+  .slick-prev::before {
+    border-width: 8px 10px 8px 0; /* Increase size of the arrow */
+    border-color: transparent white transparent transparent;
+  }
+  
+  .slick-next::before {
+    border-width: 8px 0 8px 10px; /* Increase size of the arrow */
+    border-color: transparent transparent transparent white;
+  }
+  
+  .signup-message {
+    padding: 10px;
+    background-color: #e0f7fa;
+    border: 1px solid #00bcd4;
+    margin-bottom: 20px;
+  }
+  

@@ -1,0 +1,12 @@
+.profile-container {
+  max-width: 500px;
+  margin: 20px auto; /* Combined margin-top and margin-bottom */
+  padding: 20px;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 50px;
+}
+
+.profile-container h2 {
+  text-align: center;
+}
