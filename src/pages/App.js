@@ -7,6 +7,7 @@ import SignupForm from "./SignupForm";
 import Profile from './Profile';
 import ChangePassword from './ChangePassword';
 import Header from "../global/Header";
+import AdminUsers from "./AdminUsers";
 import UserTable from "./UserTable";
 import AddUserForm from "./AddUserForm";
 import { Modal, Button } from "antd";
@@ -24,12 +25,12 @@ const App = observer(() => {
   };
 
   useEffect(() => {
-    const user_id = localStorage.getItem('user_id') || '';
-    console.log("user_id", user_id)
+    const teacher_id = localStorage.getItem('teacher_id') || '';
+    console.log("teacher_id", teacher_id)
     const token = Cookies.get('token'); // Get the token from the cookie
-    if (user_id || token) {
+    if (token) {
       authStore.login();
-      localStorage.setItem('isAuthenticated', 'true'); // Ensure local storage is also updated
+      // localStorage.setItem('isAuthenticated', 'true'); // Ensure local storage is also updated
     }
   }, []);
 
@@ -42,6 +43,8 @@ const App = observer(() => {
             <Routes>
               <Route path="/exam" element={<Exam />} />
               <Route path="/home" element={<Home />} />
+              <Route path="/admin" element={<AdminUsers />} />
+              <Route path="/student" element={<UserTable />} />
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/changepassword" element={<ChangePassword />} />

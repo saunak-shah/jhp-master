@@ -57,6 +57,16 @@ const Header = ({ history }) => {
       onClick: () => handleMenuItemClick('/home')
     },
     {
+      key: 'admin',
+      label: <Link to="/admin" className="header-menu-item">Admin</Link>,
+      onClick: () => handleMenuItemClick('/admin')
+    },
+    {
+      key: 'student',
+      label: <Link to="/student" className="header-menu-item">Student</Link>,
+      onClick: () => handleMenuItemClick('/student')
+    },
+    {
       key: 'exam',
       label: <Link to="/exam" className="header-menu-item">Exam</Link>,
       onClick: () => handleMenuItemClick('/exam')
