@@ -1,46 +1,48 @@
 // src/UserTable.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Table, Input, Button, Space } from 'antd';
 import { observer } from 'mobx-react-lite';
 import authStore from '../stores/authStore';
+import axios from 'axios';
 
 const columns = [
-  { title: 'ID', dataIndex: 'id', key: 'id', sorter: true },
-  { title: 'First Name', dataIndex: 'firstName', key: 'firstName', sorter: true },
-  { title: 'Last Name', dataIndex: 'lastName', key: 'lastName', sorter: true },
+  { title: 'ID', dataIndex: 'student_id', key: 'student_id', sorter: true },
+  { title: 'First Name', dataIndex: 'first_name', key: 'first_name', sorter: true },
+  { title: 'Last Name', dataIndex: 'last_name', key: 'last_name', sorter: true },
   { title: 'Email', dataIndex: 'email', key: 'email', sorter: true },
-  { title: 'Phone', dataIndex: 'phone', key: 'phone', sorter: true },
+  { title: 'Phone', dataIndex: 'phone_number', key: 'phone_number', sorter: true },
   { title: 'Gender', dataIndex: 'gender', key: 'gender', sorter: true },
-  { title: 'Area', dataIndex: 'area', key: 'area', sorter: true },
+  { title: 'Area', dataIndex: 'address', key: 'address', sorter: true },
 ];
 
 const UserTable = observer(() => {
   const { Search } = Input;
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('');
+  const token = localStorage.getItem('token');
 
-  const handleTableChange = (pagination, filters, sorter) => {
-    console.log("sorter.field========", sorter.field)
-    console.log("sorter.order========", sorter.order)
-    // Update sortField and sortOrder
-    setSortField(sorter.field);
-    setSortOrder(sorter.order);
-
-    // Trigger API call here based on the sorting parameters
-    fetchData(sorter.field, sorter.order);
+  const limit = 20
+  const offset = 0
+  
+  const handleTableChange = () => {
+    fetchData();
   };
 
-  const fetchData = async (field, order) => {
+  useEffect (() => {
+    handleTableChange();
+  }, [])
+  
+  const fetchData = async () => {
     try {
-      // Replace 'http://your-api-endpoint/users' with your actual API endpoint
-      const response = await fetch(`http://your-api-endpoint/users?sort=${field}&order=${order}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Update the user data in the store with the fetched data
-        authStore.users = data;
-      } else {
-        console.error('Error fetching data:', response.statusText);
-      }
+      const apiHost = process.env.REACT_APP_API_HOST;
+      const apiUrl = `${apiHost}/api/students/${limit}/${offset}`;
+      let headers = {
+        'Content-Type': 'application/json',
+        Authorization: token
+      };
+      const response = await axios.get(apiUrl, { headers });
+      authStore.users = response.data.data;
+      console.log("🚀 ~ file: UserTable.js:54 ~ fetchData ~ response.data:", response.data)
     } catch (error) {
       console.error('Error during API call:', error);
     }

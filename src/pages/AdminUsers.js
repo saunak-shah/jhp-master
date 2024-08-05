@@ -5,13 +5,13 @@ import { observer } from 'mobx-react-lite';
 import authStore from '../stores/authStore';
 
 const columns = [
-  { title: 'ID', dataIndex: 'id', key: 'id', sorter: true },
-  { title: 'First Name', dataIndex: 'firstName', key: 'firstName', sorter: true },
-  { title: 'Last Name', dataIndex: 'lastName', key: 'lastName', sorter: true },
+  { title: 'ID', dataIndex: 'student_id', key: 'student_id', sorter: true },
+  { title: 'First Name', dataIndex: 'first_name', key: 'first_name', sorter: true },
+  { title: 'Last Name', dataIndex: 'last_name', key: 'lastName', sorter: true },
   { title: 'Email', dataIndex: 'email', key: 'email', sorter: true },
-  { title: 'Phone', dataIndex: 'phone', key: 'phone', sorter: true },
+  { title: 'Phone', dataIndex: 'phone_number', key: 'phone', sorter: true },
   { title: 'Gender', dataIndex: 'gender', key: 'gender', sorter: true },
-  { title: 'Area', dataIndex: 'area', key: 'area', sorter: true },
+  { title: 'Area', dataIndex: 'address', key: 'area', sorter: true },
 ];
 const AdminTable = () => {
     console.log("Component mounted or updated");
