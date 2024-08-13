@@ -9,13 +9,12 @@ import ChangePassword from './ChangePassword';
 import Header from "../global/Header";
 import AdminUsers from "./AdminUsers";
 import UserTable from "./UserTable";
-import AddUserForm from "./AddUserForm";
-import { Modal, Button } from "antd";
 import Exam from "./Exam";
 import Attendance from "./Attendance";
 import Home from "./Home";
 import Footer from "../global/Footer";
 import Cookies from 'js-cookie'; // Import js-cookie
+import Teacher from "./Teacher";
 
 const App = observer(() => {
   const [isLogin, setIsLogin] = useState(true);
@@ -48,6 +47,7 @@ const App = observer(() => {
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/changepassword" element={<ChangePassword />} />
+              <Route path="/teacher" element={<Teacher />} />
               <Route path="/" element={<Home />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

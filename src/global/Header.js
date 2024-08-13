@@ -77,6 +77,11 @@ const Header = ({ history }) => {
       onClick: () => handleMenuItemClick('/attendance')
     },
     {
+      key: 'teacher',
+      label: <Link to="/teacher" className="header-menu-item">Teacher</Link>,
+      onClick: () => handleMenuItemClick('/teacher')
+    },
+    {
       key: 'profile',
       label: (
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>

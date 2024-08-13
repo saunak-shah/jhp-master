@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Input, Button, Space, message } from 'antd';
+import axios from 'axios';
+
+const limit = 20;
+
+const token = localStorage.getItem('token')
 
 const Exam = () => {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
 
   // Define columns for the table
   const columns = [
@@ -93,37 +99,22 @@ const Exam = () => {
 
   const { Search } = Input;
 
+  const fetchData = async () => {
+    try {
+      const apiHost = process.env.REACT_APP_API_HOST;
+      const apiUrl = `${apiHost}/api/students/${limit}/${offset}`;
+      let headers = {
+        'Content-Type': 'application/json',
+        Authorization: token
+      };
+      const response = await axios.get(apiUrl, { headers });
+      console.log("🚀 ~ file: UserTable.js:54 ~ fetchData ~ response.data:", response.data)
+    } catch (error) {
+      console.error('Error during API call:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const apiHost = process.env.REACT_APP_API_HOST;
-        const apiURL = `${apiHost}/api/courses/`;
-        const response = await fetch(apiURL, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: localStorage.getItem('token') || ''
-          }
-        });
-        if (response.ok) {
-          const rawData = await response.json();
-          console.log("Fetched data:", rawData.data);
-
-          // Check if rawData is an array
-          if (Array.isArray(rawData && rawData.data)) {
-            setData(rawData.data);
-          } else {
-            console.error("Expected an array but got:", rawData);
-          }
-        } else {
-          console.error('Error fetching data:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error during API call:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
 
