@@ -160,7 +160,6 @@ const Teacher = observer(() => {
     const data = await fetchTeacherData(record);
     if (data.teacher_birth_date) {
       data.teacher_birth_date = moment(data.teacher_birth_date);
-      data.is_support_user = Boolean(data.is_support_user) ? "Yes" : "No";
     }
     setModalOpen(true);
     setIsCreating(false);
@@ -183,10 +182,6 @@ const Teacher = observer(() => {
     const apiHost = process.env.REACT_APP_API_HOST;
     const signupUrl = `${apiHost}/api/teachers/signup`;
     setModalOpen(false);
-    values = {
-      ...values,
-      is_support_user: Boolean(values.is_support_user),
-    };
     reqData(signupUrl, values)
       .then((response) => {
         if (response.status === 200) {
@@ -214,10 +209,7 @@ const Teacher = observer(() => {
         const updateProfileUrl = `${apiHost}/api/teachers/update_profile`;
         setModalOpen(false);
         values = {
-          data: {
-            ...values,
-            is_support_user: Boolean(values.is_support_user),
-          },
+          data: values,
         };
         reqData(updateProfileUrl, values).then((response) => {
           console.log("Response received:", response);
@@ -272,12 +264,6 @@ const Teacher = observer(() => {
       };
 
       const response = await axios.get(apiUrl, { headers });
-      teachers.map((teacher) => {
-        return {
-          ...teacher,
-          is_support_user: Boolean(teacher.is_support_user) ? "Yes" : "No",
-        };
-      });
       setTeachers(response.data.data.teachers);
     } catch (error) {
       console.error("Error during API call:", error);
@@ -475,26 +461,14 @@ const Teacher = observer(() => {
             </Col>
             <Col xs={24} sm={12} style={{ paddingLeft: "10px" }}>
               <Form.Item
-                name="is_support_user"
-                label="Is Support User ?"
-                rules={[{ required: true, message: "Is this support user?" }]}
-              >
-                <Select placeholder="Is this support user?">
-                  <Option value={false}>No</Option>
-                  <Option value={true}>Yes</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-            <Col xs={24} sm={24} style={{ paddingLeft: "10px" }}>
-              <Form.Item
                 name="master_role_id"
                 label="Allow Permission"
                 rules={[{ required: true, message: "Allow permissions" }]}
               >
                 <Select placeholder="Allow permissions">
-                  <Option value={1}>1</Option>
-                  <Option value={2}>2</Option>
-                  <Option value={3}>3</Option>
+                  <Option value={1}>Admin</Option>
+                  <Option value={2}>Teacher</Option>
+                  <Option value={3}>Support User</Option>
                 </Select>
               </Form.Item>
             </Col>
