@@ -41,7 +41,7 @@ const Home = () => {
         nextArrow={<button className="slick-next"></button>}
         style={{margin: '50px'}}
       >
-        <div>
+        {/* <div>
           <h3 style={contentStyle}><img src={firstImage} alt="First slide" className="carousel-image" /></h3>
         </div>
         <div>
@@ -55,7 +55,7 @@ const Home = () => {
         </div>
         <div>
           <h3 style={contentStyle}><img src={fifthImage} alt="First slide" className="carousel-image" /></h3>
-        </div>
+        </div> */}
       </Carousel>
     </>
   );

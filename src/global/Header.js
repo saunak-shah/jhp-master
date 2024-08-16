@@ -99,9 +99,9 @@ const Header = ({ history }) => {
   ];
 
   return (
-    <AntHeader className="header" style={{ backgroundColor: "#F54290" }}>
+    <AntHeader className="header" style={{ backgroundColor: "#001529" }}>
       <div className="logo" />
-      <Menu theme="dark" mode="horizontal" style={{ backgroundColor: "#F54290", fontSize: "18px", fontFamily: "sans-serif", color: 'white' }} defaultSelectedKeys={['2']} items={mainMenuItems} />
+      <Menu theme="dark" mode="horizontal" style={{ backgroundColor: "#001529", fontSize: "18px", fontFamily: "sans-serif", color: 'white' }} defaultSelectedKeys={['2']} items={mainMenuItems} />
     </AntHeader>
   );
 };

@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Input, Button, Space, message } from 'antd';
+import AddCourseForm from '../components/AddCourseForm'; // Make sure the path is correct
+import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-const limit = 20;
-
-const token = localStorage.getItem('token')
 
 const Exam = () => {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [offset, setOffset] = useState(0);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   // Define columns for the table
   const columns = [
@@ -18,64 +17,65 @@ const Exam = () => {
     { title: 'Marks', dataIndex: 'course_score', key: 'course_score' },
     { title: 'Passing Marks', dataIndex: 'course_passing_score', key: 'course_passing_score' },
     { title: 'Exam Duration', dataIndex: 'course_duration_in_hours', key: 'course_duration_in_hours' },
-    { title: 'Exam Date', dataIndex: 'course_date', key: 'course_date' },
     {
       title: 'Action',
       key: 'action',
-      render: (text, record) => (
-        <span>
-          <Button
-            type="primary"
-            style={{
-              width: "120px",
-              height: "40px",
-              /* backgroundColor: "#f54290", */
-              marginRight: "10px", // Add margin to create space between buttons
-            }}
-            onClick={() => handleDownload(record)}
-          >
-            Download File
-          </Button>
-          <Button
-            type="primary"
-            style={{
-              width: "120px",
-              height: "40px",
-              /* backgroundColor: "#f54290", */
-            }}
-            onClick={() => handleApply(record)}
-          >
-            Apply for Exam
-          </Button>
-        </span>
-      ),
+      render: (text, record) => {
+        const currentDate = new Date();
+        const startDate = new Date(record.registration_starting_date);
+        const endDate = new Date(record.registration_closing_date);
+        const isRegistrationOpen = currentDate >= startDate && currentDate <= endDate;
+
+        return (
+          <span>
+            <EditOutlined style={{ marginRight: 10, fontSize: '16px' }} onClick={() => console.log('Edit clicked')} />
+            <DeleteOutlined style={{ fontSize: '16px' }} onClick={() => handleEditCourse(record)} />
+          </span>
+        )
+      }
     },
   ];
 
-  const handleDownload = (record) => {
-    // Implement download logic here
-    console.log('Downloading file for course:', record.course_name);
+  const handleProfileUpdate = () => {
+    setIsModalVisible(true);
   };
 
-  const handleApply = (record) => {
-    // Implement apply for exam logic here
-    console.log('Applying for exam for course:', record);
-    let user_id = localStorage.getItem('user_id') || '1';
-    console.log('user_id:', user_id);
+  const handleEditCourse = async (course) => {
 
     const apiHost = process.env.REACT_APP_API_HOST;
-    const apiUrl = `${apiHost}/api/register/`;
+    const appUrl = `${apiHost}/api/courses/${course.course_id}`;
+    let token = localStorage.getItem('token') || '';
   
-    let reqData = {
-      course_id: record.course_id,
-      user_id: user_id
-    }
-     const coursApply =  postData(apiUrl, reqData);
+    let headers = {
+      'Content-Type': 'application/json',
+      Authorization: token
+    };
+    const response = await axios.get(appUrl, { headers });
+    // setData(newData);
+    // setIsModalVisible(false);
+  };
 
-    // message.success('Restration filed successfully');
+  const handleAddCourse = (course) => {
+    course.is_active = true
+    course.category = "A"
+    course.course_duration_in_hours = parseInt(course.course_duration_in_hours)
+    course.course_score = parseInt(course.course_score)
+    course.course_passing_score = parseInt(course.course_passing_score)
+    course.course_max_attempts = parseInt(course.course_max_attempts)
+    console.log("88888888888888888888", course)
 
-     console.log(coursApply)
+    const apiHost = process.env.REACT_APP_API_HOST;
+    const appUrl = `${apiHost}/api/courses`;
+  
+    const insertCourse = postData(appUrl, course);
+    console.log("1111111111111 %j", insertCourse)
+    // setData(newData);
+    // setIsModalVisible(false);
+  };
 
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
   };
 
   async function postData(url = "", data = {}) {
@@ -99,27 +99,52 @@ const Exam = () => {
 
   const { Search } = Input;
 
-  const fetchData = async () => {
-    try {
-      const apiHost = process.env.REACT_APP_API_HOST;
-      const apiUrl = `${apiHost}/api/students/${limit}/${offset}`;
-      let headers = {
-        'Content-Type': 'application/json',
-        Authorization: token
-      };
-      const response = await axios.get(apiUrl, { headers });
-      console.log("🚀 ~ file: UserTable.js:54 ~ fetchData ~ response.data:", response.data)
-    } catch (error) {
-      console.error('Error during API call:', error);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const limit = 20;
+        const offset = 0;
+        const apiHost = process.env.REACT_APP_API_HOST;
+        const apiURL = `${apiHost}/api/courses/${limit}/${offset}`;
+        const response = await fetch(apiURL, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: localStorage.getItem('token') || ''
+          }
+        });
+        if (response.ok) {
+          const rawData = await response.json();
+          console.log("Fetched data:", rawData.data.course);
+
+          // Check if rawData is an array
+          if (Array.isArray(rawData?.data?.course)) {
+            setData(rawData.data.course);
+          } else {
+            console.error("Expected an array but got:", rawData);
+          }
+        } else {
+          console.error('Error fetching data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error during API call:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchData();
   }, []);
 
   return (
     <div id="exam-container">
+          <Button 
+            style={{ width: '150px', height: '40px', backgroundColor: '#f54290' }} 
+            type="primary" 
+            block 
+            onClick={handleProfileUpdate}
+          >
+            Add Course
+          </Button>
       <Table
         dataSource={data}
         columns={columns}
@@ -127,6 +152,12 @@ const Exam = () => {
         pagination={false}
         loading={loading}
       />
+      <AddCourseForm
+        visible={isModalVisible}
+        onCancel={handleCancel}
+        onSubmit={handleAddCourse}
+      />
+
     </div>
   );
 };

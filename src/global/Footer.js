@@ -12,7 +12,7 @@ const iconStyle = {
 
 const Footer = () => {
   return (
-    <AntFooter style={{ textAlign: 'center', backgroundColor: '#F54290', color: 'white', position: 'fixed', bottom: 0, width: '100%', padding: '24px 200px 10px 0px'  }}>
+    <AntFooter style={{ textAlign: 'center', backgroundColor: '#001529', color: 'white', position: 'fixed', bottom: 0, width: '100%', padding: '24px 200px 10px 0px'  }}>
       @Powered By JHP Parivar
       <div style={{ float: 'right' }}>
         <a href="https://www.youtube.com/@jhpparivar" target="_blank" rel="noopener noreferrer">
