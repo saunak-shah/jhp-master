@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Table, Input, Button, Space, message } from 'antd';
 import AddCourseForm from '../components/AddCourseForm'; // Make sure the path is correct
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import axios from 'axios';
-import { post } from '../global/api';
-// import routes from '../config/apiRoute';
+import { post, deleteData } from '../global/api';
 
 const Exam = () => {
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [currentCourse, setCurrentCourse] = useState(null);
 
   // Define columns for the table
   const columns = [
@@ -22,41 +21,26 @@ const Exam = () => {
       title: 'Action',
       key: 'action',
       render: (text, record) => {
-        const currentDate = new Date();
-        const startDate = new Date(record.registration_starting_date);
-        const endDate = new Date(record.registration_closing_date);
-        const isRegistrationOpen = currentDate >= startDate && currentDate <= endDate;
-
         return (
-          <span>
-            <EditOutlined style={{ marginRight: 10, fontSize: '16px' }} onClick={() => handleEditCourse(record)} />
-            <DeleteOutlined style={{ fontSize: '16px' }} onClick={() => handleEditCourse(record)} />
-          </span>
+          <Space>
+            <Button icon={<EditOutlined />} onClick={() => editCourse(record)} />
+            <Button icon={<DeleteOutlined />} onClick={() => deleteCourse(record)} />
+          </Space>
         )
       }
     },
   ];
 
-  const AddExamCourseForm = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleEditCourse = async (course) => {
-
-    const apiHost = process.env.REACT_APP_API_HOST;
-    const appUrl = `${apiHost}/api/courses/${course.course_id}`;
-    let token = localStorage.getItem('token') || '';
+  const handleAddOrEditCourse = async (course, isEdit) => {
+    if (isEdit && !course.course_id) {
+      console.error("Error: No ID provided for the course to edit");
+      message.error("No course ID provided for editing.");
+      return;
+    }
   
-    let headers = {
-      'Content-Type': 'application/json',
-      Authorization: token
-    };
-    const response = await axios.get(appUrl, { headers });
-    // setData(newData);
-    // setIsModalVisible(false);
-  };
+    setLoading(true);
+    const endpoint = isEdit ? `/api/courses/${course.course_id}` : '/api/courses';
 
-  const handleAddCourse = async (course) => {
     course.is_active = true
     course.category = "A"
     course.course_duration_in_hours = parseInt(course.course_duration_in_hours)
@@ -64,76 +48,69 @@ const Exam = () => {
     course.course_passing_score = parseInt(course.course_passing_score)
     course.course_max_attempts = parseInt(course.course_max_attempts)
 
-    // const appUrl = `${apiHost}/api/courses`;
-  
-    const res = await post('/api/courses', course);
-    // const insertCourse = postData(appUrl, course);
-    if(res.status === 200){
-      setData(res);
-      setIsModalVisible(false);
-    } else{
-      message.error(res.message); // Shows the backend specified message
+    const res = await post(endpoint, course);
+    if (res.status == 200) {
+      /* const updatedCourses = isEdit
+        ? data.map(item => (item.id === course.course_id ? { ...item, ...course } : item))
+        : [...data, course]; // This assumes the API returns the updated list or new course
+      console.log("yyyyyyyyyyy", updatedCourses) */
+      // setData(updatedCourses);
+      fetchData();
+
+      message.success(`Course ${isEdit ? 'updated' : 'added'} successfully.`);
+    } else {
+      message.error(`Failed to ${isEdit ? 'update' : 'add'} course.`);
     }
-  };
-
-
-  const handleCancel = () => {
+    setLoading(false);
     setIsModalVisible(false);
   };
 
-  async function postData(url = "", data = {}) {
-    let token = localStorage.getItem('token') || '';
+  const addCourse = () => {
+    setCurrentCourse(null); // No current course when adding new
+    setIsModalVisible(true);
+  };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token
-      },
-      redirect: 'follow',
-      referrerPolicy: 'no-referrer',
-      body: JSON.stringify(data)
-    });
-    return response;
-  }
+  const editCourse = (course) => {
+    setCurrentCourse(course); // Set current course to edit
+    setIsModalVisible(true);
+  };
+
+  const deleteCourse = async (course) => {
+    console.log("course", course)
+    const endpoint = `/api/courses/${course.course_id}`
+    const res = await deleteData(endpoint, course);
+    fetchData()
+  };
 
   const { Search } = Input;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const limit = 20;
-        const offset = 0;
-        const apiHost = process.env.REACT_APP_API_HOST;
-        const apiURL = `${apiHost}/api/courses/${limit}/${offset}`;
-        const response = await fetch(apiURL, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: localStorage.getItem('token') || ''
-          }
-        });
-        if (response.ok) {
-          const rawData = await response.json();
-          console.log("Fetched data:", rawData.data.course);
-
-          // Check if rawData is an array
-          if (Array.isArray(rawData?.data?.course)) {
-            setData(rawData.data.course);
-          } else {
-            console.error("Expected an array but got:", rawData);
-          }
-        } else {
-          console.error('Error fetching data:', response.statusText);
+  const fetchData = async () => {
+    try {
+      const limit = 20;
+      const offset = 0;
+      const apiHost = process.env.REACT_APP_API_HOST;
+      const apiURL = `${apiHost}/api/courses/${limit}/${offset}`;
+      const response = await fetch(apiURL, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token') || ''
         }
-      } catch (error) {
-        console.error('Error during API call:', error);
-      } finally {
-        setLoading(false);
+      });
+      if (response.ok) {
+        const rawData = await response.json();
+        console.log("Fetched data:", rawData.data.course);
+
+        setData(rawData.data.course);
+      } else {
+        console.error('Error fetching data:', response.statusText);
       }
-    };
+    } catch (error) {
+      console.error('Error during API call:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    
 
     fetchData();
   }, []);
@@ -144,7 +121,7 @@ const Exam = () => {
             style={{ width: '150px', height: '40px', backgroundColor: '#f54290', marginBottom:'10px' }} 
             type="primary" 
             block 
-            onClick={AddExamCourseForm}
+            onClick={addCourse}
           >
             Add Course
           </Button>
@@ -157,10 +134,10 @@ const Exam = () => {
       />
       <AddCourseForm
         visible={isModalVisible}
-        onCancel={handleCancel}
-        onSubmit={handleAddCourse}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleAddOrEditCourse}
+        initialData={currentCourse}
       />
-
     </div>
   );
 };

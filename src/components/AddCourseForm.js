@@ -1,31 +1,43 @@
-import React from 'react';
-import { Modal, Form, Input, DatePicker } from 'antd';
+import React, { useEffect } from 'react';
+import { Modal, Form, Input, DatePicker, Button } from 'antd';
 import moment from 'moment';
 
-const AddCourseForm = ({ visible, onCancel, onSubmit }) => {
+const AddCourseForm = ({ visible, onCancel, onSubmit, initialData }) => {
   const [form] = Form.useForm();
+  const isCreating = !initialData;
 
-  const handleOk = async () => {
-    await form.validateFields()
-      .then(values => {
-        form.resetFields();
-        onSubmit(values); // Pass the values back to the parent component
-      })
-      .catch(info => {
-        console.log('Validate Failed:', info);
-      });
+  useEffect(() => {
+    if (visible && initialData) {
+      const formValues = {
+        ...initialData,
+        course_date: initialData.course_date ? moment(initialData.course_date) : null,
+        registration_starting_date: initialData.registration_starting_date ? moment(initialData.registration_starting_date) : null,
+        registration_closing_date: initialData.registration_closing_date ? moment(initialData.registration_closing_date) : null,
+      };
+      form.setFieldsValue(formValues);
+    } else {
+      form.resetFields();
+    }
+  }, [initialData, form, visible]);
+  
+  
+  const handleSubmit = async () => {
+    const values = await form.validateFields();
+    onSubmit({...values, course_id: initialData?.course_id}, !!initialData); // Pass course_id back if editing
+    // onSubmit(values, !isCreating);
+    onCancel(); // Optionally close the form modal after submit
   };
 
   return (
     <Modal
-      title="Add New Course"
+    title={`${isCreating ? 'Add' : 'Edit'} Course`}
       visible={visible}
-      onOk={handleOk}
+      onOk={handleSubmit}
       onCancel={() => {
         form.resetFields();
         onCancel();
       }}
-      okText="Submit"
+      okText={isCreating ? 'Create' : 'Update'}
       cancelText="Cancel"
     >
       <Form form={form} layout="vertical">

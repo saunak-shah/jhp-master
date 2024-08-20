@@ -51,3 +51,35 @@ export async function post(url, data) {
     throw error; // You can modify this part to handle JavaScript errors differently if you like
   }
 }
+
+
+export async function deleteData(url, data) {
+  try {
+    let token = localStorage.getItem('token') || '';
+
+    let reqOptions = {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: token
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+    };
+    const response = await fetch(`${apiHost}${url}`, reqOptions);
+
+    const result = await response.json();  // Get JSON response regardless of status
+
+    if (!response.ok) {
+      // This will handle HTTP errors like 422, attaching the status and message for the front end
+      return { status: response.status, ...result };
+    } else {
+      // Successful response, return data with status
+      return { status: response.status, ...result };
+    }
+    
+  } catch (error) {
+    console.error('POST request error:', error);
+    throw error; // You can modify this part to handle JavaScript errors differently if you like
+  }
+}
