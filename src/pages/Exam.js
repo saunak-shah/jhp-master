@@ -3,7 +3,8 @@ import { Table, Input, Button, Space, message } from 'antd';
 import AddCourseForm from '../components/AddCourseForm'; // Make sure the path is correct
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import axios from 'axios';
-
+import { post } from '../global/api';
+// import routes from '../config/apiRoute';
 
 const Exam = () => {
 
@@ -28,7 +29,7 @@ const Exam = () => {
 
         return (
           <span>
-            <EditOutlined style={{ marginRight: 10, fontSize: '16px' }} onClick={() => console.log('Edit clicked')} />
+            <EditOutlined style={{ marginRight: 10, fontSize: '16px' }} onClick={() => handleEditCourse(record)} />
             <DeleteOutlined style={{ fontSize: '16px' }} onClick={() => handleEditCourse(record)} />
           </span>
         )
@@ -36,7 +37,7 @@ const Exam = () => {
     },
   ];
 
-  const handleProfileUpdate = () => {
+  const AddExamCourseForm = () => {
     setIsModalVisible(true);
   };
 
@@ -55,22 +56,24 @@ const Exam = () => {
     // setIsModalVisible(false);
   };
 
-  const handleAddCourse = (course) => {
+  const handleAddCourse = async (course) => {
     course.is_active = true
     course.category = "A"
     course.course_duration_in_hours = parseInt(course.course_duration_in_hours)
     course.course_score = parseInt(course.course_score)
     course.course_passing_score = parseInt(course.course_passing_score)
     course.course_max_attempts = parseInt(course.course_max_attempts)
-    console.log("88888888888888888888", course)
 
-    const apiHost = process.env.REACT_APP_API_HOST;
-    const appUrl = `${apiHost}/api/courses`;
+    // const appUrl = `${apiHost}/api/courses`;
   
-    const insertCourse = postData(appUrl, course);
-    console.log("1111111111111 %j", insertCourse)
-    // setData(newData);
-    // setIsModalVisible(false);
+    const res = await post('/api/courses', course);
+    // const insertCourse = postData(appUrl, course);
+    if(res.status === 200){
+      setData(res);
+      setIsModalVisible(false);
+    } else{
+      message.error(res.message); // Shows the backend specified message
+    }
   };
 
 
@@ -138,10 +141,10 @@ const Exam = () => {
   return (
     <div id="exam-container">
           <Button 
-            style={{ width: '150px', height: '40px', backgroundColor: '#f54290' }} 
+            style={{ width: '150px', height: '40px', backgroundColor: '#f54290', marginBottom:'10px' }} 
             type="primary" 
             block 
-            onClick={handleProfileUpdate}
+            onClick={AddExamCourseForm}
           >
             Add Course
           </Button>
