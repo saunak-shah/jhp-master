@@ -15,6 +15,7 @@ import Home from "./Home";
 import Footer from "../global/Footer";
 import Cookies from 'js-cookie'; // Import js-cookie
 import Teacher from "./Teacher";
+import ApplicantsView from "../components/ApplicantsView";
 
 const App = observer(() => {
   const [isLogin, setIsLogin] = useState(true);
@@ -42,6 +43,7 @@ const App = observer(() => {
             <Routes>
               <Route path="/exam" element={<Exam />} />
               <Route path="/home" element={<Home />} />
+              <Route path="/applicants/:examId" element={<ApplicantsView />} /> // New route for viewing applicants
               <Route path="/admin" element={<AdminUsers />} />
               <Route path="/student" element={<UserTable />} />
               <Route path="/attendance" element={<Attendance />} />

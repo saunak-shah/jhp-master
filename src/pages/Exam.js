@@ -3,12 +3,16 @@ import { Table, Input, Button, Space, message } from "antd";
 import AddCourseForm from "../components/AddCourseForm"; // Make sure the path is correct
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import { post, deleteData } from "../global/api";
+import { useNavigate } from 'react-router-dom';
 
 const Exam = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentCourse, setCurrentCourse] = useState(null);
+
+  // Inside your Exam component
+const navigate = useNavigate();
 
   // Define columns for the table
   const columns = [
@@ -35,7 +39,6 @@ const Exam = () => {
               primary={true}
               icon={<EditOutlined />}
               onClick={() => editCourse(record)}
-              style={{ marginRight: 20, marginTop: 5 }}
             >
               Edit
             </Button>
@@ -43,11 +46,11 @@ const Exam = () => {
               type="primary"
               danger
               icon={<DeleteOutlined />}
-              style={{ marginTop: 5 }}
               onClick={() => deleteCourse(record)}
             >
               Delete
             </Button>
+            <Button type="primary" onClick={() => navigate(`/applicants/${record.course_id}`)}>View Applicants</Button>
           </Space>
         );
       },
