@@ -1,64 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Carousel } from 'antd';
-import firstImage from "../assets/1.jpg";
-import secondImage from "../assets/2.jpg";
-import thirdImage from "../assets/3.jpg";
-import fourthImage from "../assets/4.jpg";
-import fifthImage from "../assets/5.jpg";
-import '../css/Home.css'; // Import the CSS file
+import React from 'react';
+import { List, Card, Typography } from 'antd';
 
-const contentStyle = {
-  margin: 0,
-  color: '#fff',
-  lineHeight: '160px',
-  textAlign: 'center',
-  background: '#364d79',
-};
+const { Title } = Typography;
 
-const Home = () => {
-  const [showMessage, setShowMessage] = useState(false);
+const data = [
+  { month: 'Total Guruji', attendance: 24 },
+  { month: 'Total Students', attendance: 21 },
+  { month: 'Student count for teacher', attendance: 19 },
+  { month: 'Top 5 small age student count', attendance: 22 },
+  { month: 'Top 5 max age student countrch', attendance: 20 },
+  { month: '1 to 10 age student', attendance: 18 },
+  { month: '11 to 20 age student', attendance: 18 },
+];
 
-  useEffect(() => {
-    const messageFlag = localStorage.getItem('showSignupMessage');
-    if (messageFlag === 'true') {
-      setShowMessage(true);
-      localStorage.removeItem('showSignupMessage');
-    }
-  }, []);
-
-  return (
-    <>
-      {showMessage && (
-        <div className="signup-message">
-          <h2>Congratulations !!</h2>
-          <p>You have successfully signed up. Please save your username and password for future logins.We have also sent an email with your login details.</p>
-        </div>
+const Home = () => (
+  <div style={{ padding: '50px', textAlign: 'center' }}>
+    <Title level={2}>Dashboard</Title>
+    <List
+      grid={{ gutter: 16, column: 2 }}
+      dataSource={data}
+      renderItem={item => (
+        <List.Item>
+          <Card 
+            title={item.month}
+            bordered={true}
+            style={{ textAlign: 'center' }}
+          >
+            <p style={{ fontSize: '16px', fontWeight: 'bold' }}>Attendance: {item.attendance}</p>
+            <p style={{ color: 'gray' }}>Notes: Regular attendance with minor absences.</p>
+          </Card>
+        </List.Item>
       )}
-      <Carousel 
-        arrows
-        infinite={false}
-        prevArrow={<button className="slick-prev"></button>}
-        nextArrow={<button className="slick-next"></button>}
-        style={{margin: '50px'}}
-      >
-        {/* <div>
-          <h3 style={contentStyle}><img src={firstImage} alt="First slide" className="carousel-image" /></h3>
-        </div>
-        <div>
-          <h3 style={contentStyle}><img src={secondImage} alt="Second slide" className="carousel-image" /></h3>
-        </div>
-        <div>
-          <h3 style={contentStyle}><img src={thirdImage} alt="First slide" className="carousel-image" /></h3>
-        </div>
-        <div>
-          <h3 style={contentStyle}><img src={fourthImage} alt="First slide" className="carousel-image" /></h3>
-        </div>
-        <div>
-          <h3 style={contentStyle}><img src={fifthImage} alt="First slide" className="carousel-image" /></h3>
-        </div> */}
-      </Carousel>
-    </>
-  );
-};
+    />
+  </div>
+);
 
 export default Home;
