@@ -1,6 +1,5 @@
-// src/UserTable.js
 import React, { useEffect, useState } from 'react';
-import { Table, Input, Button, Space } from 'antd';
+import { Table, Input, Space } from 'antd';
 import { observer } from 'mobx-react-lite';
 import authStore from '../stores/authStore';
 import axios from 'axios';
@@ -17,13 +16,24 @@ const columns = [
 
 const UserTable = observer(() => {
   const { Search } = Input;
-  const [sortField, setSortField] = useState('');
-  const [sortOrder, setSortOrder] = useState('');
+  const [sortField, setSortField] = useState('student_id');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [users, setUsers] = useState([]);
   const token = localStorage.getItem('token');
 
   const limit = 20
   const offset = 0
   
+  const handleChange = (pagination, filters, sorter) => {
+    // Update sortField and sortOrder based on sorter
+    if (sorter.field) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+    }
+
+    fetchData();
+  };
+
   const handleTableChange = () => {
     fetchData();
   };
@@ -31,18 +41,34 @@ const UserTable = observer(() => {
   useEffect (() => {
     handleTableChange();
   }, [])
+
+  const handleUserSearchChange = async (value) => {
+    await fetchData(value);
+  }
   
-  const fetchData = async () => {
+  const fetchData = async (searchKey = undefined) => {
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
-      const apiUrl = `${apiHost}/api/students/${limit}/${offset}`;
+      let apiUrl = `${apiHost}/api/students?limit=${limit}&offset=${offset}`;
+      if(searchKey && searchKey.length > 0){
+        apiUrl = apiUrl + `&searchKey=${searchKey}`
+      }
+
+      if(sortField){
+        apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`
+      }
+      
       let headers = {
         'Content-Type': 'application/json',
         Authorization: token
       };
       const response = await axios.get(apiUrl, { headers });
-      authStore.users = response.data.data;
-      console.log("🚀 ~ file: UserTable.js:54 ~ fetchData ~ response.data:", response.data)
+      if(response.data && response.data.data && response.data.data.users.length > 0){
+        setUsers(response.data.data.users);
+      } else {
+        setUsers([]);
+
+      }
     } catch (error) {
       console.error('Error during API call:', error);
     }
@@ -51,15 +77,14 @@ const UserTable = observer(() => {
   return (
     <div>
       <Space style={{ marginBottom: 16 }}>
-        <Search placeholder="Search users" enterButton />
+        <Search style={{ marginTop: 16, marginLeft: 16 }} placeholder="Search users" enterButton onChange={(e) => handleUserSearchChange(e.target.value)} />
       </Space>
       <Table
-        dataSource={authStore.users}
+        dataSource={users}
         columns={columns}
         bordered={true}
-        onChange={handleTableChange}
-        sortField={sortField}
-        sortOrder={sortOrder}
+        onChange={handleChange}
+        pagination={true}
       />
     </div>
   );

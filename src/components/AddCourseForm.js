@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Input, DatePicker, Button } from 'antd';
+import { Modal, Input, DatePicker, Form } from 'antd';
 import moment from 'moment';
 
-const AddCourseForm = ({ visible, onCancel, onSubmit, initialData }) => {
-  const [form] = Form.useForm();
+const AddCourseForm = ({ form, visible, onCancel, onSubmit, initialData }) => {
   const isCreating = !initialData;
 
   useEffect(() => {
@@ -31,7 +30,7 @@ const AddCourseForm = ({ visible, onCancel, onSubmit, initialData }) => {
   return (
     <Modal
     title={`${isCreating ? 'Add' : 'Edit'} Course`}
-      visible={visible}
+      open={visible}
       onOk={handleSubmit}
       onCancel={() => {
         form.resetFields();
