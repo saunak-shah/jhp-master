@@ -14,7 +14,6 @@ import {
   Typography,
   Select,
   message,
-  Popconfirm,
 } from "antd";
 import TextArea from "antd/es/input/TextArea";
 import { observer } from "mobx-react-lite";
@@ -30,8 +29,8 @@ const Teacher = observer(() => {
   const [teachers, setTeachers] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [disableField, setDisableField] = useState(false);
-  //   const [sortField, setSortField] = useState("");
-  //   const [sortOrder, setSortOrder] = useState("");
+    const [sortField, setSortField] = useState('teacher_id');
+    const [sortOrder, setSortOrder] = useState('asc');
   const [error, setError] = useState(null);
   const [isCreating, setIsCreating] = useState(true);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
@@ -69,12 +68,14 @@ const Teacher = observer(() => {
       dataIndex: "teacher_gender",
       key: "teacher_gender",
       sorter: true,
+
     },
     {
       title: "Area",
       dataIndex: "teacher_address",
       key: "teacher_address",
       sorter: true,
+
     },
     {
       title: "Action",
@@ -109,6 +110,16 @@ const Teacher = observer(() => {
   const limit = 20;
   const offset = 0;
 
+  const handleChange = (pagination, filters, sorter) => {
+    // Update sortField and sortOrder based on sorter
+    if (sorter.field) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+    }
+
+    fetchData();
+  };
+
   const handleTableChange = () => {
     fetchData();
   };
@@ -132,6 +143,10 @@ const Teacher = observer(() => {
   const handleDelete = (record) => {
     setDeleteModalVisibility(true);
     setDataToDelete(record);
+  };
+
+  const handleTeacherSearchChange = async (value) => {
+    await fetchData(value);
   };
 
   const deleteTeacherData = async () => {
@@ -252,19 +267,34 @@ const Teacher = observer(() => {
     handleTableChange();
   }, []);
 
-  const fetchData = async () => {
+  const fetchData = async (searchKey = undefined) => {
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
 
-      const apiUrl = `${apiHost}/api/teachers/${limit}/${offset}`;
+      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
+      if (searchKey && searchKey.length > 0) {
+        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+      }
 
+      if (sortField) {
+        apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+      }
       let headers = {
         "Content-Type": "application/json",
         Authorization: token,
       };
 
       const response = await axios.get(apiUrl, { headers });
-      setTeachers(response.data.data.teachers);
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.teachers &&
+        response.data.data.teachers.length > 0
+      ) {
+        setTeachers(response.data.data.teachers);
+      } else {
+        setTeachers([]);
+      }
     } catch (error) {
       console.error("Error during API call:", error);
     }
@@ -498,7 +528,7 @@ const Teacher = observer(() => {
         }}
       >
         <Space>
-          <Search placeholder="Search teachers" enterButton />
+          <Search placeholder="Search teachers" enterButton onChange={(e) => handleTeacherSearchChange(e.target.value)}/>
         </Space>
         <Button type="primary" onClick={openModal} icon={<PlusOutlined />}>
           Add New Teacher
@@ -508,7 +538,8 @@ const Teacher = observer(() => {
         dataSource={teachers}
         columns={columns}
         bordered={true}
-        onChange={handleTableChange}
+        onChange={handleChange}
+        pagination={true}
         // sortField={sortField}
         // sortOrder={sortOrder}
       />
