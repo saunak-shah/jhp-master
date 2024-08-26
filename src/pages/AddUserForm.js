@@ -14,9 +14,6 @@ const AddUserForm = () => {
     form
       .validateFields()
       .then((values) => {
-        console.log("values==========", values);
-        console.log("authStore.users==========", authStore.users);
-
         const newUser = { id: authStore.users.length + 1, ...values, gender };
         authStore.addUser(newUser);
         form.resetFields();

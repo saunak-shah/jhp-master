@@ -1,32 +1,55 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, message } from "antd";
+import { Table, Input, Button, Space, message, Form } from "antd";
 import AddCourseForm from "../components/AddCourseForm"; // Make sure the path is correct
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  DatabaseOutlined,
+} from "@ant-design/icons";
 import { post, deleteData } from "../global/api";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+
+const limit = 20;
+const offset = 0;
 
 const Exam = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentCourse, setCurrentCourse] = useState(null);
+  const [form] = Form.useForm();
+  const [sortField, setSortField] = useState("course_id");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   // Inside your Exam component
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // Define columns for the table
   const columns = [
-    { title: "Course Name", dataIndex: "course_name", key: "course_name" },
-    { title: "Marks", dataIndex: "course_score", key: "course_score" },
+    {
+      title: "Course Name",
+      dataIndex: "course_name",
+      key: "course_name",
+      sorter: true,
+    },
+    {
+      title: "Marks",
+      dataIndex: "course_score",
+      key: "course_score",
+      sorter: true,
+    },
     {
       title: "Passing Marks",
       dataIndex: "course_passing_score",
       key: "course_passing_score",
+      sorter: true,
     },
     {
       title: "Exam Duration",
       dataIndex: "course_duration_in_hours",
       key: "course_duration_in_hours",
+      sorter: true,
     },
     {
       title: "Action",
@@ -36,7 +59,6 @@ const navigate = useNavigate();
           <Space>
             <Button
               type="primary"
-              primary={true}
               icon={<EditOutlined />}
               onClick={() => editCourse(record)}
             >
@@ -50,12 +72,32 @@ const navigate = useNavigate();
             >
               Delete
             </Button>
-            <Button type="primary" onClick={() => navigate(`/applicants/${record.course_id}`)}>View Applicants</Button>
+            <Button
+              type="primary"
+              icon={<DatabaseOutlined />}
+              onClick={() => navigate(`/applicants/${record.course_id}`)}
+            >
+              View Applicants
+            </Button>
           </Space>
         );
       },
     },
   ];
+
+  const handleChange = (pagination, filters, sorter) => {
+    // Update sortField and sortOrder based on sorter
+    if (sorter.field) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+    }
+
+    fetchData();
+  };
+
+  const handleCourseSearchChange = async (value) => {
+    await fetchData(value);
+  };
 
   const handleAddOrEditCourse = async (course, isEdit) => {
     if (isEdit && !course.course_id) {
@@ -77,7 +119,7 @@ const navigate = useNavigate();
     course.course_max_attempts = parseInt(course.course_max_attempts);
 
     const res = await post(endpoint, course);
-    if (res.status == 200) {
+    if (res.status === 200) {
       /* const updatedCourses = isEdit
         ? data.map(item => (item.id === course.course_id ? { ...item, ...course } : item))
         : [...data, course]; // This assumes the API returns the updated list or new course
@@ -106,18 +148,24 @@ const navigate = useNavigate();
   const deleteCourse = async (course) => {
     console.log("course", course);
     const endpoint = `/api/courses/${course.course_id}`;
-    const res = await deleteData(endpoint, course);
+    await deleteData(endpoint, course);
     fetchData();
   };
 
   const { Search } = Input;
-  const fetchData = async () => {
+  const fetchData = async (searchKey = undefined) => {
     try {
-      const limit = 20;
-      const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
-      const apiURL = `${apiHost}/api/courses/${limit}/${offset}`;
-      const response = await fetch(apiURL, {
+      let apiUrl = `${apiHost}/api/courses?limit=${limit}&offset=${offset}`;
+      if (searchKey && searchKey.length > 0) {
+        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+      }
+
+      if (sortField) {
+        apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+      }
+
+      const response = await fetch(apiUrl, {
         headers: {
           "Content-Type": "application/json",
           Authorization: localStorage.getItem("token") || "",
@@ -125,9 +173,16 @@ const navigate = useNavigate();
       });
       if (response.ok) {
         const rawData = await response.json();
-        console.log("Fetched data:", rawData.data.course);
-
-        setData(rawData.data.course);
+        console.log("Fetched data:", rawData.data.courses);
+        if (
+          rawData.data &&
+          rawData.data.courses &&
+          rawData.data.courses.length > 0
+        ) {
+          setData(rawData.data.courses);
+        } else {
+          setData([]);
+        }
       } else {
         console.error("Error fetching data:", response.statusText);
       }
@@ -143,15 +198,25 @@ const navigate = useNavigate();
 
   return (
     <div id="exam-container">
+      <Space style={{ marginBottom: 16 }}>
+        <Search
+          style={{ marginTop: 16, marginLeft: 10 }}
+          placeholder="Search exams"
+          enterButton
+          onChange={(e) => handleCourseSearchChange(e.target.value)}
+        />
+      </Space>
       <Button
         style={{
           width: "150px",
           height: "40px",
-          backgroundColor: "#f54290",
-          marginBottom: "10px",
+          marginTop: "10px",
+          marginRight: "10px",
+          float: "right",
         }}
         type="primary"
         block
+        icon={<PlusOutlined />}
         onClick={addCourse}
       >
         Add Course
@@ -160,10 +225,12 @@ const navigate = useNavigate();
         dataSource={data}
         columns={columns}
         bordered={true}
-        pagination={false}
+        onChange={handleChange}
+        pagination={true}
         loading={loading}
       />
       <AddCourseForm
+        form={form}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         onSubmit={handleAddOrEditCourse}
