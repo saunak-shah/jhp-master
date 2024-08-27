@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { Modal, Input, DatePicker, Form } from 'antd';
 import moment from 'moment';
 
-const AddCourseForm = ({ form, visible, onCancel, onSubmit, initialData }) => {
+const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
+  const [form] = Form.useForm();
   const isCreating = !initialData;
 
   useEffect(() => {
@@ -122,4 +123,4 @@ const AddCourseForm = ({ form, visible, onCancel, onSubmit, initialData }) => {
   );
 };
 
-export default AddCourseForm;
+export default AddEditStudent;

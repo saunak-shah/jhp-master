@@ -88,6 +88,8 @@ const UserTable = observer(() => {
 
   const fetchData = async (searchKey = undefined, teacherId = undefined) => {
     try {
+      const limit = 20;
+      const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl;
       if (teacherId) {
@@ -151,6 +153,9 @@ const UserTable = observer(() => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchData();
@@ -190,6 +195,6 @@ const UserTable = observer(() => {
       />
     </div>
   );
-});
-
+}
+);
 export default UserTable;
