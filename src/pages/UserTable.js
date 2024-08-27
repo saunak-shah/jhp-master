@@ -146,7 +146,9 @@ const UserTable = observer(() => {
         setTeachers([]);
       }
     } catch (error) {
-      console.error('Error during API call:', error);
+      console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -167,7 +169,7 @@ const UserTable = observer(() => {
       </Space>
       <Space style={{ float: "right", marginTop: 15, marginRight: 15 }}>
         Filter by teacher:
-        <Select onChange={handleFilterChange} defaultValue={"Select Teachers"} style={{width: 200}}>
+        <Select onChange={handleFilterChange} defaultValue={"Select Teacher"} style={{width: 200}}>
           <Option key={"None"} value={undefined}>
             None
           </Option>
