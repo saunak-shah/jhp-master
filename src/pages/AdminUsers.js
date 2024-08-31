@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Table, Input, Space, Button, Select } from "antd";
+import { Input, Space, Button, Select } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
 import { DeleteOutlined } from "@ant-design/icons";
 import { pageSize } from "./constants";
+import TableView from "../components/TableView";
 
 const { Option } = Select;
 
@@ -63,19 +64,6 @@ const UserTable = observer(() => {
   const [selectedValue, setSelectedValue] = useState(null);
 
   const token = localStorage.getItem("token");
-
-  const handleChange = (pagination, filters, sorter) => {
-    // Update sortField and sortOrder based on sorter
-    if (sorter.field) {
-      setSortField(sorter.field);
-      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
-    }
-
-    const newOffset = (pagination.current - 1) * pagination.pageSize;
-    setOffset(newOffset);
-    setCurrentPage(pagination.current);
-    fetchData(newOffset, pagination.pageSize);
-  };
 
   const handleFilterChange = (teacherId) => {
     setTeacherId(teacherId);
@@ -199,18 +187,20 @@ const UserTable = observer(() => {
           ))}
         </Select>
       </Space>
-      <Table
-        dataSource={users}
+
+      <TableView
+        data={users}
         columns={columns}
         loading={loading}
-        bordered={true}
-        onChange={handleChange}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: totalUserCount,
-        }}
+        currentPage={currentPage}
+        totalCount={totalUserCount}
+        setSortField={setSortField}
+        setSortOrder={setSortOrder}
+        setOffset={setOffset}
+        setCurrentPage={setCurrentPage}
+        fetchData={fetchData}
       />
+      
     </div>
   );
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Table, Input, Button, Space, message, Form } from "antd";
+import { Input, Button, Space, message, Form } from "antd";
 import AddCourseForm from "../components/AddCourseForm"; // Make sure the path is correct
 import {
   EditOutlined,
@@ -10,6 +10,7 @@ import {
 import { post, deleteData } from "../global/api";
 import { useNavigate } from "react-router-dom";
 import { pageSize } from "./constants";
+import TableView from "../components/TableView";
 
 const Exam = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -92,19 +93,6 @@ const Exam = () => {
       },
     },
   ];
-
-  const handleChange = (pagination, filters, sorter) => {
-    // Update sortField and sortOrder based on sorter
-    if (sorter.field) {
-      setSortField(sorter.field);
-      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
-    }
-
-    const newOffset = (pagination.current - 1) * pagination.pageSize;
-    setOffset(newOffset);
-    setCurrentPage(pagination.current);
-    fetchData(newOffset, pagination.pageSize);
-  };
 
   const handleCourseSearchChange = async (value) => {
     setSearchKey(value);
@@ -192,7 +180,7 @@ const Exam = () => {
           rawData.data.courses.length > 0
         ) {
           setCourses(rawData.data.courses);
-          setTotalCoursesCount(rawData.data.totalCount)
+          setTotalCoursesCount(rawData.data.totalCount);
         } else {
           setCourses([]);
         }
@@ -241,17 +229,18 @@ const Exam = () => {
       >
         Add Course
       </Button>
-      <Table
-        dataSource={courses}
+
+      <TableView
+        data={courses}
         columns={columns}
-        bordered={true}
-        onChange={handleChange}
         loading={loading}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: totalCourseCount,
-        }}
+        currentPage={currentPage}
+        totalCount={totalCourseCount}
+        setSortField={setSortField}
+        setSortOrder={setSortOrder}
+        setOffset={setOffset}
+        setCurrentPage={setCurrentPage}
+        fetchData={fetchData}
       />
       <AddCourseForm
         form={form}

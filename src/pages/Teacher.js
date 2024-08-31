@@ -1,7 +1,6 @@
 // src/UserTable.js
 import React, { useEffect, useState } from "react";
 import {
-  Table,
   Input,
   Space,
   Button,
@@ -21,6 +20,7 @@ import axios from "axios";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { pageSize } from "./constants";
+import TableView from "../components/TableView";
 const { Option } = Select;
 const { Text } = Typography;
 
@@ -111,23 +111,6 @@ const Teacher = observer(() => {
       ),
     },
   ];
-
-  const handleChange = (pagination, filters, sorter) => {
-    // Update sortField and sortOrder based on sorter
-    if (sorter.field) {
-      setSortField(sorter.field);
-      if (sorter.order === "descend") {
-        setSortOrder("desc");
-      } else if (sorter.order === "ascend") {
-        setSortOrder("asc");
-      }
-    }
-
-    const newOffset = (pagination.current - 1) * pagination.pageSize;
-    setOffset(newOffset);
-    setCurrentPage(pagination.current);
-    fetchData(newOffset, pagination.pageSize);
-  };
 
   useEffect(() => {
     fetchData(offset, pageSize);
@@ -555,17 +538,17 @@ const Teacher = observer(() => {
           Add New Teacher
         </Button>
       </div>
-      <Table
-        dataSource={teachers}
+      <TableView
+        data={teachers}
         columns={columns}
-        bordered={true}
-        onChange={handleChange}
         loading={loading}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          total: totalTeacherCount,
-        }}
+        currentPage={currentPage}
+        totalCount={totalTeacherCount}
+        setSortField={setSortField}
+        setSortOrder={setSortOrder}
+        setOffset={setOffset}
+        setCurrentPage={setCurrentPage}
+        fetchData={fetchData}
       />
     </div>
   );
