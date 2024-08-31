@@ -9,24 +9,32 @@ import {
 } from "@ant-design/icons";
 import { post, deleteData } from "../global/api";
 import { useNavigate } from "react-router-dom";
-
-const limit = 20;
-const offset = 0;
+import { pageSize } from "./constants";
 
 const Exam = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentCourse, setCurrentCourse] = useState(null);
   const [form] = Form.useForm();
   const [sortField, setSortField] = useState("course_id");
   const [sortOrder, setSortOrder] = useState("asc");
+  const [offset, setOffset] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [totalCourseCount, setTotalCoursesCount] = useState(0);
+  const [searchKey, setSearchKey] = useState("");
+  const [courses, setCourses] = useState([]);
 
   // Inside your Exam component
   const navigate = useNavigate();
 
   // Define columns for the table
   const columns = [
+    {
+      title: "Course Id",
+      dataIndex: "course_id",
+      key: "course_id",
+      sorter: true,
+    },
     {
       title: "Course Name",
       dataIndex: "course_name",
@@ -92,11 +100,14 @@ const Exam = () => {
       setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
     }
 
-    fetchData();
+    const newOffset = (pagination.current - 1) * pagination.pageSize;
+    setOffset(newOffset);
+    setCurrentPage(pagination.current);
+    fetchData(newOffset, pagination.pageSize);
   };
 
   const handleCourseSearchChange = async (value) => {
-    await fetchData(value);
+    setSearchKey(value);
   };
 
   const handleAddOrEditCourse = async (course, isEdit) => {
@@ -149,11 +160,12 @@ const Exam = () => {
     console.log("course", course);
     const endpoint = `/api/courses/${course.course_id}`;
     await deleteData(endpoint, course);
-    fetchData();
+    fetchData(offset, pageSize);
   };
 
   const { Search } = Input;
-  const fetchData = async (searchKey = undefined) => {
+  const fetchData = async (offset, limit) => {
+    setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/courses?limit=${limit}&offset=${offset}`;
@@ -179,9 +191,10 @@ const Exam = () => {
           rawData.data.courses &&
           rawData.data.courses.length > 0
         ) {
-          setData(rawData.data.courses);
+          setCourses(rawData.data.courses);
+          setTotalCoursesCount(rawData.data.totalCount)
         } else {
-          setData([]);
+          setCourses([]);
         }
       } else {
         console.error("Error fetching data:", response.statusText);
@@ -192,9 +205,16 @@ const Exam = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    fetchData();
+    fetchData(offset, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchData(0, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKey, totalCourseCount]);
 
   return (
     <div id="exam-container">
@@ -222,12 +242,16 @@ const Exam = () => {
         Add Course
       </Button>
       <Table
-        dataSource={data}
+        dataSource={courses}
         columns={columns}
         bordered={true}
         onChange={handleChange}
-        pagination={true}
         loading={loading}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalCourseCount,
+        }}
       />
       <AddCourseForm
         form={form}

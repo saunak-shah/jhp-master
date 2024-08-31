@@ -3,6 +3,7 @@ import { Table, Input, Space, Button, Select } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
 import { DeleteOutlined } from "@ant-design/icons";
+import { pageSize } from "./constants";
 
 const { Option } = Select;
 
@@ -53,12 +54,15 @@ const UserTable = observer(() => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [users, setUsers] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [totalUserCount, setTotalUserCount] = useState(0);
+  const [searchKey, setSearchKey] = useState(0);
+  const [teacherId, setTeacherId] = useState(0);
+  const [offset, setOffset] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [selectedValue, setSelectedValue] = useState(null);
 
   const token = localStorage.getItem("token");
-
-  const limit = 20;
-  const offset = 0;
 
   const handleChange = (pagination, filters, sorter) => {
     // Update sortField and sortOrder based on sorter
@@ -67,29 +71,32 @@ const UserTable = observer(() => {
       setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
     }
 
-    fetchData();
+    const newOffset = (pagination.current - 1) * pagination.pageSize;
+    setOffset(newOffset);
+    setCurrentPage(pagination.current);
+    fetchData(newOffset, pagination.pageSize);
   };
 
-  const handleFilterChange = (teacherId = undefined) => {
-    fetchData(undefined, teacherId);
-  };
-
-  const handleTableChange = () => {
-    fetchData();
+  const handleFilterChange = (teacherId) => {
+    setTeacherId(teacherId);
+    setSelectedValue(teacherId);
+    setOffset(0);
+    fetchData(offset, pageSize);
+    setCurrentPage(1);
   };
 
   useEffect(() => {
-    handleTableChange();
-  }, []);
+    fetchData(offset, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKey, totalUserCount, teacherId]);
 
-  const handleUserSearchChange = async (value) => {
-    await fetchData(value);
+  const handleUserSearchChange = (value) => {
+    setSearchKey(value);
   };
 
-  const fetchData = async (searchKey = undefined, teacherId = undefined) => {
+  const fetchData = async (offset, limit) => {
+    setLoading(true);
     try {
-      const limit = 20;
-      const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl;
       if (teacherId) {
@@ -110,11 +117,9 @@ const UserTable = observer(() => {
         Authorization: token,
       };
       const response = await axios.get(apiUrl, { headers });
-      if (
-        response.data &&
-        response.data.data
-      ) {
-        setUsers(response.data.data.users || response.data.data);
+      if (response.data && response.data.data) {
+        setTotalUserCount(response.data.data.totalCount);
+        setUsers(response.data.data.users);
       } else {
         setUsers([]);
       }
@@ -153,13 +158,11 @@ const UserTable = observer(() => {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   useEffect(() => {
-    fetchData();
+    fetchData(0, pageSize);
     fetchTeachersData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -174,7 +177,17 @@ const UserTable = observer(() => {
       </Space>
       <Space style={{ float: "right", marginTop: 15, marginRight: 15 }}>
         Filter by teacher:
-        <Select onChange={handleFilterChange} defaultValue={"Select Teacher"} style={{width: 200}}>
+        <Select
+          onChange={handleFilterChange}
+          showSearch={true}
+          placeholder="Select Teacher"
+          optionFilterProp="children"
+          value={selectedValue}
+          filterOption={(input, option) =>
+            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+          style={{ width: 200 }}
+        >
           <Option key={"None"} value={undefined}>
             None
           </Option>
@@ -189,12 +202,16 @@ const UserTable = observer(() => {
       <Table
         dataSource={users}
         columns={columns}
+        loading={loading}
         bordered={true}
         onChange={handleChange}
-        pagination={true}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalUserCount,
+        }}
       />
     </div>
   );
-}
-);
+});
 export default UserTable;

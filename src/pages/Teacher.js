@@ -20,6 +20,7 @@ import { observer } from "mobx-react-lite";
 import axios from "axios";
 import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import moment from "moment";
+import { pageSize } from "./constants";
 const { Option } = Select;
 const { Text } = Typography;
 
@@ -29,12 +30,18 @@ const Teacher = observer(() => {
   const [teachers, setTeachers] = useState([]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [disableField, setDisableField] = useState(false);
-    const [sortField, setSortField] = useState('teacher_id');
-    const [sortOrder, setSortOrder] = useState('asc');
+  const [sortField, setSortField] = useState("teacher_id");
+  const [sortOrder, setSortOrder] = useState("asc");
   const [error, setError] = useState(null);
   const [isCreating, setIsCreating] = useState(true);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const [offset, setOffset] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [totalTeacherCount, setTotalteacherCount] = useState(0);
+  const [searchKey, setSearchKey] = useState("");
+
   const token = localStorage.getItem("token");
 
   const columns = [
@@ -68,14 +75,12 @@ const Teacher = observer(() => {
       dataIndex: "teacher_gender",
       key: "teacher_gender",
       sorter: true,
-
     },
     {
       title: "Area",
       dataIndex: "teacher_address",
       key: "teacher_address",
       sorter: true,
-
     },
     {
       title: "Action",
@@ -107,22 +112,27 @@ const Teacher = observer(() => {
     },
   ];
 
-  const limit = 20;
-  const offset = 0;
-
   const handleChange = (pagination, filters, sorter) => {
     // Update sortField and sortOrder based on sorter
     if (sorter.field) {
       setSortField(sorter.field);
-      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
+      if (sorter.order === "descend") {
+        setSortOrder("desc");
+      } else if (sorter.order === "ascend") {
+        setSortOrder("asc");
+      }
     }
 
-    fetchData();
+    const newOffset = (pagination.current - 1) * pagination.pageSize;
+    setOffset(newOffset);
+    setCurrentPage(pagination.current);
+    fetchData(newOffset, pagination.pageSize);
   };
 
-  const handleTableChange = () => {
-    fetchData();
-  };
+  useEffect(() => {
+    fetchData(offset, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const openModal = () => {
     setModalOpen(true);
@@ -145,8 +155,13 @@ const Teacher = observer(() => {
     setDataToDelete(record);
   };
 
+  useEffect(() => {
+    fetchData(0, pageSize);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKey, totalTeacherCount]);
+
   const handleTeacherSearchChange = async (value) => {
-    await fetchData(value);
+    setSearchKey(value);
   };
 
   const deleteTeacherData = async () => {
@@ -158,7 +173,7 @@ const Teacher = observer(() => {
           message.success("Teacher deleted");
           setDeleteModalVisibility(false);
           setDataToDelete({});
-          fetchData();
+          fetchData(0, pageSize);
           return response.json();
         } else {
           throw new Error("Failed to delete teacher.");
@@ -201,7 +216,7 @@ const Teacher = observer(() => {
       .then((response) => {
         if (response.status === 200) {
           message.success("Teacher created");
-          fetchData();
+          fetchData(0, pageSize);
           return response.json();
         } else {
           throw new Error("Failed to create teacher.");
@@ -230,7 +245,7 @@ const Teacher = observer(() => {
           console.log("Response received:", response);
           if (response.status === 200) {
             message.success("Teacher updated");
-            fetchData();
+            fetchData(offset, pageSize);
             return response.json();
           } else {
             throw new Error("Failed to update teacher.");
@@ -262,13 +277,9 @@ const Teacher = observer(() => {
     return response;
   }
 
-  // eslint-disable-next-line
-  useEffect(() => {
-    handleTableChange();
-  }, []);
-
-  const fetchData = async (searchKey = undefined) => {
+  const fetchData = async (offset, limit) => {
     try {
+      setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
 
       let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
@@ -291,16 +302,20 @@ const Teacher = observer(() => {
         response.data.data.teachers &&
         response.data.data.teachers.length > 0
       ) {
+        setTotalteacherCount(response.data.data.totalCount);
         setTeachers(response.data.data.teachers);
       } else {
         setTeachers([]);
       }
     } catch (error) {
       console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchTeacherData = async (username) => {
+    setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -315,6 +330,8 @@ const Teacher = observer(() => {
       return response.data.data;
     } catch (error) {
       console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -528,7 +545,11 @@ const Teacher = observer(() => {
         }}
       >
         <Space>
-          <Search placeholder="Search teachers" enterButton onChange={(e) => handleTeacherSearchChange(e.target.value)}/>
+          <Search
+            placeholder="Search teachers"
+            enterButton
+            onChange={(e) => handleTeacherSearchChange(e.target.value)}
+          />
         </Space>
         <Button type="primary" onClick={openModal} icon={<PlusOutlined />}>
           Add New Teacher
@@ -539,9 +560,12 @@ const Teacher = observer(() => {
         columns={columns}
         bordered={true}
         onChange={handleChange}
-        pagination={true}
-        // sortField={sortField}
-        // sortOrder={sortOrder}
+        loading={loading}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalTeacherCount,
+        }}
       />
     </div>
   );
