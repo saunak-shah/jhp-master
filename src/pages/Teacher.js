@@ -21,6 +21,8 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
+import '../css/Teacher.css'; // Import the CSS file
+
 const { Option } = Select;
 const { Text } = Typography;
 
@@ -45,7 +47,6 @@ const Teacher = observer(() => {
   const token = localStorage.getItem("token");
 
   const columns = [
-    { title: "ID", dataIndex: "teacher_id", key: "teacher_id", sorter: true },
     {
       title: "First Name",
       dataIndex: "teacher_first_name",
@@ -535,9 +536,10 @@ const Teacher = observer(() => {
           />
         </Space>
         <Button type="primary" onClick={openModal} icon={<PlusOutlined />}>
-          Add New Teacher
+          Add Teacher
         </Button>
       </div>
+      <div className="table-container">
       <TableView
         data={teachers}
         columns={columns}
@@ -550,6 +552,7 @@ const Teacher = observer(() => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
       />
+      </div>
     </div>
   );
 });
