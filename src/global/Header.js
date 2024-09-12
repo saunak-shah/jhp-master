@@ -67,11 +67,11 @@ const Header = ({ history }) => {
       roles: [allowModules.Exam],  // Exam role
       label: <Link to="/exam" className="header-menu-item">Exam</Link>,
     },
-    {
+    /* {
       key: 'admin',
       roles: [allowModules.Admin],  // Admin visibility
       label: <Link to="/admin" className="header-menu-item">Admin</Link>,
-    },
+    }, */
     {
       key: 'student',
       roles: [allowModules.Student],  // Assume role 1 for students

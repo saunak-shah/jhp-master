@@ -64,7 +64,7 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         </Form.Item>
         <Form.Item
           name="course_duration_in_hours"
-          label="Exam Duration"
+          label="Exam Duration (In minute)"
           rules={[{ required: true, message: 'Please input the exam duration!' }]}
         >
           <Input />

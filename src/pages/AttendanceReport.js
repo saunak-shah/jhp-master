@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space } from "antd";
+import { Table, Button, Space, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
+import { post } from "../global/api";
+import moment from "moment";
 
-const ApplicantsView = () => {
+
+const AttendanceView = () => {
   const [applicants, setApplicants] = useState([]);
   const navigate = useNavigate();
   const [sortField, setSortField] = useState("student_apply_course_id");
@@ -24,44 +27,21 @@ const ApplicantsView = () => {
   const fetchData = async (searchKey = undefined) => {
     const limit = 20;
     const offset = 0;
-    const apiHost = process.env.REACT_APP_API_HOST;
-    let apiUrl = `${apiHost}/api/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
-    if (searchKey && searchKey.length > 0) {
-      apiUrl = apiUrl + `&searchKey=${searchKey}`;
+    // const apiHost = process.env.REACT_APP_API_HOST;
+    let apiUrl = `/api/attendance_report`;
+    let dateMonth = moment().format()
+    let reqObj = {
+      limit: 20,
+      offset: 0,
+      dateMonth
     }
-
-    if (sortField) {
-      apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
-    }
-
-    const response = await fetch(apiUrl, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem("token") || "",
-      },
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (
-        data.data &&
-        data.data.registrations &&
-        data.data.registrations.length > 0
-      ) {
-        data.data.registrations.map((data) => {
-          data.updated_at =
-            new Date(data.updated_at).getDate() +
-            "/" +
-            new Date(data.updated_at).getMonth() +
-            "/" +
-            new Date(data.updated_at).getFullYear();
-          data.email = data.student.email;
-          data.name = data.student.first_name + " " + data.student.last_name;
-        });
-        setApplicants(data.data.registrations);
-      } else {
-        setApplicants([]);
-      }
+    const res = await post(apiUrl, reqObj);
+    if (res.status === 200) {
+      // fetchData();
+      setApplicants(res.data);
+      message.success(`Attendance fetched successfully.`);
+    } else {
+      message.error(`Failed to course.`);
     }
   };
 
@@ -74,14 +54,8 @@ const ApplicantsView = () => {
   }, [examId]);
 
   const columns = [
-    { title: "Name", dataIndex: "name", key: "name"},
-    { title: "Email", dataIndex: "email", key: "email"},
-    {
-      title: "Applied On",
-      dataIndex: "updated_at",
-      key: "updated_at",
-      sorter: true,
-    },
+    { title: "Name", dataIndex: "first_name", key: "first_name"},
+    { title: "Attendance Count", dataIndex: "attendance_count", key: "attendance_count"},
   ];
 
   return (
@@ -116,4 +90,4 @@ const ApplicantsView = () => {
   );
 };
 
-export default ApplicantsView;
+export default AttendanceView;

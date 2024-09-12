@@ -2,25 +2,44 @@ import React, { useState, useEffect } from "react";
 import { Form, Table, Checkbox, Button, Card, Tooltip, message } from "antd";
 import moment from "moment";
 import { post, deleteData } from "../global/api";
+import { useNavigate } from "react-router-dom";
+
 
 const StaffAttendance = () => {
+  // Inside your Exam component
+  const navigate = useNavigate();
   // const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const last10Days = Array.from({ length: 2 }, (_, i) =>
-    moment()
-      .subtract(9 - i, "days")
-      .format("DD/MM/YYYY")
-  );
+  const master_role_id = localStorage.getItem('master_role_id');
+
+  let daysLength = 6;
+  // Teacher role show only 2 days
+  if(master_role_id === 2){
+    daysLength = 2;
+  }
+  const last10Days = [];
+  for (let i = daysLength; i >= 0; i--) {
+      const date = moment().subtract(i, 'days').format('DD/MM/YYYY');
+      last10Days.push(date);
+  }
+
   const [staff, setStaff] = useState([]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
-      const uperdate = "2025-08-12T18:30:00.000Z";
-      const lowerdate = "2023-08-12T18:30:00.000Z";
+
+      let uperdate = moment().utc().startOf('day').format();
+      let lowerdate = moment().utc().startOf('day').subtract(6, 'days').format();
+
+      if(master_role_id === 2){
+        lowerdate = moment().subtract(2, 'days').format();
+      }
+
       const apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}`;
+      
       const response = await fetch(apiURL, {
         headers: {
           "Content-Type": "application/json",
@@ -31,7 +50,7 @@ const StaffAttendance = () => {
         const rawData = await response.json();
         console.log("Fetched data:", rawData);
         console.log("previous 10 date data ", last10Days);
-        const updatedStaff = rawData.data.staff.map((staffMember) => {
+        const updatedStaff = rawData.data.map((staffMember) => {
           const attendance = last10Days.map((date, index) => {
             const isChecked = staffMember.checked_dates.includes(date);
             return {
@@ -40,7 +59,7 @@ const StaffAttendance = () => {
               disabled: false,
             };
           });
-          return { ...staffMember, attendance }; // Ensure the structure matches what is expected by the table
+          return { ...staffMember, key: staffMember.student_id, attendance }; // Set key here
         });
 
         console.log("updated staff data", updatedStaff);
@@ -61,17 +80,17 @@ const StaffAttendance = () => {
 
   const handleCheckboxChange = (key, index, checked) => {
     setStaff((prevData) =>
-      prevData.map((item) =>
-        item.key === key
-          ? {
-              ...item,
-              attendance: item.attendance.map((att, idx) =>
-                idx === index ? { ...att, checked } : att
-              ),
-            }
-          : item
-      )
-    );
+  prevData.map((item) =>
+    item.student_id === key // Use student_id instead of key if that's more reliable
+      ? {
+          ...item,
+          attendance: item.attendance.map((att, idx) =>
+            idx === index ? { ...att, checked } : att
+          ),
+        }
+      : item
+  )
+);
   };
 
   const onFinish = async () => {
@@ -112,9 +131,7 @@ const StaffAttendance = () => {
           <Checkbox
             checked={record.attendance[i].checked}
             disabled={record.attendance[i].disabled}
-            onChange={(e) =>
-              handleCheckboxChange(record.key, i, e.target.checked)
-            }
+            onChange={(e) => handleCheckboxChange(record.student_id, i, e.target.checked)}
           />
         </Tooltip>
       ),
@@ -124,6 +141,12 @@ const StaffAttendance = () => {
   return (
     <div className="attendance-container">
       <Card title="Staff Attendance" className="attendance-card">
+      <Button
+              type="primary"
+              onClick={() => navigate(`/attendance/report/`)}
+            >
+              Report
+            </Button>
         <Form onFinish={onFinish}>
           <Table
             columns={columns}

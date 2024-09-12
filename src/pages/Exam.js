@@ -31,12 +31,6 @@ const Exam = () => {
   // Define columns for the table
   const columns = [
     {
-      title: "Course Id",
-      dataIndex: "course_id",
-      key: "course_id",
-      sorter: true,
-    },
-    {
       title: "Course Name",
       dataIndex: "course_name",
       key: "course_name",
@@ -55,7 +49,7 @@ const Exam = () => {
       sorter: true,
     },
     {
-      title: "Exam Duration",
+      title: "Exam Duration (In minute)",
       dataIndex: "course_duration_in_hours",
       key: "course_duration_in_hours",
       sorter: true,
@@ -119,13 +113,7 @@ const Exam = () => {
 
     const res = await post(endpoint, course);
     if (res.status === 200) {
-      /* const updatedCourses = isEdit
-        ? data.map(item => (item.id === course.course_id ? { ...item, ...course } : item))
-        : [...data, course]; // This assumes the API returns the updated list or new course
-      console.log("yyyyyyyyyyy", updatedCourses) */
-      // setData(updatedCourses);
       fetchData();
-
       message.success(`Course ${isEdit ? "updated" : "added"} successfully.`);
     } else {
       message.error(`Failed to ${isEdit ? "update" : "add"} course.`);
@@ -152,6 +140,7 @@ const Exam = () => {
   };
 
   const { Search } = Input;
+  
   const fetchData = async (offset, limit) => {
     setLoading(true);
     try {
@@ -193,11 +182,6 @@ const Exam = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData(offset, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     fetchData(0, pageSize);
