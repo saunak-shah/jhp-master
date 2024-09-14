@@ -11,6 +11,9 @@ import { post, deleteData } from "../global/api";
 import { useNavigate } from "react-router-dom";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
+import { debounce } from 'lodash';
+import '../css/Teacher.css'; // Import the CSS file
+
 
 const Exam = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -92,6 +95,10 @@ const Exam = () => {
     setSearchKey(value);
   };
 
+  // Debounce search key handler
+  const debouncedSearchHandler = debounce(handleCourseSearchChange, 500);
+
+
   const handleAddOrEditCourse = async (course, isEdit) => {
     if (isEdit && !course.course_id) {
       console.error("Error: No ID provided for the course to edit");
@@ -141,9 +148,11 @@ const Exam = () => {
 
   const { Search } = Input;
   
-  const fetchData = async (offset, limit) => {
+  const fetchData = async () => {
     setLoading(true);
     try {
+      let limit = 20;
+      let offset = 0
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/courses?limit=${limit}&offset=${offset}`;
       if (searchKey && searchKey.length > 0) {
@@ -184,9 +193,9 @@ const Exam = () => {
   };
 
   useEffect(() => {
-    fetchData(0, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, totalCourseCount]);
+    fetchData();
+  }, []); // Only fetch when searchKey changes after debounce
+
 
   return (
     <div id="exam-container">
@@ -195,7 +204,7 @@ const Exam = () => {
           style={{ marginTop: 16, marginLeft: 10 }}
           placeholder="Search exams"
           enterButton
-          onChange={(e) => handleCourseSearchChange(e.target.value)}
+          onChange={(e) => debouncedSearchHandler(e.target.value)}
         />
       </Space>
       <Button
@@ -224,7 +233,6 @@ const Exam = () => {
         setSortOrder={setSortOrder}
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
-        fetchData={fetchData}
       />
       <AddCourseForm
         form={form}

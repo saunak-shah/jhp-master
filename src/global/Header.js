@@ -15,8 +15,8 @@ const Header = ({ history }) => {
   const [roleAccess, setRoleAccess] = useState([]);
 
   useEffect(() => {
-    const firstName = localStorage.getItem('first_name');
-    const lastName = localStorage.getItem('last_name');
+    const firstName = localStorage.getItem('teacher_first_name');
+    const lastName = localStorage.getItem('teacher_last_name');
     setRegisterNo(localStorage.getItem('register_no'));
     if (firstName && lastName) {
       setUserName(`${firstName} ${lastName}`);
@@ -95,7 +95,7 @@ const Header = ({ history }) => {
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size="small" icon={<UserOutlined />} />
             <span style={{ marginLeft: '8px' }}>
-              {userName} (<span style={{ color: '#ddd' }}>#{registerNo}</span>)
+              {userName}
             </span>
           </div>
         </Dropdown>
