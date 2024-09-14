@@ -1,4 +1,4 @@
-export const pageSize = 3;
+export const pageSize = 20;
 
 export const allowModules = {
     Home: 1,

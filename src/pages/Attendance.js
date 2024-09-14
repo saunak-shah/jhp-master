@@ -3,6 +3,7 @@ import { Form, Table, Checkbox, Button, Card, Tooltip, message } from "antd";
 import moment from "moment";
 import { post, deleteData } from "../global/api";
 import { useNavigate } from "react-router-dom";
+import '../css/Teacher.css'; // Import the CSS file
 
 
 const StaffAttendance = () => {
@@ -48,8 +49,6 @@ const StaffAttendance = () => {
       });
       if (response.ok) {
         const rawData = await response.json();
-        console.log("Fetched data:", rawData);
-        console.log("previous 10 date data ", last10Days);
         const updatedStaff = rawData.data.map((staffMember) => {
           const attendance = last10Days.map((date, index) => {
             const isChecked = staffMember.checked_dates.includes(date);
@@ -62,7 +61,6 @@ const StaffAttendance = () => {
           return { ...staffMember, key: staffMember.student_id, attendance }; // Set key here
         });
 
-        console.log("updated staff data", updatedStaff);
         setStaff(updatedStaff);
       } else {
         console.error("Error fetching data:", response.statusText);
@@ -102,7 +100,6 @@ const StaffAttendance = () => {
           .filter((date) => date !== null),
       })),
     };
-    console.log("Payload:", payload);
 
     const endpoint = "/api/attendance";
     const res = await post(endpoint, payload);
@@ -139,8 +136,8 @@ const StaffAttendance = () => {
   ];
 
   return (
-    <div className="attendance-container">
-      <Card title="Staff Attendance" className="attendance-card">
+    <div className="table-container">
+      <Card title="Attendance" className="attendance-card">
       <Button
               type="primary"
               onClick={() => navigate(`/attendance/report/`)}

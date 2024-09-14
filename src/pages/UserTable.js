@@ -155,16 +155,16 @@ const UserTable = observer(() => {
   }, []);
 
   return (
-    <div style={{ margin: 35 }}>
+    <div className="main-container">
       <Space style={{ marginBottom: 16 }}>
         <Search
-          style={{ marginTop: 16}}
+          style={{ marginTop: 16, marginLeft: 10 }}
           placeholder="Search users"
           enterButton
           onChange={(e) => handleUserSearchChange(e.target.value)}
         />
       </Space>
-      <Space style={{ float: "right", marginTop: 15 }}>
+      <Space style={{ float: "right", marginTop: '16px'}}>
         Filter by teacher:
         <Select
           onChange={handleFilterChange}

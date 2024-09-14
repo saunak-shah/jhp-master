@@ -148,11 +148,9 @@ const Exam = () => {
 
   const { Search } = Input;
   
-  const fetchData = async () => {
+  const fetchData = async (offset, limit) => {
     setLoading(true);
     try {
-      let limit = 20;
-      let offset = 0
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/courses?limit=${limit}&offset=${offset}`;
       if (searchKey && searchKey.length > 0) {
@@ -193,12 +191,12 @@ const Exam = () => {
   };
 
   useEffect(() => {
-    fetchData();
-  }, []); // Only fetch when searchKey changes after debounce
+    fetchData(0, pageSize);
+  }, [searchKey]); // Only fetch when searchKey changes after debounce
 
 
   return (
-    <div id="exam-container">
+    <div className="main-container">
       <Space style={{ marginBottom: 16 }}>
         <Search
           style={{ marginTop: 16, marginLeft: 10 }}
@@ -207,14 +205,7 @@ const Exam = () => {
           onChange={(e) => debouncedSearchHandler(e.target.value)}
         />
       </Space>
-      <Button
-        style={{
-          width: "150px",
-          height: "40px",
-          marginTop: "10px",
-          marginRight: "10px",
-          float: "right",
-        }}
+      <Button className="button-class"
         type="primary"
         block
         icon={<PlusOutlined />}
@@ -222,18 +213,19 @@ const Exam = () => {
       >
         Add Course
       </Button>
-
-      <TableView
-        data={courses}
-        columns={columns}
-        loading={loading}
-        currentPage={currentPage}
-        totalCount={totalCourseCount}
-        setSortField={setSortField}
-        setSortOrder={setSortOrder}
-        setOffset={setOffset}
-        setCurrentPage={setCurrentPage}
-      />
+      <div className="table-container">
+        <TableView
+          data={courses}
+          columns={columns}
+          loading={loading}
+          currentPage={currentPage}
+          totalCount={totalCourseCount}
+          setSortField={setSortField}
+          setSortOrder={setSortOrder}
+          setOffset={setOffset}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
       <AddCourseForm
         form={form}
         visible={isModalVisible}

@@ -111,3 +111,31 @@ code {
   transform: scale(0.95);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
+
+.main-container {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  margin-left: 16px;
+  margin-top: 20px;
+  margin-inline-end: 40px;
+}
+
+.button-class {
+  width: 150px !important;
+  height: 40px;
+  margin-top: 10px;
+  margin-right: 10px;
+  float: right;
+}
+
+@media (max-width: 768px) { /* Adjustments for tablets and mobile devices */
+  .table-container {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .button-class {
+    float: none;
+  }
+
+}
