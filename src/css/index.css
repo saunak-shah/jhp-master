@@ -134,6 +134,12 @@ code {
     margin-left: 0;
     margin-right: 0;
   }
+
+  .main-container {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
   .button-class {
     float: none;
   }
