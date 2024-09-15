@@ -11,6 +11,9 @@ import { post, deleteData } from "../global/api";
 import { useNavigate } from "react-router-dom";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
+import { debounce } from 'lodash';
+import '../css/Teacher.css'; // Import the CSS file
+
 
 const Exam = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -31,12 +34,6 @@ const Exam = () => {
   // Define columns for the table
   const columns = [
     {
-      title: "Course Id",
-      dataIndex: "course_id",
-      key: "course_id",
-      sorter: true,
-    },
-    {
       title: "Course Name",
       dataIndex: "course_name",
       key: "course_name",
@@ -55,7 +52,7 @@ const Exam = () => {
       sorter: true,
     },
     {
-      title: "Exam Duration",
+      title: "Exam Duration (In minute)",
       dataIndex: "course_duration_in_hours",
       key: "course_duration_in_hours",
       sorter: true,
@@ -98,6 +95,10 @@ const Exam = () => {
     setSearchKey(value);
   };
 
+  // Debounce search key handler
+  const debouncedSearchHandler = debounce(handleCourseSearchChange, 500);
+
+
   const handleAddOrEditCourse = async (course, isEdit) => {
     if (isEdit && !course.course_id) {
       console.error("Error: No ID provided for the course to edit");
@@ -119,13 +120,7 @@ const Exam = () => {
 
     const res = await post(endpoint, course);
     if (res.status === 200) {
-      /* const updatedCourses = isEdit
-        ? data.map(item => (item.id === course.course_id ? { ...item, ...course } : item))
-        : [...data, course]; // This assumes the API returns the updated list or new course
-      console.log("yyyyyyyyyyy", updatedCourses) */
-      // setData(updatedCourses);
       fetchData();
-
       message.success(`Course ${isEdit ? "updated" : "added"} successfully.`);
     } else {
       message.error(`Failed to ${isEdit ? "update" : "add"} course.`);
@@ -152,6 +147,7 @@ const Exam = () => {
   };
 
   const { Search } = Input;
+  
   const fetchData = async (offset, limit) => {
     setLoading(true);
     try {
@@ -195,33 +191,21 @@ const Exam = () => {
   };
 
   useEffect(() => {
-    fetchData(offset, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     fetchData(0, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, totalCourseCount]);
+  }, [searchKey]); // Only fetch when searchKey changes after debounce
+
 
   return (
-    <div id="exam-container">
+    <div className="main-container">
       <Space style={{ marginBottom: 16 }}>
         <Search
           style={{ marginTop: 16, marginLeft: 10 }}
           placeholder="Search exams"
           enterButton
-          onChange={(e) => handleCourseSearchChange(e.target.value)}
+          onChange={(e) => debouncedSearchHandler(e.target.value)}
         />
       </Space>
-      <Button
-        style={{
-          width: "150px",
-          height: "40px",
-          marginTop: "10px",
-          marginRight: "10px",
-          float: "right",
-        }}
+      <Button className="button-class"
         type="primary"
         block
         icon={<PlusOutlined />}
@@ -229,19 +213,19 @@ const Exam = () => {
       >
         Add Course
       </Button>
-
-      <TableView
-        data={courses}
-        columns={columns}
-        loading={loading}
-        currentPage={currentPage}
-        totalCount={totalCourseCount}
-        setSortField={setSortField}
-        setSortOrder={setSortOrder}
-        setOffset={setOffset}
-        setCurrentPage={setCurrentPage}
-        fetchData={fetchData}
-      />
+      <div className="table-container">
+        <TableView
+          data={courses}
+          columns={columns}
+          loading={loading}
+          currentPage={currentPage}
+          totalCount={totalCourseCount}
+          setSortField={setSortField}
+          setSortOrder={setSortOrder}
+          setOffset={setOffset}
+          setCurrentPage={setCurrentPage}
+        />
+      </div>
       <AddCourseForm
         form={form}
         visible={isModalVisible}

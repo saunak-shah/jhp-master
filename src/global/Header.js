@@ -1,29 +1,35 @@
-// Header.js
 import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import authStore from '../stores/authStore';
 import '../css/Header.css'; // Import the CSS file
+import '../pages/constants'; // Import the CSS file
+import { allowModules } from '../pages/constants';
 
 const { Header: AntHeader } = Layout;
 
 const Header = ({ history }) => {
   const [userName, setUserName] = useState('');
   const [registerNo, setRegisterNo] = useState('');
+  const [roleAccess, setRoleAccess] = useState([]);
 
   useEffect(() => {
-    const firstName = localStorage.getItem('first_name');
-    const lastName = localStorage.getItem('last_name');
+    const firstName = localStorage.getItem('teacher_first_name');
+    const lastName = localStorage.getItem('teacher_last_name');
     setRegisterNo(localStorage.getItem('register_no'));
     if (firstName && lastName) {
       setUserName(`${firstName} ${lastName}`);
+    }
+    // Retrieve role_access and parse it as an array
+    const roleAccessStored = localStorage.getItem('role_access');
+    if (roleAccessStored) {
+      setRoleAccess(JSON.parse(roleAccessStored));
     }
   }, []);
 
   const handleLogout = () => {
     // Implement logout logic here
-    // history.push('/login');
     authStore.logout();
   };
 
@@ -53,42 +59,43 @@ const Header = ({ history }) => {
   const mainMenuItems = [
     {
       key: 'home',
+      roles: [allowModules.Home],  // Specify which roles should see this item
       label: <Link to="/home" className="header-menu-item">Home</Link>,
-      onClick: () => handleMenuItemClick('/home')
-    },
-    {
-      key: 'admin',
-      label: <Link to="/admin" className="header-menu-item">Admin</Link>,
-      onClick: () => handleMenuItemClick('/admin')
-    },
-    {
-      key: 'student',
-      label: <Link to="/student" className="header-menu-item">Student</Link>,
-      onClick: () => handleMenuItemClick('/student')
     },
     {
       key: 'exam',
+      roles: [allowModules.Exam],  // Exam role
       label: <Link to="/exam" className="header-menu-item">Exam</Link>,
-      onClick: () => handleMenuItemClick('/exam')
+    },
+    /* {
+      key: 'admin',
+      roles: [allowModules.Admin],  // Admin visibility
+      label: <Link to="/admin" className="header-menu-item">Admin</Link>,
+    }, */
+    {
+      key: 'student',
+      roles: [allowModules.Student],  // Assume role 1 for students
+      label: <Link to="/student" className="header-menu-item">Student</Link>,
     },
     {
       key: 'attendance',
+      roles: [allowModules.Attendance],  // For example, if attendance is general access
       label: <Link to="/attendance" className="header-menu-item">Attendance</Link>,
-      onClick: () => handleMenuItemClick('/attendance')
     },
     {
       key: 'teacher',
+      roles: [allowModules.Teacher],  // Specific to teachers
       label: <Link to="/teacher" className="header-menu-item">Teacher</Link>,
-      onClick: () => handleMenuItemClick('/teacher')
     },
     {
       key: 'profile',
+      roles: [allowModules.Profile],
       label: (
         <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Avatar size="small" icon={<UserOutlined />} />
             <span style={{ marginLeft: '8px' }}>
-              {userName} (<span style={{ color: '#ddd' }}>#{registerNo}</span>)
+              {userName}
             </span>
           </div>
         </Dropdown>
@@ -96,7 +103,7 @@ const Header = ({ history }) => {
       ),
       style: { float: 'right', marginLeft: 'auto' }
     }
-  ];
+  ].filter(item => item.roles.some(role => roleAccess.includes(role)));  // Filter items based on role access
 
   return (
     <AntHeader className="header" style={{ backgroundColor: "#001529" }}>

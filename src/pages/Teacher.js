@@ -21,6 +21,8 @@ import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import moment from "moment";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
+import '../css/Teacher.css'; // Import the CSS file
+
 const { Option } = Select;
 const { Text } = Typography;
 
@@ -45,7 +47,6 @@ const Teacher = observer(() => {
   const token = localStorage.getItem("token");
 
   const columns = [
-    { title: "ID", dataIndex: "teacher_id", key: "teacher_id", sorter: true },
     {
       title: "First Name",
       dataIndex: "teacher_first_name",
@@ -516,40 +517,33 @@ const Teacher = observer(() => {
         </Form>
       </Modal>
 
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-          marginLeft: 16,
-          marginTop: 20,
-          marginInlineEnd: 40,
-        }}
-      >
-        <Space>
+      <div className="main-container">
+        <Space style={{ marginBottom: 16 }}>
           <Search
+            style={{ marginTop: 16, marginLeft: 10 }}
             placeholder="Search teachers"
             enterButton
             onChange={(e) => handleTeacherSearchChange(e.target.value)}
           />
         </Space>
-        <Button type="primary" onClick={openModal} icon={<PlusOutlined />}>
-          Add New Teacher
+        <Button type="primary" className="button-class" onClick={openModal} icon={<PlusOutlined />}>
+          Add Teacher
         </Button>
       </div>
-      <TableView
-        data={teachers}
-        columns={columns}
-        loading={loading}
-        currentPage={currentPage}
-        totalCount={totalTeacherCount}
-        setSortField={setSortField}
-        setSortOrder={setSortOrder}
-        setOffset={setOffset}
-        setCurrentPage={setCurrentPage}
-        fetchData={fetchData}
-      />
+      <div className="table-container">
+        <TableView
+          data={teachers}
+          columns={columns}
+          loading={loading}
+          currentPage={currentPage}
+          totalCount={totalTeacherCount}
+          setSortField={setSortField}
+          setSortOrder={setSortOrder}
+          setOffset={setOffset}
+          setCurrentPage={setCurrentPage}
+          fetchData={fetchData}
+        />
+      </div>
     </div>
   );
 });

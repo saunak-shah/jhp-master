@@ -5,6 +5,7 @@ import axios from "axios";
 import { DeleteOutlined } from "@ant-design/icons";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
+import '../css/Teacher.css'; // Import the CSS file
 
 const { Option } = Select;
 
@@ -154,16 +155,16 @@ const UserTable = observer(() => {
   }, []);
 
   return (
-    <div>
+    <div className="main-container">
       <Space style={{ marginBottom: 16 }}>
         <Search
-          style={{ marginTop: 16, marginLeft: 16 }}
+          style={{ marginTop: 16, marginLeft: 10 }}
           placeholder="Search users"
           enterButton
           onChange={(e) => handleUserSearchChange(e.target.value)}
         />
       </Space>
-      <Space style={{ float: "right", marginTop: 15, marginRight: 15 }}>
+      <Space style={{ float: "right", marginTop: '16px'}}>
         Filter by teacher:
         <Select
           onChange={handleFilterChange}
@@ -182,11 +183,12 @@ const UserTable = observer(() => {
 
           {teachers.map((teacher, index) => (
             <Option key={index} value={teacher.teacher_id}>
-              {teacher.teacher_first_name + teacher.teacher_last_name}
+              {teacher.teacher_first_name + ' ' +teacher.teacher_last_name}
             </Option>
           ))}
         </Select>
       </Space>
+      <div className="table-container">
       <TableView
         data={users}
         columns={columns}
@@ -199,6 +201,7 @@ const UserTable = observer(() => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
       />
+      </div>
     </div>
   );
 });

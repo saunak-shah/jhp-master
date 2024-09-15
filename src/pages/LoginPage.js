@@ -82,6 +82,9 @@ const LoginForm = ({ toggleForm, history }) => {
           localStorage.setItem("teacher_first_name", data.data.teacher_first_name || "");
           localStorage.setItem("teacher_last_name", data.data.teacher_last_name || "");
           localStorage.setItem("token", data.data.token);
+          localStorage.setItem("master_role_id", data.data.master_role_id);
+          localStorage.setItem('role_access', JSON.stringify(data.data.role_access));
+
 
           if (form.getFieldValue("remember")) {
             Cookies.set('token', data.data.token, { expires: 7 }); // Cookie expires in 7 days
