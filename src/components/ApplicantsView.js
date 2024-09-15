@@ -149,7 +149,7 @@ const ApplicantsView = () => {
   ];
 
   return (
-    <div>
+    <div className="main-container">
       <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
         <Search
           style={{ marginTop: 0, marginLeft: 10 }}

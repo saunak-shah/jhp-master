@@ -519,8 +519,8 @@ const Teacher = observer(() => {
 
       <div className="main-container">
         <Space style={{ marginBottom: 16 }}>
-          <Search
-            style={{ marginTop: 16, marginLeft: 10 }}
+        <Search
+          style={{ marginTop: 16, marginLeft: 10 }}
             placeholder="Search teachers"
             enterButton
             onChange={(e) => handleTeacherSearchChange(e.target.value)}
@@ -529,7 +529,6 @@ const Teacher = observer(() => {
         <Button type="primary" className="button-class" onClick={openModal} icon={<PlusOutlined />}>
           Add Teacher
         </Button>
-      </div>
       <div className="table-container">
         <TableView
           data={teachers}
@@ -543,6 +542,7 @@ const Teacher = observer(() => {
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
         />
+      </div>
       </div>
     </div>
   );

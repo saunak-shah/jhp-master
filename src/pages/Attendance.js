@@ -136,7 +136,7 @@ const StaffAttendance = () => {
   ];
 
   return (
-    <div className="table-container">
+    <div className="main-container">
       <Card title="Attendance" className="attendance-card">
       <Button
               type="primary"
