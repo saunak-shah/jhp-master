@@ -41,27 +41,27 @@ const ApplicantsView = () => {
 
     const response = await axios.get(apiUrl, { headers });
 
-      if (
-        response.data.data &&
-        response.data.data.registrations &&
-        response.data.data.registrations.length > 0
-      ) {
-        response.data.data.registrations.map((data) => {
-          data.updated_at =
-            new Date(data.updated_at).getDate() +
-            "/" +
-            new Date(data.updated_at).getMonth() +
-            "/" +
-            new Date(data.updated_at).getFullYear();
-          data.email = data.student.email;
-          data.name = data.student.first_name + " " + data.student.last_name;
-        });
-        setTotalApplicantsCount(response.data.data.totalCount);
-        setApplicants(response.data.data.registrations);
-      } else {
-        setApplicants([]);
-      }
-    
+    if (
+      response.data.data &&
+      response.data.data.registrations &&
+      response.data.data.registrations.length > 0
+    ) {
+      response.data.data.registrations.map((data) => {
+        data.updated_at =
+          new Date(data.updated_at).getDate() +
+          "/" +
+          new Date(data.updated_at).getMonth() +
+          "/" +
+          new Date(data.updated_at).getFullYear();
+        data.email = data.student.email;
+        data.name = data.student.first_name + " " + data.student.last_name;
+      });
+      setTotalApplicantsCount(response.data.data.totalCount);
+      setApplicants(response.data.data.registrations);
+    } else {
+      setApplicants([]);
+    }
+
     setLoading(false);
   };
 
@@ -71,7 +71,7 @@ const ApplicantsView = () => {
     const limit = 10000;
     const offset = 0;
     const apiHost = process.env.REACT_APP_API_HOST;
-    let apiUrl = `${apiHost}/api/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
+    let apiUrl = `${apiHost}/api/download/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -94,8 +94,14 @@ const ApplicantsView = () => {
             new Date(data.updated_at).getMonth() +
             "/" +
             new Date(data.updated_at).getFullYear();
-          data.email = data.student.email;
-          data.name = data.student.first_name + " " + data.student.last_name;
+
+          data.created_at =
+            new Date(data.created_at).getDate() +
+            "/" +
+            new Date(data.created_at).getMonth() +
+            "/" +
+            new Date(data.created_at).getFullYear();
+          data.email = data.email;
         });
         setLoading(false);
         return data.data.registrations;
