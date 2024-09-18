@@ -85,6 +85,14 @@ const Exam = () => {
             >
               View Applicants
             </Button>
+
+            <Button
+              type="primary"
+              icon={<DatabaseOutlined />}
+              onClick={() => navigate(`/results/${record.course_id}`)}
+            >
+              View Results
+            </Button>
           </Space>
         );
       },
