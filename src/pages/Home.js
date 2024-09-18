@@ -90,31 +90,47 @@ const Home = () => {
   }, []);
 
   return (
-    <div style={{margin: '30px'}}>
+    <div style={{ margin: '30px' }}>
       {/* <h1>Dashboard</h1> */}
-      <List
-        grid={{ gutter: 16, column: 2 }}
-        dataSource={data}
-        renderItem={item => (
-          <List.Item>
-            <Card
-              title={<div>{item.icon} {item.month}</div>}
-              bordered={true}
-              hoverable
-              style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}
-            >
-              <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{item.attendance}</p>
-              <p style={{ color: 'gray' }}>Notes: Regular attendance with minor absences.</p>
-            </Card>
-          </List.Item>
-        )}
-      />
+
       <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
         <div style={{ flex: 1, marginRight: '20px' }}>
-          <Line data={lineData} options={{...commonOptions, title: {...commonOptions.title, text: 'Visitor Statistics'}}} />
+          <Card title={<div>Total Teachers</div>}
+            bordered={true}
+            hoverable
+            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>23</p>
+            <p style={{ color: 'gray' }}>Notes: A total of 23 Guruji's are currently teaching students in the Pathshala.</p>
+          </Card>
         </div>
-        <div style={{ flex: 1, marginLeft: '20px' }}>
-          <Bar data={barData1} options={{...commonOptions, title: {...commonOptions.title, text: 'Teacher Assignments'}}} />
+        <div style={{ flex: 1, marginLeft: '20px', marginTop: '10px' }}>
+          <Card title={<div>Total Students</div>}
+            bordered={true}
+            hoverable
+            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>637</p>
+            <p style={{ color: 'gray' }}>Notes: A total of 637 Students are currently studying in the Pathshala.</p>
+          </Card>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
+        <div style={{ flex: 1, marginRight: '20px' }}>
+          <Card title={<div>Pathshala Growth</div>}
+            bordered={true}
+            hoverable
+            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <Line data={lineData} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Visitor Statistics' } }} />
+
+          </Card>
+        </div>
+        <div style={{ flex: 1, marginLeft: '20px', marginTop: '10px' }}>
+          <Card title={<div>Teacher Class Data</div>}
+            bordered={true}
+            hoverable
+            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+            <Bar data={barData1} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Teacher Assignments' } }} />
+          </Card>
         </div>
       </div>
     </div>
