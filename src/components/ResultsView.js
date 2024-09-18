@@ -8,7 +8,7 @@ import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import axios from "axios";
 
-const ApplicantsView = () => {
+const ResultsView = () => {
   const [applicants, setApplicants] = useState([]);
   const navigate = useNavigate();
   const [sortField, setSortField] = useState("student_apply_course_id");
@@ -26,7 +26,7 @@ const ApplicantsView = () => {
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
-    let apiUrl = `${apiHost}/api/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
+    let apiUrl = `${apiHost}/api/courses/result/${examId}?limit=${limit}&offset=${offset}`;
     if (searchKey && searchKey.length > 0) {
       apiUrl = apiUrl + `&searchKey=${searchKey}`;
     }
@@ -43,21 +43,23 @@ const ApplicantsView = () => {
 
     if (
       response.data.data &&
-      response.data.data.registrations &&
-      response.data.data.registrations.length > 0
+      response.data.data.result &&
+      response.data.data.result.length > 0
     ) {
-      response.data.data.registrations.map((data) => {
+      response.data.data.result.map((data) => {
         data.updated_at =
           new Date(data.updated_at).getDate() +
           "/" +
           new Date(data.updated_at).getMonth() +
           "/" +
           new Date(data.updated_at).getFullYear();
-        data.email = data.student.email;
-        data.name = data.student.first_name + " " + data.student.last_name;
+        data.email = data.student_apply_course.student.email;
+
+        data.name = data.student_apply_course.student.first_name + " " + data.student_apply_course.student.last_name;
+        data.course_name = data.student_apply_course.course.course_name
       });
       setTotalApplicantsCount(response.data.data.totalCount);
-      setApplicants(response.data.data.registrations);
+      setApplicants(response.data.data.result);
     } else {
       setApplicants([]);
     }
@@ -65,13 +67,13 @@ const ApplicantsView = () => {
     setLoading(false);
   };
 
-  const fetchAllApplicantsData = async () => {
+  const fetchAllResults = async () => {
     setLoading(true);
 
     const limit = 10000;
     const offset = 0;
     const apiHost = process.env.REACT_APP_API_HOST;
-    let apiUrl = `${apiHost}/api/download/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
+    let apiUrl = `${apiHost}/api/download/courses/result/${examId}?limit=${limit}&offset=${offset}`;
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -84,10 +86,12 @@ const ApplicantsView = () => {
       const data = await response.json();
       if (
         data.data &&
-        data.data.registrations &&
-        data.data.registrations.length > 0
+        data.data.result &&
+        data.data.result.length > 0
       ) {
-        data.data.registrations.map((data) => {
+        data.data.result.map((data) => {
+          data.student_name = data.student_apply_course.student.first_name + " " + data.student_apply_course.student.last_name
+          data.course_name = data.student_apply_course.course.course_name
           data.updated_at =
             new Date(data.updated_at).getDate() +
             "/" +
@@ -96,22 +100,22 @@ const ApplicantsView = () => {
             new Date(data.updated_at).getFullYear();
 
           data.created_at =
-            new Date(data.created_at).getDate() +
-            "/" +
-            new Date(data.created_at).getMonth() +
+          new Date(data.created_at).getDate() +
+          "/" +
+          new Date(data.created_at).getMonth() +
             "/" +
             new Date(data.created_at).getFullYear();
-          data.email = data.email;
-        });
+          delete data.student_apply_course;
+          });
         setLoading(false);
-        return data.data.registrations;
+        return data.data.result;
       }
     }
     setLoading(false);
     return null;
   };
 
-  const handleApplicantsSearchChange = async (value) => {
+  const handleResultSearchChange = async (value) => {
     setSearchKey(value);
   };
 
@@ -133,35 +137,38 @@ const ApplicantsView = () => {
   };
 
   const exportDataToExcel = async () => {
-    const data = await fetchAllApplicantsData();
-    exportToExcel(data, "Applicants");
+    const data = await fetchAllResults();
+    exportToExcel(data, "Results");
   };
 
   const columns = [
     {
-      title: "RegistrationId",
+      title: "Result Id",
+      dataIndex: "result_id",
+      key: "result_id",
+      sorter: true,
+    },
+    {
+      title: "Registration Id",
       dataIndex: "student_apply_course_id",
       key: "student_apply_course_id",
       sorter: true,
     },
+    { title: "Course Name", dataIndex: "course_name", key: "course_name" },
     { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    {
-      title: "Applied On",
-      dataIndex: "updated_at",
-      key: "updated_at",
-      sorter: true,
-    },
+    { title: "Score", dataIndex: "score", key: "score" },
+    { title: "Passing Score", dataIndex: "course_passing_score", key: "course_passing_score" },
+    { title: "Course Score", dataIndex: "course_score", key: "course_score" },
   ];
 
   return (
-    <div className="main-container">
+    <div>
       <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
         <Search
           style={{ marginTop: 0, marginLeft: 10 }}
           placeholder="Search applicants"
           enterButton
-          onChange={(e) => handleApplicantsSearchChange(e.target.value)}
+          onChange={(e) => handleResultSearchChange(e.target.value)}
         />
 
         <Button
@@ -202,4 +209,4 @@ const ApplicantsView = () => {
   );
 };
 
-export default ApplicantsView;
+export default ResultsView;
