@@ -32,7 +32,7 @@ const Home = () => {
       },
       title: {
         display: true,
-        text: 'Chart Data',
+        // text: 'Chart Data',
       },
     },
   };
@@ -55,7 +55,7 @@ const Home = () => {
     datasets: [
       {
         label: 'Students Assigned to Teacher',
-        data: [120, 80, 40, 30, 25],
+        data: [130, 80, 40, 30, 25],
         backgroundColor: 'rgba(54, 162, 235, 0.5)',
         borderColor: 'rgba(54, 162, 235, 1)',
         borderWidth: 1,
@@ -120,7 +120,7 @@ const Home = () => {
             bordered={true}
             hoverable
             style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-            <Line data={lineData} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Visitor Statistics' } }} />
+            <Line data={lineData} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Pathsala Growth' } }} />
 
           </Card>
         </div>

@@ -142,18 +142,6 @@ const ResultsView = () => {
   };
 
   const columns = [
-    {
-      title: "Result Id",
-      dataIndex: "result_id",
-      key: "result_id",
-      sorter: true,
-    },
-    {
-      title: "Registration Id",
-      dataIndex: "student_apply_course_id",
-      key: "student_apply_course_id",
-      sorter: true,
-    },
     { title: "Course Name", dataIndex: "course_name", key: "course_name" },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Score", dataIndex: "score", key: "score" },

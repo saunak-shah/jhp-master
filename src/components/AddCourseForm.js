@@ -37,15 +37,14 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
       onCancel={onCancel}
       okText={isCreating ? 'Create' : 'Update'}
       cancelText="Cancel"
-      width="80%" // Responsive width
       style={{ top: 20 }} // Top position for better visibility
       bodyStyle={{ overflowY: 'auto', maxHeight: '70vh' }} // Scrollable body
     >
       <Form form={form} layout="vertical" style={{ width: '90%' }}>
         <Form.Item
           name="course_name"
-          label="Course Name"
-          rules={[{ required: true, message: 'Please input the course name!' }]}
+          label="Exam Name"
+          rules={[{ required: true, message: 'Please input the exam name!' }]}
         >
           <Input />
         </Form.Item>
@@ -72,22 +71,22 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         </Form.Item>
         <Form.Item
           name="course_description"
-          label="Course Description"
-          rules={[{ required: true, message: 'Please input the course name!' }]}
+          label="Exam Description"
+          rules={[{ required: true, message: 'Please input the exam description!' }]}
         >
           <Input.TextArea rows={3} />
         </Form.Item>
         <Form.Item
           name="course_score"
-          label="Course Score"
-          rules={[{ required: true, message: 'Please input the course name!' }]}
+          label="Marks"
+          rules={[{ required: true, message: 'Please input the exam marks!' }]}
         >
           <Input type='number'/>
         </Form.Item>
         <Form.Item
           name="course_location"
           label="Exam Location"
-          rules={[{ required: true, message: 'Please input the course name!' }]}
+          rules={[{ required: true, message: 'Please input the exam location!' }]}
         >
           <Input />
         </Form.Item>
@@ -101,21 +100,21 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         <Form.Item
           name="course_max_attempts"
           label="Exam Maximum Attempts"
-          rules={[{ required: true, message: 'Please input the passing score!' }]}
+          rules={[{ required: true, message: 'Please input the exam maximum attempts!' }]}
         >
           <Input type="number" />
         </Form.Item>
         <Form.Item
           name="registration_starting_date"
           label="Registration Start Date"
-          rules={[{ required: true, message: 'Please select the exam date!' }]}
+          rules={[{ required: true, message: 'Please select the exam registration date!' }]}
         >
           <DatePicker format="YYYY-MM-DD" />
         </Form.Item>
         <Form.Item
           name="registration_closing_date"
           label="Registration Closing Date"
-          rules={[{ required: true, message: 'Please select the exam date!' }]}
+          rules={[{ required: true, message: 'Please select the exam closing date!' }]}
         >
           <DatePicker format="YYYY-MM-DD" />
         </Form.Item>
