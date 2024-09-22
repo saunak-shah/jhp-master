@@ -16,9 +16,10 @@ const Profile = () => {
       try {
         let token = localStorage.getItem('token') || '';
 
-        const username = localStorage.getItem('username') || '';
+        const teacher_id = parseInt(localStorage.getItem('teacher_id') || '');
+
         const apiHost = process.env.REACT_APP_API_HOST;
-        const apiUrl = `${apiHost}/api/students/${username}`;
+        const apiUrl = `${apiHost}/api/teachers/${teacher_id}`;
         let headers = {
           'Content-Type': 'application/json',
           Authorization: token
@@ -26,8 +27,8 @@ const Profile = () => {
         const response = await axios.get(apiUrl, { headers });
         const userData = response.data.data;
         // Convert the birth_date to a moment object if necessary
-        if (userData.birth_date) {
-          userData.birth_date = moment(userData.birth_date);
+        if (userData.teacher_birth_date) {
+          userData.teacher_birth_date = moment(userData.teacher_birth_date);
         }
 
         form.setFieldsValue(userData);
@@ -68,7 +69,7 @@ const Profile = () => {
         .then(values => {
           console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
-          const appUrl = `${apiHost}/api/students/update_profile`;
+          const appUrl = `${apiHost}/api/teachers/update_my_profile`;
   
           return postData(appUrl, values);
         })
@@ -104,7 +105,7 @@ const Profile = () => {
         layout="vertical"
       >
         <Form.Item
-          name="first_name"
+          name="teacher_first_name"
           label="First Name"
           rules={[{ required: true, message: 'Please input your first name!' }]}
         >
@@ -112,35 +113,28 @@ const Profile = () => {
         </Form.Item>
         
         <Form.Item
-          name="last_name"
+          name="teacher_last_name"
           label="Last Name"
           rules={[{ required: true, message: 'Please input your last name!' }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          name="father_name"
-          label="Father Name"
-          rules={[{ required: true, message: 'Please input your father name!' }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="email"
+          name="teacher_email"
           label="Email"
           rules={[{ required: true, type: 'email', message: 'Please input a valid email!' }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          name="phone_number"
+          name="teacher_phone_number"
           label="Phone Number"
           rules={[{ required: true, message: 'Please input your phone number!' }]}
         >
           <Input />
         </Form.Item>
         <Form.Item
-          name="address"
+          name="teacher_address"
           label="Address"
           rules={[{ required: true, message: 'Please input your address!' }]}
         >
@@ -148,7 +142,7 @@ const Profile = () => {
         </Form.Item>
         <Form.Item
           label="Birth Date"
-          name="birth_date"
+          name="teacher_birth_date"
           rules={[{ required: true, message: "Please select your birth date" }]}
         >
           <DatePicker style={{ width: "100%" }} format="YYYY-MM-DD" placeholder="Select your birth date" />

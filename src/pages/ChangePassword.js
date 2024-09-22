@@ -59,7 +59,7 @@ const ChangePassword = () => {
         .then(values => {
           console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
-          const appUrl = `${apiHost}/api/students/change_password`;
+          const appUrl = `${apiHost}/api/teachers/change_password`;
   
           return postData(appUrl, values);
         })
@@ -73,7 +73,11 @@ const ChangePassword = () => {
           }
         })
         .then(data => {
-          message.success(data.message);
+          if(data.message.includes("successfully")){
+            message.success(data.message);
+          } else {
+            message.error(data.message);
+          }
           // console.log("Data parsed:", data);
           // Update authentication state
           // authStore.login();
