@@ -27,6 +27,7 @@ const Exam = () => {
   const [totalCourseCount, setTotalCoursesCount] = useState(0);
   const [searchKey, setSearchKey] = useState("");
   const [courses, setCourses] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
 
   // Inside your Exam component
   const navigate = useNavigate();
@@ -107,7 +108,7 @@ const Exam = () => {
   const debouncedSearchHandler = debounce(handleCourseSearchChange, 500);
 
 
-  const handleAddOrEditCourse = async (course, isEdit) => {
+  const handleAddOrEditCourse = async (course) => {
     if (isEdit && !course.course_id) {
       console.error("Error: No ID provided for the course to edit");
       message.error("No course ID provided for editing.");
@@ -128,7 +129,7 @@ const Exam = () => {
 
     const res = await post(endpoint, course);
     if (res.status === 200) {
-      fetchData();
+      fetchData(0, pageSize);
       message.success(`Course ${isEdit ? "updated" : "added"} successfully.`);
     } else {
       message.error(`Failed to ${isEdit ? "update" : "add"} course.`);
@@ -140,11 +141,13 @@ const Exam = () => {
   const addCourse = () => {
     setCurrentCourse(null); // No current course when adding new
     setIsModalVisible(true);
+    setIsEdit(false);
   };
 
   const editCourse = (course) => {
     setCurrentCourse(course); // Set current course to edit
     setIsModalVisible(true);
+    setIsEdit(true);
   };
 
   const deleteCourse = async (course) => {

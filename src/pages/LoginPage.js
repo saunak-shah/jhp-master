@@ -77,7 +77,7 @@ const LoginForm = ({ toggleForm, history }) => {
         })
         .then((data) => {
           console.log("Data parsed:", data);
-          localStorage.setItem("teacher_id", data.data.student_id || "");
+          localStorage.setItem("teacher_id", data.data.teacher_id || "");
           localStorage.setItem("teacher_username", data.data.teacher_username || "");
           localStorage.setItem("teacher_first_name", data.data.teacher_first_name || "");
           localStorage.setItem("teacher_last_name", data.data.teacher_last_name || "");
