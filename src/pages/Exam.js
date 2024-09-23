@@ -262,6 +262,7 @@ const Exam = () => {
           setSortOrder={setSortOrder}
           setOffset={setOffset}
           setCurrentPage={setCurrentPage}
+          fetchData={fetchData}
         />
       </div>
       <AddCourseForm
