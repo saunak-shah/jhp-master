@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Space, message, Form } from "antd";
+import { Input, Button, Space, message, Form, Modal } from "antd";
 import AddCourseForm from "../components/AddCourseForm"; // Make sure the path is correct
 import {
   EditOutlined,
@@ -28,6 +28,13 @@ const Exam = () => {
   const [searchKey, setSearchKey] = useState("");
   const [courses, setCourses] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
+  const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
+  const [dataToDelete, setDataToDelete] = useState({});
+  
+  const handleDeleteCancel = () => {
+    setDeleteModalVisibility(false);
+    setDataToDelete("");
+  };
 
   // Inside your Exam component
   const navigate = useNavigate();
@@ -75,7 +82,7 @@ const Exam = () => {
               type="primary"
               danger
               icon={<DeleteOutlined />}
-              onClick={() => deleteCourse(record)}
+              onClick={() => handleDelete(record)}
             >
               Delete
             </Button>
@@ -150,10 +157,17 @@ const Exam = () => {
     setIsEdit(true);
   };
 
-  const deleteCourse = async (course) => {
-    console.log("course", course);
-    const endpoint = `/api/courses/${course.course_id}`;
-    await deleteData(endpoint, course);
+  const handleDelete = (record) => {
+    setDeleteModalVisibility(true);
+    setDataToDelete(record);
+  };
+
+  const deleteCourse = async () => {
+    console.log("course", dataToDelete);
+    const endpoint = `/api/courses/${dataToDelete.course_id}`;
+    await deleteData(endpoint, dataToDelete);
+    setDeleteModalVisibility(false);
+    setDataToDelete({});
     fetchData(offset, pageSize);
   };
 
@@ -208,6 +222,19 @@ const Exam = () => {
 
   return (
     <div className="main-container">
+
+      <Modal
+        title="Confirm Deletion"
+        open={isDeleteModalVisible}
+        onOk={deleteCourse}
+        onCancel={handleDeleteCancel}
+        okText="Yes"
+        cancelText="No"
+      >
+        <p>Are you sure you want to delete this record?</p>
+      </Modal>
+
+
       <Space style={{ marginBottom: 16 }}>
         <Search
           style={{ marginTop: 16, marginLeft: 10 }}
