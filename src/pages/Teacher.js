@@ -203,7 +203,8 @@ const Teacher = observer(() => {
           fetchData(0, pageSize);
           return response.json();
         } else {
-          throw new Error("Failed to create teacher.");
+          message.success(response.error);
+          // throw new Error("Failed to create teacher.");
         }
       })
       .catch((error) => {
@@ -280,6 +281,7 @@ const Teacher = observer(() => {
       };
 
       const response = await axios.get(apiUrl, { headers });
+      console.log(response);
       if (
         response.data &&
         response.data.data &&

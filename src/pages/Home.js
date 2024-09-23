@@ -68,7 +68,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        const teacherCount = axios.get('/api/teachercount');
+        /* const teacherCount = axios.get('/api/teachercount');
         const studentCount = axios.get('/api/studentcount');
         const [teachers, students] = await Promise.all([teacherCount, studentCount]);
 
@@ -78,7 +78,7 @@ const Home = () => {
             ...prevData.datasets[0],
             data: [teachers.data.count, students.data.count] // Example of how to integrate fetched data
           }]
-        }));
+        })); */
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch counts:', error);
@@ -125,7 +125,7 @@ const Home = () => {
           </Card>
         </div>
         <div style={{ flex: 1, marginLeft: '20px', marginTop: '10px' }}>
-          <Card title={<div>Teacher Class Data</div>}
+          <Card title={<div>Number of Students for Each Teacher</div>}
             bordered={true}
             hoverable
             style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>

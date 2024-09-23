@@ -138,12 +138,12 @@ const ApplicantsView = () => {
   };
 
   const columns = [
-    {
+    /* {
       title: "RegistrationId",
       dataIndex: "student_apply_course_id",
       key: "student_apply_course_id",
       sorter: true,
-    },
+    }, */
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     {

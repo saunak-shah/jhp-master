@@ -93,7 +93,7 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         <Form.Item
           name="course_passing_score"
           label="Passing Score"
-          rules={[{ required: true, message: 'Please input the passing score!' }]}
+          rules={[{ required: true, message: 'Please input the passing marks!' }]}
         >
           <Input type="number" />
         </Form.Item>

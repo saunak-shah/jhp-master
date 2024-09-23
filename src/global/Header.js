@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
-import { UserOutlined, LogoutOutlined } from '@ant-design/icons';
+import { UserOutlined, LogoutOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import authStore from '../stores/authStore';
 import '../css/Header.css'; // Import the CSS file
@@ -45,7 +45,7 @@ const Header = ({ history }) => {
     },
     {
       key: 'change_password',
-      icon: <UserOutlined />,
+      icon: <UnlockOutlined />,
       label: <Link to="/changepassword">Change Password</Link>,
     },
     {
