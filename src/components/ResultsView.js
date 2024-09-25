@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space } from "antd";
+import { Button, Space } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";

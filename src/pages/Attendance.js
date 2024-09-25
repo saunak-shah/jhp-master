@@ -1,28 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { Form, Table, Checkbox, Button, Card, Tooltip, message } from "antd";
+import { Form, Checkbox, Button, Card, Tooltip, message } from "antd";
 import moment from "moment";
-import { post, deleteData } from "../global/api";
+import { post } from "../global/api";
 import { useNavigate } from "react-router-dom";
-import '../css/Teacher.css'; // Import the CSS file
-
+import "../css/Teacher.css"; // Import the CSS file
+import TableView from "../components/TableView";
+import { DownloadOutlined } from "@ant-design/icons";
 
 const StaffAttendance = () => {
   // Inside your Exam component
   const navigate = useNavigate();
   // const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [offset, setOffset] = useState(0);
 
-  const master_role_id = localStorage.getItem('master_role_id');
+  const master_role_id = localStorage.getItem("master_role_id");
 
   let daysLength = 6;
   // Teacher role show only 2 days
-  if(master_role_id === 2){
+  if (master_role_id === 2) {
     daysLength = 2;
   }
   const last10Days = [];
   for (let i = daysLength; i >= 0; i--) {
-      const date = moment().subtract(i, 'days').format('DD/MM/YYYY');
-      last10Days.push(date);
+    const date = moment().subtract(i, "days").format("DD/MM/YYYY");
+    last10Days.push(date);
   }
 
   const [staff, setStaff] = useState([]);
@@ -32,11 +36,15 @@ const StaffAttendance = () => {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
 
-      let uperdate = moment().utc().startOf('day').format();
-      let lowerdate = moment().utc().startOf('day').subtract(6, 'days').format();
+      let uperdate = moment().utc().startOf("day").format();
+      let lowerdate = moment()
+        .utc()
+        .startOf("day")
+        .subtract(6, "days")
+        .format();
 
-      if(master_role_id === 2){
-        lowerdate = moment().subtract(2, 'days').format();
+      if (master_role_id === 2) {
+        lowerdate = moment().subtract(2, "days").format();
       }
 
       const apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}`;
@@ -78,17 +86,17 @@ const StaffAttendance = () => {
 
   const handleCheckboxChange = (key, index, checked) => {
     setStaff((prevData) =>
-  prevData.map((item) =>
-    item.student_id === key // Use student_id instead of key if that's more reliable
-      ? {
-          ...item,
-          attendance: item.attendance.map((att, idx) =>
-            idx === index ? { ...att, checked } : att
-          ),
-        }
-      : item
-  )
-);
+      prevData.map((item) =>
+        item.student_id === key // Use student_id instead of key if that's more reliable
+          ? {
+              ...item,
+              attendance: item.attendance.map((att, idx) =>
+                idx === index ? { ...att, checked } : att
+              ),
+            }
+          : item
+      )
+    );
   };
 
   const onFinish = async () => {
@@ -128,7 +136,9 @@ const StaffAttendance = () => {
           <Checkbox
             checked={record.attendance[i].checked}
             disabled={record.attendance[i].disabled}
-            onChange={(e) => handleCheckboxChange(record.student_id, i, e.target.checked)}
+            onChange={(e) =>
+              handleCheckboxChange(record.student_id, i, e.target.checked)
+            }
           />
         </Tooltip>
       ),
@@ -138,19 +148,19 @@ const StaffAttendance = () => {
   return (
     <div className="table-container">
       <Card title="Attendance" className="attendance-card">
-      <Button
-              type="primary"
-              onClick={() => navigate(`/attendance/report/`)}
-            >
-              Report
-            </Button>
+        <Button type="primary" onClick={() => navigate(`/attendance/report/`)} style={{marginBottom: "20px"}} icon={<DownloadOutlined/ >}>
+          Download Report
+        </Button>
         <Form onFinish={onFinish}>
-          <Table
+          <TableView
+            data={staff}
             columns={columns}
-            dataSource={staff}
-            pagination={true}
-            rowKey="key"
-            className="attendance-table"
+            loading={loading}
+            currentPage={currentPage}
+            totalCount={totalCount}
+            setOffset={setOffset}
+            setCurrentPage={setCurrentPage}
+            fetchData={fetchData}
           />
           <div className="button-container">
             <Form.Item>
