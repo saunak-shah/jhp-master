@@ -39,7 +39,7 @@ const AttendanceView = () => {
     if (res.status === 200) {
       // fetchData();
       setApplicants(res.data);
-      message.success(`Attendance fetched successfully.`);
+      // message.success(`Attendance fetched successfully.`);
     } else {
       message.error(`Failed to course.`);
     }
