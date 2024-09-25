@@ -55,8 +55,11 @@ const ResultsView = () => {
           new Date(data.updated_at).getFullYear();
         data.email = data.student_apply_course.student.email;
 
-        data.name = data.student_apply_course.student.first_name + " " + data.student_apply_course.student.last_name;
-        data.course_name = data.student_apply_course.course.course_name
+        data.name =
+          data.student_apply_course.student.first_name +
+          " " +
+          data.student_apply_course.student.last_name;
+        data.course_name = data.student_apply_course.course.course_name;
       });
       setTotalApplicantsCount(response.data.data.totalCount);
       setApplicants(response.data.data.result);
@@ -84,14 +87,13 @@ const ResultsView = () => {
 
     if (response.ok) {
       const data = await response.json();
-      if (
-        data.data &&
-        data.data.result &&
-        data.data.result.length > 0
-      ) {
+      if (data.data && data.data.result && data.data.result.length > 0) {
         data.data.result.map((data) => {
-          data.student_name = data.student_apply_course.student.first_name + " " + data.student_apply_course.student.last_name
-          data.course_name = data.student_apply_course.course.course_name
+          data.student_name =
+            data.student_apply_course.student.first_name +
+            " " +
+            data.student_apply_course.student.last_name;
+          data.course_name = data.student_apply_course.course.course_name;
           data.updated_at =
             new Date(data.updated_at).getDate() +
             "/" +
@@ -100,13 +102,13 @@ const ResultsView = () => {
             new Date(data.updated_at).getFullYear();
 
           data.created_at =
-          new Date(data.created_at).getDate() +
-          "/" +
-          new Date(data.created_at).getMonth() +
+            new Date(data.created_at).getDate() +
+            "/" +
+            new Date(data.created_at).getMonth() +
             "/" +
             new Date(data.created_at).getFullYear();
           delete data.student_apply_course;
-          });
+        });
         setLoading(false);
         return data.data.result;
       }
@@ -136,6 +138,13 @@ const ResultsView = () => {
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
   };
 
+  const isStudentPass = (record) => {
+    if (record.score > record.course_passing_score) {
+      return <Button type="primary">Pass</Button>;
+    }
+    return <Button type="" danger style={{backgroundColor: "red", color: "white"}}>Fail</Button>;
+  };
+
   const exportDataToExcel = async () => {
     const data = await fetchAllResults();
     exportToExcel(data, "Results");
@@ -157,8 +166,19 @@ const ResultsView = () => {
     { title: "Course Name", dataIndex: "course_name", key: "course_name" },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Score", dataIndex: "score", key: "score" },
-    { title: "Passing Score", dataIndex: "course_passing_score", key: "course_passing_score" },
+    {
+      title: "Passing Score",
+      dataIndex: "course_passing_score",
+      key: "course_passing_score",
+    },
     { title: "Course Score", dataIndex: "course_score", key: "course_score" },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => {
+        return <Space>{isStudentPass(record)}</Space>;
+      },
+    },
   ];
 
   return (
