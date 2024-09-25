@@ -1,54 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Input, Space, Button, Select } from "antd";
+import { Input, Space, Button, Select, Modal } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
 import { DeleteOutlined } from "@ant-design/icons";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import '../css/Teacher.css'; // Import the CSS file
+import { deleteData } from "../global/api";
 
 const { Option } = Select;
-
-const columns = [
-  {
-    title: "First Name",
-    dataIndex: "first_name",
-    key: "first_name",
-    sorter: true,
-  },
-  {
-    title: "Last Name",
-    dataIndex: "last_name",
-    key: "last_name",
-    sorter: true,
-  },
-  { title: "Email", dataIndex: "email", key: "email", sorter: true },
-  {
-    title: "Phone",
-    dataIndex: "phone_number",
-    key: "phone_number",
-    sorter: true,
-  },
-  { title: "Gender", dataIndex: "gender", key: "gender", sorter: true },
-  {
-    title: "Action",
-    key: "action",
-    render: (text, record) => {
-      return (
-        <Space>
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            // onClick={() => deleteCourse(record)}
-          >
-            Delete
-          </Button>
-        </Space>
-      );
-    },
-  },
-];
 
 const UserTable = observer(() => {
   const { Search } = Input;
@@ -63,6 +23,13 @@ const UserTable = observer(() => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
+  const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
+  const [dataToDelete, setDataToDelete] = useState({});
+  
+  const handleDeleteCancel = () => {
+    setDeleteModalVisibility(false);
+    setDataToDelete("");
+  };
 
   const token = localStorage.getItem("token");
 
@@ -73,6 +40,61 @@ const UserTable = observer(() => {
     fetchData(offset, pageSize);
     setCurrentPage(1);
   };
+
+  const handleDelete = (record) => {
+    setDeleteModalVisibility(true);
+    setDataToDelete(record);
+  };
+
+  const deleteCourse = async () => {
+    console.log("course", dataToDelete);
+    const endpoint = `/api/students/${dataToDelete.student_id}`;
+    await deleteData(endpoint, dataToDelete);
+    setDeleteModalVisibility(false);
+    setDataToDelete({});
+    fetchData(offset, pageSize);
+  };
+
+  const columns = [
+    {
+      title: "First Name",
+      dataIndex: "first_name",
+      key: "first_name",
+      sorter: true,
+    },
+    {
+      title: "Last Name",
+      dataIndex: "last_name",
+      key: "last_name",
+      sorter: true,
+    },
+    { title: "Email", dataIndex: "email", key: "email", sorter: true },
+    {
+      title: "Phone",
+      dataIndex: "phone_number",
+      key: "phone_number",
+      sorter: true,
+    },
+    { title: "Gender", dataIndex: "gender", key: "gender", sorter: true },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => {
+        return (
+          <Space>
+            <Button
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record)}
+              >
+                Delete
+              </Button>
+          </Space>
+        );
+      },
+    },
+  ];
 
   useEffect(() => {
     fetchData(offset, pageSize);
@@ -156,6 +178,17 @@ const UserTable = observer(() => {
 
   return (
     <div className="main-container">
+      <Modal
+        title="Confirm Deletion"
+        open={isDeleteModalVisible}
+        onOk={deleteCourse}
+        onCancel={handleDeleteCancel}
+        okText="Yes"
+        cancelText="No"
+      >
+        <p>Are you sure you want to delete this user?</p>
+      </Modal>
+
       <Space style={{ marginBottom: 16 }}>
         <Search
           style={{ marginTop: 16, marginLeft: 10 }}
