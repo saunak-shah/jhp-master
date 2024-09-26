@@ -78,7 +78,7 @@ const Teacher = observer(() => {
       sorter: true,
     },
     {
-      title: "Area",
+      title: "Address",
       dataIndex: "teacher_address",
       key: "teacher_address",
       sorter: true,

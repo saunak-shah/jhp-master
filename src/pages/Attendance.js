@@ -17,11 +17,10 @@ const StaffAttendance = () => {
   const [offset, setOffset] = useState(0);
 
   const master_role_id = localStorage.getItem("master_role_id");
-
   let daysLength = 6;
   // Teacher role show only 2 days
-  if (master_role_id === 2) {
-    daysLength = 2;
+  if (Number(master_role_id) === 2) {
+    daysLength = 1;
   }
   const last10Days = [];
   for (let i = daysLength; i >= 0; i--) {
@@ -36,17 +35,22 @@ const StaffAttendance = () => {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
 
-      let uperdate = moment().utc().startOf("day").format();
+      let uperdate = moment().startOf("day").format();
       let lowerdate = moment()
-        .utc()
         .startOf("day")
         .subtract(6, "days")
         .format();
 
-      if (master_role_id === 2) {
-        lowerdate = moment().subtract(2, "days").format();
-      }
-
+        if (Number(master_role_id) === 2) {
+          lowerdate = moment()
+          .startOf("day")
+          .subtract(2, "days")
+          .format();
+        }
+        
+      lowerdate = encodeURIComponent(lowerdate);
+      uperdate = encodeURIComponent(uperdate);
+        
       const apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}`;
       
       const response = await fetch(apiURL, {
