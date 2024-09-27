@@ -35,7 +35,7 @@ const StaffAttendance = () => {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
 
-      let uperdate = moment().startOf("day").format();
+      let uperdate = moment().endOf("day").format();
       let lowerdate = moment()
         .startOf("day")
         .subtract(6, "days")
