@@ -203,7 +203,9 @@ const Teacher = observer(() => {
           fetchData(0, pageSize);
           return response.json();
         } else {
-          message.success(response.error);
+          response.json().then((data) => {
+            message.error(data.message);
+          })
           // throw new Error("Failed to create teacher.");
         }
       })
