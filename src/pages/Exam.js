@@ -138,11 +138,11 @@ const Exam = () => {
     if (res.status === 200) {
       fetchData(0, pageSize);
       message.success(`Course ${isEdit ? "updated" : "added"} successfully.`);
+      setIsModalVisible(false);
     } else {
-      message.error(`Failed to ${isEdit ? "update" : "add"} course.`);
+      message.error(`${res.message}`);
     }
     setLoading(false);
-    setIsModalVisible(false);
   };
 
   const addCourse = () => {

@@ -54,6 +54,12 @@ const LoginForm = ({ toggleForm, history }) => {
     return response;
   }
 
+  const handleKeyPress = (event) => {
+    if (event.key === "Enter") {
+      handleLogin(); // Calls the login handler when Enter is pressed
+    }
+  };
+
   const handleLogin = async () => {
     try {
       await form
@@ -113,10 +119,10 @@ const LoginForm = ({ toggleForm, history }) => {
         <Title level={3} className="login-title" style={{ textAlign: 'center' }}>Login</Title>
         <Form form={form} layout="vertical">
           <Form.Item label="Username" name="username" rules={[{ required: true, message: 'Please enter your username' }]}>
-            <Input />
+            <Input autoFocus onKeyDown={handleKeyPress} />
           </Form.Item>
           <Form.Item label="Password" name="password" rules={[{ required: true, message: 'Please enter your password' }]}>
-            <Input.Password />
+            <Input.Password onKeyDown={handleKeyPress}  />
           </Form.Item>
           <Form.Item name="remember" valuePropName="checked" style={{ textAlign: 'left', marginBottom: '10px' }}>
             <Checkbox>Remember me</Checkbox>

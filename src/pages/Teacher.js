@@ -233,7 +233,8 @@ const Teacher = observer(() => {
             fetchData(offset, pageSize);
             return response.json();
           } else {
-            throw new Error("Failed to update teacher.");
+            message.success(response.error);
+            // throw new Error("Failed to update teacher.");
           }
         });
       })
