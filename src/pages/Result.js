@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Input, Button, Form, message } from "antd";
 import { observer } from "mobx-react-lite";
-import axios from "axios";
+// import axios from "axios";
 import "../css/Teacher.css"; // Import the CSS file
 import { post } from "../global/api";
 
@@ -32,7 +32,7 @@ const Result = observer(() => {
           return post(appUrl, values);
         })
         .then((data) => {
-            if(data.status == 200){
+            if(data.status === 200){
                 message.success(data.message);
             } else {
                 message.error(data.message);
