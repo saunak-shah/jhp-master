@@ -17,7 +17,6 @@ const UserTable = observer(() => {
   const [users, setUsers] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [totalUserCount, setTotalUserCount] = useState(0);
-  const [searchKey, setSearchKey] = useState(0);
   const [teacherId, setTeacherId] = useState(0);
   const [offset, setOffset] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -96,16 +95,12 @@ const UserTable = observer(() => {
     },
   ];
 
-  useEffect(() => {
-    fetchData(offset, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, totalUserCount, teacherId]);
-
   const handleUserSearchChange = (value) => {
-    setSearchKey(value);
+    value = value.length > 0 ? value : null;
+    fetchData(offset, pageSize, value);
   };
 
-  const fetchData = async (offset, limit) => {
+  const fetchData = async (offset, limit, searchKey = null) => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;

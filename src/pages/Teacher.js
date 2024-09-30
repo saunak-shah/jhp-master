@@ -42,7 +42,6 @@ const Teacher = observer(() => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [totalTeacherCount, setTotalteacherCount] = useState(0);
-  const [searchKey, setSearchKey] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -139,13 +138,9 @@ const Teacher = observer(() => {
     setDataToDelete(record);
   };
 
-  useEffect(() => {
-    fetchData(0, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, totalTeacherCount]);
-
   const handleTeacherSearchChange = async (value) => {
-    setSearchKey(value);
+    value = value.length > 0 ? value : null;
+    fetchData(0, pageSize, value);
   };
 
   const deleteTeacherData = async () => {
@@ -265,7 +260,7 @@ const Teacher = observer(() => {
     return response;
   }
 
-  const fetchData = async (offset, limit) => {
+  const fetchData = async (offset, limit, searchKey = null) => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;

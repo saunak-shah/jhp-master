@@ -7,5 +7,6 @@ export const allowModules = {
     Student: 4,
     Attendance: 5,
     Teacher: 6,
-    Profile: 7
+    Profile: 7,
+    Result: 8
 }

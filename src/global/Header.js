@@ -83,6 +83,11 @@ const Header = ({ history }) => {
       label: <Link to="/attendance" className="header-menu-item">Attendance</Link>,
     },
     {
+      key: 'result',
+      roles: [allowModules.Result],  // For example, if attendance is general access
+      label: <Link to="/result" className="header-menu-item">Update Result</Link>,
+    },
+    {
       key: 'teacher',
       roles: [allowModules.Teacher],  // Specific to teachers
       label: <Link to="/teacher" className="header-menu-item">Teacher</Link>,

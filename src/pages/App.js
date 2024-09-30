@@ -18,6 +18,7 @@ import Teacher from "./Teacher";
 import ApplicantsView from "../components/ApplicantsView";
 import AttendanceReport from "../pages/AttendanceReport";
 import ResultsView from "../components/ResultsView";
+import Result from "./Result";
 
 const App = observer(() => {
   const [isLogin, setIsLogin] = useState(true);
@@ -52,6 +53,7 @@ const App = observer(() => {
               <Route path="/student" element={<UserTable />} />
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/result" element={<Result />} />
               <Route path="/changepassword" element={<ChangePassword />} />
               <Route path="/teacher" element={<Teacher />} />
               <Route path="/" element={<Home />} />
