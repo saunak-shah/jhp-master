@@ -25,7 +25,6 @@ const Exam = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [totalCourseCount, setTotalCoursesCount] = useState(0);
-  const [searchKey, setSearchKey] = useState("");
   const [courses, setCourses] = useState([]);
   const [isEdit, setIsEdit] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
@@ -108,7 +107,8 @@ const Exam = () => {
   ];
 
   const handleCourseSearchChange = async (value) => {
-    setSearchKey(value);
+    value = value.length > 0 ? value : null;
+    fetchData(0, pageSize, value);
   };
 
   // Debounce search key handler
@@ -173,7 +173,7 @@ const Exam = () => {
 
   const { Search } = Input;
   
-  const fetchData = async (offset, limit) => {
+  const fetchData = async (offset, limit, searchKey = null) => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
@@ -217,7 +217,7 @@ const Exam = () => {
 
   useEffect(() => {
     fetchData(0, pageSize);
-  }, [searchKey]); // Only fetch when searchKey changes after debounce
+  }, []); // Only fetch when searchKey changes after debounce
 
 
   return (

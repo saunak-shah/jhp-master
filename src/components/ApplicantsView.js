@@ -16,13 +16,12 @@ const ApplicantsView = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalApplicantsCount, setTotalApplicantsCount] = useState(0);
-  const [searchKey, setSearchKey] = useState("");
   const [offset, setOffset] = useState(0);
 
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
-  const fetchData = async (offset, limit) => {
+  const fetchData = async (offset, limit, searchKey = null) => {
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -112,13 +111,9 @@ const ApplicantsView = () => {
   };
 
   const handleApplicantsSearchChange = async (value) => {
-    setSearchKey(value);
+    value = value.length > 0 ? value : null;
+    fetchData(offset, pageSize, value);
   };
-
-  useEffect(() => {
-    fetchData(0, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchKey, totalApplicantsCount, examId]);
 
   useEffect(() => {
     fetchData(offset, pageSize);
