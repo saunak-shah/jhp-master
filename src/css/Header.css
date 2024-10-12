@@ -1,22 +1,104 @@
 /* Header.css */
-/* .header-menu-item {
-    position: relative;
-  }
-  
-  .header-menu-item:hover {
-    color: blue !important;
-  } */
-  
-  /* .header-menu-item:hover::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 40px;
-    width: 100%;
-    height: 3px;
-    background-color: blue;
-  } */
+.main-header-custom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%; /* Ensure the header spans the full width */
+}
 
-  .ant-menu-title-content{
-    color: white;
+
+.ant-layout-header {
+  background-color: rgb(0, 21, 41) !important;
+}
+
+.ant-menu-horizontal > .ant-menu-item,
+.ant-menu-submenu-title {
+  font-weight: bold; /* Make font bold */
+  font-family: 'Arial', sans-serif; /* Change font style to Arial */
+  color: #ffffff; /* White color for better contrast */
+}
+
+
+.ant-menu-horizontal > .ant-menu-item:hover,
+.ant-menu-submenu-title:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* Light shadow effect */
+  border-radius: 4px; /* Optional: adds rounded corners */
+}
+
+.ant-dropdown-link:hover {
+  color: #ffffff; /* Changes the text color on hover */
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.custom-avatar:hover {
+  border: 2px solid white; /* Adds a border around the avatar on hover */
+}
+
+/* Ensure the dropdown menu also has a cohesive shadow and border */
+.ant-dropdown-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  border-radius: 4px; /* Optional: adds rounded corners */
+}
+/* Responsive text handling */
+.custom-user-info {
+  display: inline-block;
+  max-width: 180px; /* Adjust based on space available in your layout */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  margin: 5px;
+}
+
+.ant-dropdown-link{
+  margin-right: 70px;
+  color: white;
+}
+
+.ant-menu-light{
+  background-color: rgb(0, 21, 41) ;
+
+}
+
+.main-menu {
+  flex-grow: 1; /* Allow the menu to take up available space */
+  justify-content: flex-start; /* Align items to the left */
+}
+.ant-menu-horizontal {
+  width: auto; /* Ensure the menu adapts to the content width */
+}
+
+.ant-menu-item {
+  display: inline-block; /* Make sure all menu items are visible */
+  padding: 0 15px; /* Adjust spacing for better layout */
+}
+
+
+.mobile-menu-button {
+  display: none; /* Hidden on large screens */
+}
+
+/* Responsive design for mobile devices */
+@media (max-width: 768px) {
+  .main-menu {
+    display: none; /* Hide horizontal menu on mobile */
   }
+
+  .mobile-menu-button {
+    display: block; /* Show menu button on mobile */
+    background-color: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+  }
+  
+  .custom-user-info {
+    display: none; /* Hides username and registration number on mobile devices */
+  }
+  .ant-menu-light{
+    background-color: white ;
+  
+  }
+}

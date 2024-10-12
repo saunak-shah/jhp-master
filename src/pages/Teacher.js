@@ -418,7 +418,7 @@ const Teacher = observer(() => {
                     {
                       required: true,
                       message:
-                        "Password length should be between 4 to 12 characters.",
+                        "Password length should be greater then 4 characters.",
                     },
                   ]}
                 >
@@ -520,7 +520,7 @@ const Teacher = observer(() => {
       <div className="main-container">
         <Space style={{ marginBottom: 16 }}>
         <Search
-          style={{ marginTop: 16, marginLeft: 10 }}
+            className="search-class"
             placeholder="Search teachers"
             enterButton
             onChange={(e) => handleTeacherSearchChange(e.target.value)}

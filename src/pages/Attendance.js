@@ -153,7 +153,7 @@ const StaffAttendance = () => {
     <div className="main-container">
       <Card title="Attendance" className="attendance-card">
         <Button type="primary" onClick={() => navigate(`/attendance/report/`)} style={{marginBottom: "20px"}} icon={<DownloadOutlined/ >}>
-          Download Report
+          Attendance Report
         </Button>
         <Form onFinish={onFinish}>
           <TableView

@@ -191,7 +191,7 @@ const SignupForm = ({ toggleForm, history}) => {
             <Form.Item
               label="Password"
               name="password"
-              rules={[{ required: true, message: "Password length should be between 4 to 12 characters." }]}
+              rules={[{ required: true, message: "Password length should be greater then 4 characters." }]}
             >
               <Input.Password placeholder="Enter your password" type="password" />
             </Form.Item>

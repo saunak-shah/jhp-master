@@ -28,8 +28,6 @@ const App = observer(() => {
   };
 
   useEffect(() => {
-    const teacher_id = localStorage.getItem('teacher_id') || '';
-    console.log("teacher_id", teacher_id)
     const token = Cookies.get('token'); // Get the token from the cookie
     if (token) {
       authStore.login();

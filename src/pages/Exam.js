@@ -237,7 +237,7 @@ const Exam = () => {
 
       <Space style={{ marginBottom: 16 }}>
         <Search
-          style={{ marginTop: 16, marginLeft: 10 }}
+          className="search-class"
           placeholder="Search exams"
           enterButton
           onChange={(e) => debouncedSearchHandler(e.target.value)}

@@ -21,14 +21,11 @@ class AuthStore {
   }
 
   signup(reqData) {
-    console.log("reques data======", reqData);
     // Simulate a login, you would replace this with your actual authentication logic
     this.isAuthenticated = true;
     const apiHost = process.env.REACT_APP_API_HOST;
     const signupUrl = `${apiHost}/api/students/signup`;
     async function postData(url = "", data = {}) {
-      console.log("77777777777", url)
-      console.log("8888888888888888", data)
       // Default options are marked with *
       const response = await fetch(url, {
         method: "POST", // *GET, POST, PUT, DELETE, etc.
@@ -43,15 +40,11 @@ class AuthStore {
         referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
         body: JSON.stringify(data), // body data type must match "Content-Type" header
       });
-      console.log("response============== %j", response)
       return response; // parses JSON response into native JavaScript objects
     }
 
     postData(signupUrl, reqData).then((res) => {
-      console.log("11111111111111======",res); // JSON data parsed by `data.json()` call
-        console.log("11111111111111======",res.data); // JSON data parsed by `data.json()` call
         if(res.status === 200){
-          console.log("tyuiopghjkl========")
           if(res.data && res.data.length){
             this.users = res.data;
             this.isAuthenticated = true;

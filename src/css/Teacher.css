@@ -4,10 +4,12 @@
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
   }
   
+  
   @media (max-width: 768px) { /* Adjustments for tablets and mobile devices */
     .table-container {
       margin-left: 0;
       margin-right: 0;
+      overflow-x: unset;
     }
   }
   

@@ -186,13 +186,13 @@ const UserTable = observer(() => {
 
       <Space style={{ marginBottom: 16 }}>
         <Search
-          style={{ marginTop: 16, marginLeft: 10 }}
+          className="search-class"
           placeholder="Search users"
           enterButton
           onChange={(e) => handleUserSearchChange(e.target.value)}
         />
       </Space>
-      <Space style={{ float: "right", marginTop: '16px'}}>
+      <Space style={{ float: "right", marginTop: '10px'}}>
         Filter by teacher:
         <Select
           onChange={handleFilterChange}

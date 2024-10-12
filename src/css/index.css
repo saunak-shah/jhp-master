@@ -1,47 +1,23 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* background: #f0f2f5; */
-  /* background-image: url("./assets/bg1.jpg"); */
-
-  /* background-color: antiquewhite; */
-  /* background-image: url("https://www.freecodecamp.org/news/content/images/size/w2000/2021/06/w-qjCHPZbeXCQ-unsplash.jpg"); */
-  /* background-image: url("../public/login_image.jpg"); */
-  /* background-repeat: no-repeat; */
-  /* background-size: cover; */
-  /* background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e); */
-  /* background: linear-gradient(to bottom, #1d0c29, #42829d, #3c3ca5) */
+  background: #fffaf0;
+  min-height: 100vh; /* Ensures the height covers the full viewport */
+  min-width: 100vw; /* Ensures the width covers the full viewport */
+  overflow-x: hidden; /* Prevents horizontal scrolling */
+  background-size: cover; /* Ensures the image covers the whole screen */
+  background-position: center; /* Centers the background image */
+  background-repeat: no-repeat; /* Ensures no repetition of the image */
+  background-attachment: fixed; /* Keeps the background fixed when scrolling */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
-}
-
-#exam-container {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-}
-
-#exam-container td, #exam-container th {
-  border: 1px solid #ddd;
-  /* padding: 8px; */
-}
-
-#exam-container tr:nth-child(even){background-color: #f2f2f2;}
-
-#exam-container tr:hover {background-color: #ddd;}
-
-#exam-container th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #468de4;
-  color: white;
 }
 
 .main-login {
@@ -50,7 +26,16 @@ code {
   background: url("https://do c-08-2c-docs.googleusercontent.com/docs/securesc/68c90smiglihng9534mvqmq1946dmis5/fo0picsp1nhiucmc0l25s29respgpr4j/1631524275000/03522360960922298374/03522360960922298374/1Sx0jhdpEpnNIydS4rnN4kHSJtU1EyWka?e=view&authuser=0&nonce=gcrocepgbb17m&user=03522360960922298374&hash=tfhgbs86ka6divo3llbvp93mg4csvb38") no-repeat center/ cover;
 	border-radius: 10px;
 	box-shadow: 5px 20px 50px #000;
+  width: 100%;
+  max-width: 400px
 }
+
+.main-login img {
+  width: 25%;
+  margin: auto;
+  display: block 
+}
+
 
 .main-signup {
   /* width: 350px; */
@@ -70,20 +55,11 @@ code {
   box-sizing: border-box;
 }
 
-.login-title::before {
-  /* content: '';
-  position: absolute;
-  width: 100%;
-  height: 3px;
-  background-color: #f54290;
-  bottom: -5px;
-  left: 0; */
-}
-
 .login-title {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   margin-bottom: 15px !important;
   color: #103CC3E0 !important;
+  text-align: center
 }
 
 /* Add this to your CSS file or in a styled-components block */
@@ -121,6 +97,10 @@ code {
   margin-inline-end: 40px;
 }
 
+.search-class{
+  margin: 10px;
+}
+
 .button-class {
   width: 150px !important;
   height: 40px;
@@ -135,13 +115,9 @@ code {
     margin-right: 0;
   }
 
-  .main-container {
-    margin-left: 0;
-    margin-right: 0;
-  }
-
   .button-class {
     float: none;
+    margin-top: 10px;
   }
 
 }
