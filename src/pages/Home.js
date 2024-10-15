@@ -4,6 +4,8 @@ import axios from 'axios';
 import { UserOutlined, TeamOutlined } from '@ant-design/icons';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement, LineElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
+import "../css/Home.css"; // Import the CSS file
+
 
 // Register ArcElement, Tooltip, and Legend for Chart.js
 ChartJS.register(
@@ -32,7 +34,6 @@ const Home = () => {
       },
       title: {
         display: true,
-        // text: 'Chart Data',
       },
     },
   };
@@ -91,45 +92,47 @@ const Home = () => {
 
   return (
     <div style={{ margin: '30px' }}>
-      {/* <h1>Dashboard</h1> */}
-
-      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-        <div style={{ flex: 1, marginRight: '20px' }}>
-          <Card title={<div>Total Teachers</div>}
-            bordered={true}
-            hoverable
-            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+      <div className="container">
+        <div className="card">
+          <Card title={<div>Total Teachers</div>} bordered={true} hoverable>
             <p style={{ fontSize: '24px', fontWeight: 'bold' }}>23</p>
-            <p style={{ color: 'gray' }}>Notes: A total of 23 Guruji's are currently teaching students in the Pathshala.</p>
+            <p style={{ color: 'gray' }}>
+              Notes: A total of 23 Guruji's are currently teaching students in
+              the Pathshala.
+            </p>
           </Card>
         </div>
-        <div style={{ flex: 1, marginLeft: '20px', marginTop: '10px' }}>
-          <Card title={<div>Total Students</div>}
-            bordered={true}
-            hoverable
-            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
+        <div className="card">
+          <Card title={<div>Total Students</div>} bordered={true} hoverable>
             <p style={{ fontSize: '24px', fontWeight: 'bold' }}>637</p>
-            <p style={{ color: 'gray' }}>Notes: A total of 637 Students are currently studying in the Pathshala.</p>
+            <p style={{ color: 'gray' }}>
+              Notes: A total of 637 Students are currently studying in the
+              Pathshala.
+            </p>
           </Card>
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'center' }}>
-        <div style={{ flex: 1, marginRight: '20px' }}>
-          <Card title={<div>Pathshala Growth</div>}
-            bordered={true}
-            hoverable
-            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-            <Line data={lineData} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Pathsala Growth' } }} />
-
+      <div className="container">
+        <div className="card">
+          <Card title={<div>Pathshala Growth</div>} bordered={true} hoverable>
+            <Line
+              data={lineData}
+              options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Pathsala Growth' } }}
+            />
           </Card>
         </div>
-        <div style={{ flex: 1, marginLeft: '20px', marginTop: '10px' }}>
-          <Card title={<div>Number of Students for Each Teacher</div>}
+
+        <div className="card">
+          <Card
+            title={<div>Number of Students for Each Teacher</div>}
             bordered={true}
             hoverable
-            style={{ textAlign: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>
-            <Bar data={barData1} options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Teacher Assignments' } }} />
+          >
+            <Bar
+              data={barData1}
+              options={{ ...commonOptions, title: { ...commonOptions.title, text: 'Teacher Assignments' } }}
+            />
           </Card>
         </div>
       </div>

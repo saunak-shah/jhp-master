@@ -12,7 +12,7 @@ import UserTable from "./UserTable";
 import Exam from "./Exam";
 import Attendance from "./Attendance";
 import Home from "./Home";
-import Footer from "../global/Footer";
+// import Footer from "../global/Footer";
 import Cookies from 'js-cookie'; // Import js-cookie
 import Teacher from "./Teacher";
 import ApplicantsView from "../components/ApplicantsView";
@@ -57,7 +57,7 @@ const App = observer(() => {
               <Route path="/" element={<Home />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
-            <Footer />
+            {/* <Footer /> */}
           </div>
         ) : (
           <div>

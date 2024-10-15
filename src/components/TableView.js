@@ -1,5 +1,4 @@
-// HomePage.js
-import { Table } from "antd";
+import { Card, Table } from "antd";
 import React from "react";
 import { pageSize } from "../pages/constants";
 
@@ -29,18 +28,24 @@ function TableView({
   };
 
   return (
-    <Table
-      dataSource={data}
-      columns={columns}
-      bordered={true}
-      onChange={handleChange}
-      loading={loading}
-      pagination={{
-        current: currentPage,
-        pageSize: pageSize,
-        total: totalCount,
-      }}
-    />
+    <Card>
+      <Table
+        dataSource={data}
+        columns={columns}
+        bordered={true}
+        onChange={handleChange}
+        loading={loading}
+        pagination={{
+          current: currentPage,
+          pageSize: pageSize,
+          total: totalCount,
+        }}
+        scroll={{
+          y: 600, // Set a fixed height for vertical scrolling
+          x: "max-content", // Enable horizontal scrolling for wide columns
+        }}
+      />
+    </Card>
   );
 }
 

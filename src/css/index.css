@@ -120,4 +120,15 @@ code {
     margin-top: 10px;
   }
 
+  @media (max-width: 768px) {
+  .chart-container {
+    display: block;
+  }
+
+  .chart-container .chart-card {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+}
+
 }
