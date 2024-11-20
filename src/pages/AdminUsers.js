@@ -46,7 +46,6 @@ const UserTable = observer(() => {
   };
 
   const deleteCourse = async () => {
-    console.log("course", dataToDelete);
     const endpoint = `/api/students/${dataToDelete.student_id}`;
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);

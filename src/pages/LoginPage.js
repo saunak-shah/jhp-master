@@ -65,14 +65,12 @@ const LoginForm = ({ toggleForm, history }) => {
       await form
         .validateFields()
         .then((values) => {
-          console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
           const loginUrl = `${apiHost}/api/teachers/login`;
 
           return postData(loginUrl, values);
         })
         .then((response) => {
-          console.log("Response received:", response);
           if (response.status === 200) {
             message.success("Login successful.");
             return response.json(); // Only parse JSON if the response is successful
@@ -82,7 +80,6 @@ const LoginForm = ({ toggleForm, history }) => {
           }
         })
         .then((data) => {
-          console.log("Data parsed:", data);
           localStorage.setItem("teacher_id", data.data.teacher_id || "");
           localStorage.setItem("teacher_username", data.data.teacher_username || "");
           localStorage.setItem("teacher_first_name", data.data.teacher_first_name || "");

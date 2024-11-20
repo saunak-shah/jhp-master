@@ -187,7 +187,6 @@ const Teacher = observer(() => {
 
   const createTeacher = async (values) => {
     values.organization_id = 1;
-    console.log("Form values:", values);
     const apiHost = process.env.REACT_APP_API_HOST;
     const signupUrl = `${apiHost}/api/teachers/signup`;
     setModalOpen(false);
@@ -216,7 +215,6 @@ const Teacher = observer(() => {
       .validateFields()
       .then((values) => {
         values.organization_id = 1;
-        console.log("Form values:", values);
         const apiHost = process.env.REACT_APP_API_HOST;
         const updateProfileUrl = `${apiHost}/api/teachers/update_profile`;
         setModalOpen(false);
@@ -224,7 +222,6 @@ const Teacher = observer(() => {
           data: values,
         };
         reqData(updateProfileUrl, values).then((response) => {
-          console.log("Response received:", response);
           if (response.status === 200) {
             message.success("Teacher updated");
             fetchData(offset, pageSize);
@@ -279,7 +276,6 @@ const Teacher = observer(() => {
       };
 
       const response = await axios.get(apiUrl, { headers });
-      console.log(response);
       if (
         response.data &&
         response.data.data &&

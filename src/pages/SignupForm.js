@@ -29,10 +29,6 @@ const iconStyle = {
 
 const { Title, Text } = Typography;
 
-const onChange = (e) => {
-  console.log(`checked = ${e.target.checked}`);
-};
-
 const SignupForm = ({ toggleForm, history}) => {
   const [form] = Form.useForm();
   const [error, setError] = useState(null);
@@ -87,14 +83,12 @@ const SignupForm = ({ toggleForm, history}) => {
       await form.validateFields()
         .then(values => {
           values.organization_id = 1;
-          console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
           const signupUrl = `${apiHost}/api/students/signup`;
   
           return postData(signupUrl, values);
         })
         .then(response => {
-          console.log("Response received:", response);
           if (response.status === 200) {
             message.success('Signup successful.');
             return response.json(); // Only parse JSON if the response is successful
@@ -104,7 +98,6 @@ const SignupForm = ({ toggleForm, history}) => {
           }
         })
         .then(data => {
-            console.log("Data parsed:", data);
             localStorage.setItem('student_id', data.data.student_id || '');
             localStorage.setItem('username', data.data.username || '');
             localStorage.setItem('first_name', data.data.first_name || '');

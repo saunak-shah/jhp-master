@@ -163,7 +163,6 @@ const Exam = () => {
   };
 
   const deleteCourse = async () => {
-    console.log("course", dataToDelete);
     const endpoint = `/api/courses/${dataToDelete.course_id}`;
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);
@@ -194,7 +193,6 @@ const Exam = () => {
       });
       if (response.ok) {
         const rawData = await response.json();
-        console.log("Fetched data:", rawData.data.courses);
         if (
           rawData.data &&
           rawData.data.courses &&

@@ -57,14 +57,12 @@ const ChangePassword = () => {
     try {
       await form.validateFields()
         .then(values => {
-          console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
           const appUrl = `${apiHost}/api/teachers/change_password`;
   
           return postData(appUrl, values);
         })
         .then(response => {
-          console.log("Response received:", response);
           if (response.status === 200) {
             
             return response.json(); // Only parse JSON if the response is successful
@@ -78,7 +76,6 @@ const ChangePassword = () => {
           } else {
             message.error(data.message);
           }
-          // console.log("Data parsed:", data);
           // Update authentication state
           // authStore.login();
           // history.push('/home'); // Redirect to Home page

@@ -68,14 +68,12 @@ const Profile = () => {
       await form
         .validateFields()
         .then((values) => {
-          console.log("Form values:", values);
           const apiHost = process.env.REACT_APP_API_HOST;
           const appUrl = `${apiHost}/api/teachers/update_my_profile`;
 
           return postData(appUrl, values);
         })
         .then((response) => {
-          console.log("Response received:", response);
           if (response.status === 200) {
             return response.json(); // Only parse JSON if the response is successful
           } else {
@@ -84,7 +82,6 @@ const Profile = () => {
         })
         .then((data) => {
           message.success(data.message);
-          console.log("Data parsed:", data);
         })
         .catch((error) => {
           console.error("Error during post or processing response:", error);

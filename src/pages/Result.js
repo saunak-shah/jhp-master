@@ -26,7 +26,6 @@ const Result = observer(() => {
         await form
         .validateFields()
         .then((values) => {
-          console.log("Form values:", values);
           const appUrl = `/api/result`;
 
           return post(appUrl, values);
@@ -37,7 +36,6 @@ const Result = observer(() => {
             } else {
                 message.error(data.message);
             }
-          console.log("Data parsed:", data);
         })
         .catch((error) => {
           console.error("Error during post or processing response:", error);
