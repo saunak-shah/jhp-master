@@ -25,6 +25,10 @@ const Home = () => {
     { month: 'Total Teachers', attendance: 23, icon: <UserOutlined /> },
     { month: 'Total Students', attendance: 637, icon: <TeamOutlined /> },
   ]);
+  const [studentCount, setStudentCount] = useState(0);
+  const [teacherCount, setTeacherCount] = useState(0);
+
+  const token = localStorage.getItem("token");
 
   const commonOptions = {
     responsive: true,
@@ -69,17 +73,20 @@ const Home = () => {
   useEffect(() => {
     const fetchCounts = async () => {
       try {
-        /* const teacherCount = axios.get('/api/teachercount');
-        const studentCount = axios.get('/api/studentcount');
-        const [teachers, students] = await Promise.all([teacherCount, studentCount]);
+        const apiHost = process.env.REACT_APP_API_HOST;
+        let headers = {
+          "Content-Type": "application/json",
+          Authorization: token,
+        };
+        let apiUrl = `${apiHost}/api/dashboard/teachers/count`;
+        let studentapiUrl = `${apiHost}/api/dashboard/students/count`;
+        
+        const teacherCount = axios.get(apiUrl, { headers });
+        const studentCount = axios.get(`${studentapiUrl}`, { headers });
 
-        setData(prevData => ({
-          ...prevData,
-          datasets: [{
-            ...prevData.datasets[0],
-            data: [teachers.data.count, students.data.count] // Example of how to integrate fetched data
-          }]
-        })); */
+        const [teachers, students] = await Promise.all([teacherCount, studentCount]);
+        setStudentCount(students.data?.data.totalCount)
+        setTeacherCount(teachers.data?.data.totalCount)
         setLoading(false);
       } catch (error) {
         console.error('Failed to fetch counts:', error);
@@ -95,18 +102,18 @@ const Home = () => {
       <div className="container">
         <div className="card">
           <Card title={<div>Total Teachers</div>} bordered={true} hoverable>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>23</p>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{teacherCount}</p>
             <p style={{ color: 'gray' }}>
-              Notes: A total of 23 Guruji's are currently teaching students in
+              Notes: A total of {teacherCount} Guruji's are currently teaching students in
               the Pathshala.
             </p>
           </Card>
         </div>
         <div className="card">
           <Card title={<div>Total Students</div>} bordered={true} hoverable>
-            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>637</p>
+            <p style={{ fontSize: '24px', fontWeight: 'bold' }}>{studentCount}</p>
             <p style={{ color: 'gray' }}>
-              Notes: A total of 637 Students are currently studying in the
+              Notes: A total of {studentCount} Students are currently studying in the
               Pathshala.
             </p>
           </Card>
