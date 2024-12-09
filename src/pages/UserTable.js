@@ -96,10 +96,10 @@ const UserTable = observer(() => {
 
   const handleUserSearchChange = (value) => {
     value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, value);
+    fetchData(offset, pageSize, sortField, sortOrder, value);
   };
 
-  const fetchData = async (offset, limit, searchKey = null, teacherId = 0) => {
+  const fetchData = async (offset, limit, sortField = "student_id", sortOrder = "asc", searchKey = null) => {  
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;

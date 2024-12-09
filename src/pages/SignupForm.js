@@ -8,9 +8,6 @@ import {
   Col,
   Card,
   Typography,
-  Select,
-  Checkbox,
-  CheckboxProps,
   DatePicker,
   Radio,
   message
@@ -18,7 +15,6 @@ import {
 import authStore from "../stores/authStore";
 import logo from "../assets/logo.jpeg"; // Import your logo image
 import TextArea from "antd/es/input/TextArea";
-import image1 from "../assets/mata.png"; // Import your logo image
 import { InstagramFilled, FacebookFilled, YoutubeFilled } from '@ant-design/icons';
 
 const iconStyle = {

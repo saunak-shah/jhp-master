@@ -108,7 +108,7 @@ const Exam = () => {
 
   const handleCourseSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, value);
+    fetchData(0, pageSize, sortField, sortOrder, value);
   };
 
   // Debounce search key handler
@@ -172,7 +172,7 @@ const Exam = () => {
 
   const { Search } = Input;
   
-  const fetchData = async (offset, limit, searchKey = null) => {
+  const fetchData = async (offset, limit, sortField = "course_id", sortOrder = "asc", searchKey = null) => {  
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;

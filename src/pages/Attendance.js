@@ -34,7 +34,7 @@ const StaffAttendance = () => {
 
   const [staff, setStaff] = useState([]);
 
-  const fetchData = async (offset, limit, searchKey = null) => {
+const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "asc", searchKey = null) => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
@@ -58,7 +58,7 @@ const StaffAttendance = () => {
       let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}&limit=${limit}&offset=${offset}`;
       
       if (sortField) {
-        apiURL = apiURL + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+        apiURL += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
       }
 
       const response = await fetch(apiURL, {

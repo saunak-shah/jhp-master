@@ -15,16 +15,19 @@ function TableView({
   fetchData,
 }) {
   const handleChange = (pagination, filters, sorter) => {
-    // Update sortField and sortOrder based on sorter
-    if (sorter.field) {
-      setSortField(sorter.field);
-      setSortOrder(sorter.order === "ascend" ? "asc" : "desc");
-    }
+    const newSortField = sorter.field;
+    const newSortOrder = sorter.order === "ascend" ? "asc" : "desc";
+    // Update state
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
 
     const newOffset = (pagination.current - 1) * pagination.pageSize;
     setOffset(newOffset);
     setCurrentPage(pagination.current);
-    fetchData(newOffset, pagination.pageSize);
+
+    // Pass the newSortField and newSortOrder directly to fetchData
+    fetchData(newOffset, pagination.pageSize, newSortField, newSortOrder);
+
   };
 
   return (

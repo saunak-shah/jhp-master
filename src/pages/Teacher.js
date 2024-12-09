@@ -140,7 +140,7 @@ const Teacher = observer(() => {
 
   const handleTeacherSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, value);
+    fetchData(0, pageSize, sortField, sortOrder, value);
   };
 
   const deleteTeacherData = async () => {
@@ -257,7 +257,7 @@ const Teacher = observer(() => {
     return response;
   }
 
-  const fetchData = async (offset, limit, searchKey = null) => {
+  const fetchData = async (offset, limit, sortField = "teacher_id", sortOrder = "asc", searchKey = null) => {  
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;

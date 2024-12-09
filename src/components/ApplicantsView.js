@@ -21,7 +21,7 @@ const ApplicantsView = () => {
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
-  const fetchData = async (offset, limit, searchKey = null) => {
+  const fetchData = async (offset, limit, sortField = "student_apply_course_id", sortOrder = "asc", searchKey = null) => {  
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -133,12 +133,12 @@ const ApplicantsView = () => {
   };
 
   const columns = [
-    /* {
+    {
       title: "RegistrationId",
       dataIndex: "student_apply_course_id",
       key: "student_apply_course_id",
       sorter: true,
-    }, */
+    },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     {

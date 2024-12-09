@@ -21,7 +21,7 @@ const ResultsView = () => {
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
-  const fetchData = async (offset, limit, searchKey = null) => {
+  const fetchData = async (offset, limit, sortField = "student_apply_course_id", sortOrder = "asc", searchKey = null) => {  
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
