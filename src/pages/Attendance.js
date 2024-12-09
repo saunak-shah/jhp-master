@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Form, Checkbox, Button, Card, Tooltip, message } from "antd";
+import { Form, Checkbox, Button, Card, Tooltip, message,  } from "antd";
 import moment from "moment";
 import { post } from "../global/api";
 import { useNavigate } from "react-router-dom";
 import "../css/Teacher.css"; // Import the CSS file
 import TableView from "../components/TableView";
 import { DownloadOutlined } from "@ant-design/icons";
+import { pageSize } from "../pages/constants";
+
 
 const StaffAttendance = () => {
   // Inside your Exam component
@@ -15,6 +17,8 @@ const StaffAttendance = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [sortField, setSortField] = useState("first_name");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   const master_role_id = localStorage.getItem("master_role_id");
   let daysLength = 6;
@@ -30,7 +34,7 @@ const StaffAttendance = () => {
 
   const [staff, setStaff] = useState([]);
 
-  const fetchData = async () => {
+  const fetchData = async (offset, limit, searchKey = null) => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
@@ -50,9 +54,13 @@ const StaffAttendance = () => {
         
       lowerdate = encodeURIComponent(lowerdate);
       uperdate = encodeURIComponent(uperdate);
-        
-      const apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}`;
+
+      let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}&limit=${limit}&offset=${offset}`;
       
+      if (sortField) {
+        apiURL = apiURL + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+      }
+
       const response = await fetch(apiURL, {
         headers: {
           "Content-Type": "application/json",
@@ -61,7 +69,9 @@ const StaffAttendance = () => {
       });
       if (response.ok) {
         const rawData = await response.json();
-        const updatedStaff = rawData.data.map((staffMember) => {
+        setTotalCount(rawData.data.totalCount);
+
+        const updatedStaff = rawData.data?.users.map((staffMember) => {
           const attendance = last10Days.map((date, index) => {
             const isChecked = staffMember.checked_dates.includes(date);
             return {
@@ -85,7 +95,7 @@ const StaffAttendance = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchData(offset, pageSize);
   }, []);
 
   const handleCheckboxChange = (key, index, checked) => {
@@ -116,7 +126,7 @@ const StaffAttendance = () => {
     const endpoint = "/api/attendance";
     const res = await post(endpoint, payload);
     if (res.status === 200) {
-      fetchData();
+      fetchData(offset, pageSize);
       message.success(`Attendance filled successfully.`);
     } else {
       message.error(`Failed to update attendance.`);
@@ -128,8 +138,9 @@ const StaffAttendance = () => {
   const columns = [
     {
       title: "Name",
-      dataIndex: "name",
-      key: "name",
+      dataIndex: "first_name",
+      key: "first_name",
+      sorter: true,
     },
     ...last10Days.map((date, i) => ({
       title: date,
@@ -162,6 +173,8 @@ const StaffAttendance = () => {
             loading={loading}
             currentPage={currentPage}
             totalCount={totalCount}
+            setSortField={setSortField}
+            setSortOrder={setSortOrder}
             setOffset={setOffset}
             setCurrentPage={setCurrentPage}
             fetchData={fetchData}
@@ -169,7 +182,7 @@ const StaffAttendance = () => {
           <div className="button-container">
             <Form.Item>
               <Button type="primary" htmlType="submit">
-                Submit
+                  Submit
               </Button>
             </Form.Item>
           </div>

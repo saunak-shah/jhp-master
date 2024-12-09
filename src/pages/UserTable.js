@@ -36,7 +36,7 @@ const UserTable = observer(() => {
     setTeacherId(teacherId);
     setSelectedValue(teacherId);
     setOffset(0);
-    fetchData(offset, pageSize);
+    fetchData(offset, pageSize, null, teacherId);
     setCurrentPage(1);
   };
 
@@ -99,7 +99,7 @@ const UserTable = observer(() => {
     fetchData(offset, pageSize, value);
   };
 
-  const fetchData = async (offset, limit, searchKey = null) => {
+  const fetchData = async (offset, limit, searchKey = null, teacherId = 0) => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
