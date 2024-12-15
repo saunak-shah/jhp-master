@@ -27,7 +27,6 @@ function TableView({
 
     // Pass the newSortField and newSortOrder directly to fetchData
     fetchData(newOffset, pagination.pageSize, newSortField, newSortOrder);
-
   };
 
   return (
@@ -42,6 +41,8 @@ function TableView({
           current: currentPage,
           pageSize: pageSize,
           total: totalCount,
+          showTotal: (total, range) =>
+            `Showing ${range[0]}-${range[1]} of ${total} items`, // Custom message for total count
         }}
         scroll={{
           y: 600, // Set a fixed height for vertical scrolling

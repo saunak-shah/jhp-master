@@ -36,7 +36,7 @@ const UserTable = observer(() => {
     setTeacherId(teacherId);
     setSelectedValue(teacherId);
     setOffset(0);
-    fetchData(offset, pageSize, null, teacherId);
+    // fetchData(offset, pageSize, null, teacherId);
     setCurrentPage(1);
   };
 
@@ -99,7 +99,13 @@ const UserTable = observer(() => {
     fetchData(offset, pageSize, sortField, sortOrder, value);
   };
 
-  const fetchData = async (offset, limit, sortField = "student_id", sortOrder = "asc", searchKey = null) => {  
+  const fetchData = async (
+    offset,
+    limit,
+    sortField = "student_id",
+    sortOrder = "asc",
+    searchKey = null
+  ) => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
@@ -109,15 +115,16 @@ const UserTable = observer(() => {
       } else {
         apiUrl = `${apiHost}/api/students?limit=${limit}&offset=${offset}`;
       }
-      if (searchKey && searchKey.length > 0) {
-        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+      // Append filters if searchKey is present
+      if (searchKey) {
+        apiUrl += `&searchKey=${encodeURIComponent(searchKey)}`;
       }
-
+      // Append sorting parameters
       if (sortField) {
-        apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+        apiUrl += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
       }
 
-      let headers = {
+      const headers = {
         "Content-Type": "application/json",
         Authorization: token,
       };
@@ -168,7 +175,7 @@ const UserTable = observer(() => {
     fetchData(0, pageSize);
     fetchTeachersData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [teacherId]);
 
   return (
     <div className="main-container">
