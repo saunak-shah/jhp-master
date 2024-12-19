@@ -16,7 +16,7 @@ function TableView({
 }) {
   const handleChange = (pagination, filters, sorter) => {
     const newSortField = sorter.field;
-    const newSortOrder = sorter.order === "ascend" ? "asc" : "desc";
+    const newSortOrder = (!sorter.order || sorter.order === "ascend") ? "asc" : "desc";
     // Update state
     setSortField(newSortField);
     setSortOrder(newSortOrder);
