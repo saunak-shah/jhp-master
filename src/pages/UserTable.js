@@ -12,7 +12,7 @@ const { Option } = Select;
 
 const UserTable = observer(() => {
   const { Search } = Input;
-  const [sortField, setSortField] = useState("student_id");
+  const [sortField, setSortField] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
   const [users, setUsers] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -24,6 +24,7 @@ const UserTable = observer(() => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const master_role_id = localStorage.getItem("master_role_id");
   
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
@@ -102,7 +103,7 @@ const UserTable = observer(() => {
   const fetchData = async (
     offset,
     limit,
-    sortField = "student_id",
+    sortField = "first_name",
     sortOrder = "asc",
     searchKey = null
   ) => {
@@ -198,7 +199,8 @@ const UserTable = observer(() => {
           onChange={(e) => handleUserSearchChange(e.target.value)}
         />
       </Space>
-      <Space style={{ float: "right", marginTop: '10px'}}>
+      {master_role_id != 2 ? (
+        <Space style={{ float: "right", marginTop: '10px'}}>
         Filter by teacher:
         <Select
           onChange={handleFilterChange}
@@ -222,6 +224,8 @@ const UserTable = observer(() => {
           ))}
         </Select>
       </Space>
+      ) : ''}
+      
       <div className="table-container">
       <TableView
         data={users}

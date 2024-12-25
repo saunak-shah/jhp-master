@@ -164,10 +164,14 @@ const Exam = () => {
 
   const deleteCourse = async () => {
     const endpoint = `/api/courses/${dataToDelete.course_id}`;
-    await deleteData(endpoint, dataToDelete);
+    const res = await deleteData(endpoint, dataToDelete);
+    if(res.status === 200){
+      fetchData(offset, pageSize);
+    } else{
+      message.error(res.message);
+    }
     setDeleteModalVisibility(false);
     setDataToDelete({});
-    fetchData(offset, pageSize);
   };
 
   const { Search } = Input;
@@ -208,6 +212,7 @@ const Exam = () => {
       }
     } catch (error) {
       console.error("Error during API call:", error);
+      message.error(`Failed to load data.`);
     } finally {
       setLoading(false);
     }

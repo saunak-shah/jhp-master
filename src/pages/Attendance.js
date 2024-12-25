@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Form, Checkbox, Button, Card, Tooltip, message,  } from "antd";
+import { Form, Checkbox, Button, Card, Tooltip, message, Space, Select, } from "antd";
 import moment from "moment";
 import { post } from "../global/api";
 import { useNavigate } from "react-router-dom";
@@ -7,6 +7,9 @@ import "../css/Teacher.css"; // Import the CSS file
 import TableView from "../components/TableView";
 import { DownloadOutlined } from "@ant-design/icons";
 import { pageSize } from "../pages/constants";
+import axios from "axios";
+
+const { Option } = Select;
 
 
 const StaffAttendance = () => {
@@ -19,7 +22,11 @@ const StaffAttendance = () => {
   const [offset, setOffset] = useState(0);
   const [sortField, setSortField] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
-
+  const [teachers, setTeachers] = useState([]);
+  const [selectedValue, setSelectedValue] = useState(null);
+  const [teacherId, setTeacherId] = useState(0);
+  const uncheckedArr = [];
+  const token = localStorage.getItem("token");
   const master_role_id = localStorage.getItem("master_role_id");
   let daysLength = 6;
   // Teacher role show only 2 days
@@ -33,8 +40,9 @@ const StaffAttendance = () => {
   }
 
   const [staff, setStaff] = useState([]);
+  const [uncheckedData, setUncheckedData] = useState([]);
 
-const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "asc", searchKey = null) => {
+const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "asc", teacherId) => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
@@ -57,7 +65,18 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
 
       let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}&limit=${limit}&offset=${offset}`;
       
+      if(teacherId && teacherId !== 'None'){
+        apiURL += `&teacherId=${teacherId}`;
+      }
+
       if (sortField) {
+        if(sortField === "name"){
+          sortField = "first_name"
+        }
+        apiURL += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+      } else{
+        sortField = "first_name"
+        sortOrder = "asc"
         apiURL += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
       }
 
@@ -94,14 +113,65 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
     }
   };
 
+  const fetchTeachersData = async () => {
+    try {
+      const limit = 20;
+      const offset = 0;
+      const apiHost = process.env.REACT_APP_API_HOST;
+      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
+
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: token,
+      };
+      const response = await axios.get(apiUrl, { headers });
+
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.teachers.length > 0
+      ) {
+        setTeachers(response.data.data.teachers);
+      } else {
+        setTeachers([]);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData(offset, pageSize);
+    fetchTeachersData();
   }, []);
 
+  const handleFetchData = (offset, limit, sortField, sortOrder) => {
+    fetchData(offset, limit, sortField, sortOrder, teacherId);
+  };
+
   const handleCheckboxChange = (key, index, checked) => {
-    setStaff((prevData) =>
+    if(!checked){
+      const uncheckedStaff = staff
+        .filter((item) => item.student_id === key)
+        .map((item) =>
+          item.attendance.map((att, idx) =>
+            idx === index ? { ...att, student_id: key, checked } : null
+          )
+        )
+        .flat()
+        .find((item) => item !== null);
+        
+        setUncheckedData((prevUncheckedData) => [
+          ...prevUncheckedData,
+          uncheckedStaff,
+        ]);  
+    }
+    
+      setStaff((prevData) =>
       prevData.map((item) =>
-        item.student_id === key // Use student_id instead of key if that's more reliable
+        item.student_id === key
           ? {
               ...item,
               attendance: item.attendance.map((att, idx) =>
@@ -111,6 +181,15 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
           : item
       )
     );
+    
+  };
+
+  const handleFilterChange = (teacherId) => {
+    setTeacherId(teacherId);
+    setSelectedValue(teacherId);
+    setOffset(0);
+    fetchData(0, pageSize, null, null, teacherId);
+    setCurrentPage(1);
   };
 
   const onFinish = async () => {
@@ -121,16 +200,19 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
           .map((att, idx) => (att.checked ? last10Days[idx] : null))
           .filter((date) => date !== null),
       })),
+      removals: uncheckedData
     };
 
     const endpoint = "/api/attendance";
     const res = await post(endpoint, payload);
     if (res.status === 200) {
-      fetchData(offset, pageSize);
+
+      fetchData(offset, pageSize, null, null, teacherId);
       message.success(`Attendance filled successfully.`);
     } else {
       message.error(`Failed to update attendance.`);
     }
+    setUncheckedData([])
     setLoading(false);
     // Make an API request or handle the payload as needed
   };
@@ -138,9 +220,10 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
   const columns = [
     {
       title: "Name",
-      dataIndex: "first_name",
-      key: "first_name",
+      dataIndex: "name",
+      key: "name",
       sorter: true,
+      render: (_, record) => `${record.first_name || ""} ${record.father_name || ""} ${record.last_name || ""}`
     },
     ...last10Days.map((date, i) => ({
       title: date,
@@ -166,6 +249,32 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
         <Button type="primary" onClick={() => navigate(`/attendance/report/`)} style={{marginBottom: "20px"}} icon={<DownloadOutlined/ >}>
           Attendance Report
         </Button>
+        {master_role_id != 2 ? (
+        <Space style={{ float: "right", marginTop: '10px'}}>
+        Filter by teacher:
+        <Select
+          onChange={handleFilterChange}
+          showSearch={true}
+          placeholder="Select Teacher"
+          optionFilterProp="children"
+          value={selectedValue}
+          filterOption={(input, option) =>
+            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+          style={{ width: 200 }}
+        >
+          <Option key={"None"} value={undefined}>
+            None
+          </Option>
+
+          {teachers.map((teacher, index) => (
+            <Option key={index} value={teacher.teacher_id}>
+              {teacher.teacher_first_name + ' ' +teacher.teacher_last_name}
+            </Option>
+          ))}
+        </Select>
+      </Space>
+      ) : ''}
         <Form onFinish={onFinish}>
           <TableView
             data={staff}
@@ -177,7 +286,8 @@ const fetchData = async (offset, limit, sortField = "first_name", sortOrder = "a
             setSortOrder={setSortOrder}
             setOffset={setOffset}
             setCurrentPage={setCurrentPage}
-            fetchData={fetchData}
+            // fetchData={fetchData}
+            fetchData={handleFetchData} // Pass the wrapper instead of fetchData
           />
           <div className="button-container">
             <Form.Item>
