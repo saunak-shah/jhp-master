@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Input, Space, Button, Select, Modal } from "antd";
+import { Input, Space, Button, Select, Modal, Form, message } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, SwapOutlined } from "@ant-design/icons";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import '../css/Teacher.css'; // Import the CSS file
 import { deleteData } from "../global/api";
+import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path is correct
+import { post } from "../global/api";
 
 const { Option } = Select;
 
@@ -23,8 +25,12 @@ const UserTable = observer(() => {
   const [loading, setLoading] = useState(false);
   const [selectedValue, setSelectedValue] = useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
   const master_role_id = localStorage.getItem("master_role_id");
+  const [currentStudent, setCurrentStudent] = useState(null);
+
+  const [form] = Form.useForm();
   
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
@@ -46,13 +52,39 @@ const UserTable = observer(() => {
     setDataToDelete(record);
   };
 
-  const deleteCourse = async () => {
+  const deleteStudent = async () => {
     const endpoint = `/api/students/${dataToDelete.student_id}`;
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);
     setDataToDelete({});
     fetchData(offset, pageSize);
   };
+
+
+  const handleChangeTeacher = async (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    setLoading(true);
+    const endpoint = `/api/teachers/assign`;
+
+    // course.course_max_attempts = parseInt(course.course_max_attempts);
+
+    const res = await post(endpoint, record);
+    if (res.status === 200) {
+      fetchData(0, pageSize);
+      message.success(`Teacher changed successfully.`);
+      setIsModalVisible(false);
+    } else {
+      message.error(`${res.message}`);
+    }
+    setLoading(false);
+  };
+
+  const handleChangeAssignee = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    // setCurrentCourse(course); // Set current course to edit
+    setIsModalVisible(true);
+  };
+  
 
   const columns = [
     {
@@ -89,7 +121,15 @@ const UserTable = observer(() => {
               >
                 Delete
               </Button>
+              <Button
+                type="primary"
+                icon={<SwapOutlined />}
+                onClick={() => handleChangeAssignee(record)}
+              >
+                Change Teacher
+              </Button>
           </Space>
+          
         );
       },
     },
@@ -183,7 +223,7 @@ const UserTable = observer(() => {
       <Modal
         title="Confirm Deletion"
         open={isDeleteModalVisible}
-        onOk={deleteCourse}
+        onOk={deleteStudent}
         onCancel={handleDeleteCancel}
         okText="Yes"
         cancelText="No"
@@ -240,6 +280,14 @@ const UserTable = observer(() => {
         fetchData={fetchData}
       />
       </div>
+      <ChangeTeacher
+        form={form}
+        visible={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        onSubmit={handleChangeTeacher}
+        initialData={currentStudent}
+        teachersData={teachers}
+      />
     </div>
   );
 });
