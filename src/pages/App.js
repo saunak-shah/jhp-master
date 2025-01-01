@@ -19,6 +19,7 @@ import ApplicantsView from "../components/ApplicantsView";
 import AttendanceReport from "../pages/AttendanceReport";
 import ResultsView from "../components/ResultsView";
 import Result from "./Result";
+import Group from "./Group";
 
 const App = observer(() => {
   const [isLogin, setIsLogin] = useState(true);
@@ -50,6 +51,7 @@ const App = observer(() => {
               <Route path="/admin" element={<AdminUsers />} />
               <Route path="/student" element={<UserTable />} />
               <Route path="/attendance" element={<Attendance />} />
+              <Route path="/group" element={<Group />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/result" element={<Result />} />
               <Route path="/changepassword" element={<ChangePassword />} />

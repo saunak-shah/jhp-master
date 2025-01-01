@@ -104,6 +104,12 @@ const Header = ({ history }) => {
       onClick: () => handleMenuItemClick('/attendance') 
     },
     {
+      key: 'group',
+      roles: [allowModules.Group],
+      label: <Link to="/group" className="header-menu-item">Groups</Link>,
+      onClick: () => handleMenuItemClick('/group') 
+    },
+    {
       key: 'result',
       roles: [allowModules.Result],  // For example, if attendance is general access
       label: <Link to="/result" className="header-menu-item">Update Result</Link>,
