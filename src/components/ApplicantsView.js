@@ -25,11 +25,7 @@ const ApplicantsView = () => {
   const [isUpdateModelVisible, setUpdateModelVisibility] = useState(false);
   const [dataToUpdate, setDataToUpdate] = useState({});
   const [scoreToUpdate, setScoreToUpdate] = useState(0);
-  console.log(
-    "🚀 ~ file: ApplicantsView.js:28 ~ ApplicantsView ~ scoreToUpdate:",
-    scoreToUpdate
-  );
-
+  
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
