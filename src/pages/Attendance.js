@@ -35,7 +35,7 @@ const StaffAttendance = () => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [teacherId, setTeacherId] = useState(0);
   const token = localStorage.getItem("token");
-  const master_role_id = localStorage.getItem("master_role_id");
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
   let daysLength = 6;
   // Teacher role show only 2 days
   if (Number(master_role_id) === 2) {
