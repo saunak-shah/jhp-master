@@ -16,6 +16,8 @@ import {
 } from "chart.js";
 import "../css/Home.css"; // Import the CSS file
 import moment from "moment";
+import dayjs from 'dayjs';
+
 // Register ArcElement, Tooltip, and Legend for Chart.js
 ChartJS.register(
   CategoryScale,
@@ -273,19 +275,19 @@ const Home = () => {
               <DatePicker
                 onChange={handleStartDateChange}
                 placeholder="Start Date"
-                value={moment(lowerDateLimit)}
+                value={dayjs(lowerDateLimit)}
                 defaultValue={defaultStartDate}
                 allowClear={false}
               />
               <DatePicker
                 onChange={handleEndDateChange}
                 placeholder="End Date"
-                value={moment(upperDateLimit)}
+                value={dayjs(upperDateLimit)}
                 defaultValue={defaultEndDate}
                 allowClear={false}
               />
             </div>
-            <Bar
+            <Line
               style={{  width: "100%" }}
               data={attendanceBarData}
               options={{
