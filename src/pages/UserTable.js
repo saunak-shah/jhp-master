@@ -99,6 +99,12 @@ const UserTable = observer(() => {
       key: "last_name",
       sorter: true,
     },
+    {
+      title: "Fathe Name",
+      dataIndex: "father_name",
+      key: "father_name",
+      sorter: true,
+    },
     { title: "Email", dataIndex: "email", key: "email", sorter: true },
     {
       title: "Phone",
@@ -185,7 +191,7 @@ const UserTable = observer(() => {
 
   const fetchTeachersData = async () => {
     try {
-      const limit = 20;
+      const limit = 100;
       const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;

@@ -103,12 +103,20 @@ const Header = ({ history }) => {
       label: <Link to="/attendance" className="header-menu-item">Attendance</Link>,
       onClick: () => handleMenuItemClick('/attendance') 
     },
+
     // {
     //   key: 'result',
     //   roles: [allowModules.Result],  // For example, if attendance is general access
     //   label: <Link to="/result" className="header-menu-item">Update Result</Link>,
     //   onClick: () => handleMenuItemClick('/result') 
     // },
+
+    {
+      key: 'group',
+      roles: [allowModules.Group],
+      label: <Link to="/group" className="header-menu-item">Groups</Link>,
+      onClick: () => handleMenuItemClick('/group') 
+    },
     {
       key: 'teacher',
       roles: [allowModules.Teacher],  // Specific to teachers
