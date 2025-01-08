@@ -15,8 +15,7 @@ import {
   Legend,
 } from "chart.js";
 import "../css/Home.css"; // Import the CSS file
-import dayjs from "dayjs";
-
+import moment from "moment";
 // Register ArcElement, Tooltip, and Legend for Chart.js
 ChartJS.register(
   CategoryScale,
@@ -45,8 +44,8 @@ const Home = () => {
   const [attendanceDate, setAttendanceDate] = useState([]);
 
   // Default values: today and 7 days ago
-  const defaultEndDate = dayjs();
-  const defaultStartDate = dayjs().subtract(7, "day");
+  const defaultEndDate = moment();
+  const defaultStartDate = moment().subtract(7, "day");
   const [lowerDateLimit, setLowerDateLimit] = useState(defaultStartDate);
   const [upperDateLimit, setUpperDateLimit] = useState(defaultEndDate);
   const [loading, setLoading] = useState(true);
@@ -274,14 +273,14 @@ const Home = () => {
               <DatePicker
                 onChange={handleStartDateChange}
                 placeholder="Start Date"
-                value={dayjs(lowerDateLimit)}
+                value={moment(lowerDateLimit)}
                 defaultValue={defaultStartDate}
                 allowClear={false}
               />
               <DatePicker
                 onChange={handleEndDateChange}
                 placeholder="End Date"
-                value={dayjs(upperDateLimit)}
+                value={moment(upperDateLimit)}
                 defaultValue={defaultEndDate}
                 allowClear={false}
               />
