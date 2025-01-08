@@ -10,7 +10,6 @@ import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import * as XLSX from "xlsx";
 import FormItemLabel from "antd/es/form/FormItemLabel";
-import dayjs from "dayjs";
 
 const AttendanceView = () => {
   const navigate = useNavigate();
@@ -23,12 +22,12 @@ const AttendanceView = () => {
   const [totalAttedanceCount, setTotalAttedanceCount] = useState(0);
   const [searchKey, setSearchKey] = useState(null);
 
-  const defaultToDate = dayjs(
+  const defaultToDate = moment(
     moment(new Date()).format("YYYY-MM-DD"),
     "YYYY-MM-DD"
   );
 
-  const defaultFromDate = dayjs().startOf("month");
+  const defaultFromDate = moment().startOf("month");
   
   const [fromDate, setFromDate] = useState(defaultFromDate);
   const [toDate, setToDate] = useState(defaultToDate);
