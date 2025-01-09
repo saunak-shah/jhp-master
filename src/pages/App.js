@@ -53,7 +53,7 @@ const App = observer(() => {
               <Route path="/attendance" element={<Attendance />} />
               <Route path="/group" element={<Group />} />
               <Route path="/profile" element={<Profile />} />
-              <Route path="/result" element={<Result />} />
+              {/* <Route path="/result" element={<Result />} /> */}
               <Route path="/changepassword" element={<ChangePassword />} />
               <Route path="/teacher" element={<Teacher />} />
               <Route path="/" element={<Home />} />

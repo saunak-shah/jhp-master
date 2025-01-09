@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Space } from "antd";
+import { Table, Button, Space, Modal, Input, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
-import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  EditOutlined,
+  LeftOutlined,
+} from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
 import * as XLSX from "xlsx";
 import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import axios from "axios";
+import { post } from "../global/api";
 
 const ApplicantsView = () => {
   const [applicants, setApplicants] = useState([]);
@@ -17,11 +22,20 @@ const ApplicantsView = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalApplicantsCount, setTotalApplicantsCount] = useState(0);
   const [offset, setOffset] = useState(0);
-
+  const [isUpdateModelVisible, setUpdateModelVisibility] = useState(false);
+  const [dataToUpdate, setDataToUpdate] = useState({});
+  const [scoreToUpdate, setScoreToUpdate] = useState(0);
+  
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
-  const fetchData = async (offset, limit, sortField = "student_apply_course_id", sortOrder = "asc", searchKey = null) => {  
+  const fetchData = async (
+    offset,
+    limit,
+    sortField = "student_apply_course_id",
+    sortOrder = "asc",
+    searchKey = null
+  ) => {
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -54,6 +68,10 @@ const ApplicantsView = () => {
           new Date(data.updated_at).getFullYear();
         data.email = data.student.email;
         data.name = data.student.first_name + " " + data.student.last_name;
+        data.score =
+          data.result.length > 0 && data.result[0].score
+            ? data.result[0].score
+            : "Not Available";
       });
       setTotalApplicantsCount(response.data.data.totalCount);
       setApplicants(response.data.data.registrations);
@@ -147,10 +165,92 @@ const ApplicantsView = () => {
       key: "updated_at",
       sorter: true,
     },
+    {
+      title: "Result",
+      dataIndex: "score",
+      key: "score",
+      sorter: true,
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (text, record) => {
+        return (
+          <Space>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleUpdate(record)}
+            >
+              Update Result
+            </Button>
+          </Space>
+        );
+      },
+    },
   ];
+  const handleUpdateCancel = () => {
+    setUpdateModelVisibility(false);
+    setDataToUpdate("");
+  };
+
+  const handleUpdate = (record) => {
+    setUpdateModelVisibility(true);
+    setDataToUpdate(record);
+    setScoreToUpdate(record.score);
+  };
+
+  const handleUpdateScoreChange = (value) => {
+    // Allow user to input raw numbers without immediate conversion
+    if (!isNaN(value) && value.trim() !== "") {
+      setScoreToUpdate(value); // Store as string
+    } else {
+      setScoreToUpdate(""); // Reset if invalid
+    }
+  };
+
+  const updateStudentScore = async () => {
+    setLoading(true);
+
+    const data = {
+      student_apply_course_id: dataToUpdate.student_apply_course_id,
+      score: parseFloat(scoreToUpdate),
+    };
+
+    const endpoint = `/api/result`;
+    const res = await post(endpoint, {
+      data,
+    });
+
+    if (res.status === 200) {
+      fetchData(0, pageSize);
+      message.success(`Score updated successfully.`);
+      setUpdateModelVisibility(false);
+      setDataToUpdate({});
+      setScoreToUpdate(0);
+    } else {
+      message.error(`${res.message}`);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="main-container">
+      <Modal
+        title="Confirm Updation"
+        open={isUpdateModelVisible}
+        onOk={updateStudentScore}
+        onCancel={handleUpdateCancel}
+        okText="Update"
+        cancelText="Cancel"
+      >
+        <p> Enter new score: </p>
+        <Input
+          type="number"
+          value={scoreToUpdate}
+          onChange={(e) => handleUpdateScoreChange(e.target.value)}
+        ></Input>
+      </Modal>
       <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
         <Search
           style={{ marginTop: 0, marginLeft: 10 }}
