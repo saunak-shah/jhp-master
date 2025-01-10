@@ -10,6 +10,7 @@ import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import * as XLSX from "xlsx";
 import FormItemLabel from "antd/es/form/FormItemLabel";
+import dayjs from 'dayjs';
 
 const AttendanceView = () => {
   const navigate = useNavigate();
@@ -219,11 +220,9 @@ const AttendanceView = () => {
           <FormItemLabel label="From" />
           <DatePicker
           style={{}}
-          format="YYYY-MM-DD"
           placeholder="Select from date"
-          defaultValue={defaultFromDate}
+          defaultValue={dayjs(defaultFromDate)}
           allowClear={true}
-          value={fromDate}
           onChange={(date) => handleFromDateChange(date)}
         />
         </Space>
@@ -232,10 +231,8 @@ const AttendanceView = () => {
 
           <DatePicker
           style={{}}
-          format="YYYY-MM-DD"
           placeholder="Select to date"
-          defaultValue={defaultToDate}
-          value={toDate}
+          defaultValue={dayjs(defaultToDate)}
           allowClear={true}
           onChange={(date) => handleToDateChange(date)}
         />
