@@ -348,7 +348,7 @@ const Home = () => {
               data={studentGenderBarData}
               options={{
                 ...commonOptions,
-                title: { ...commonOptions.title, text: "Teacher Assignments" },
+                title: { ...commonOptions.title, text: "Students By Gender" },
               }}
             />
           </Card>
