@@ -45,6 +45,12 @@ const Home = () => {
   const [studentAttendanceCount, setStudentAttendanceCount] = useState([]);
   const [attendanceDate, setAttendanceDate] = useState([]);
 
+  const [studentAgeGroupCount, setStudentAgeGroupCount] = useState([]);
+  const [ageGroupData, setAgeGroupData] = useState([]);
+
+  const [studentGenderCount, setStudentGenderCount] = useState([]);
+  const [genderGroup, setGenderGroup] = useState([]);
+
   // Default values: today and 7 days ago
   const defaultEndDate = moment();
   const defaultStartDate = moment().subtract(7, "day");
@@ -117,6 +123,34 @@ const Home = () => {
     ],
   };
 
+  const ageGroupBarData = {
+    labels: ageGroupData,
+    datasets: [
+      {
+        label: "Students Attendance to Date",
+        data: studentAgeGroupCount,
+        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+        setLoading: loading,
+      },
+    ],
+  };
+
+  const studentGenderBarData = {
+    labels: genderGroup,
+    datasets: [
+      {
+        label: "Students Attendance to Date",
+        data: studentGenderCount,
+        backgroundColor: "rgba(54, 162, 235, 0.5)",
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+        setLoading: loading,
+      },
+    ],
+  };
+
   const fetchAttendanceGraphData = async () => {
     const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -152,6 +186,37 @@ const Home = () => {
       setAssignedTeacherNames(response.data.data.teachers);
     };
 
+    const fetchStudentAgeGroupData = async () => {
+      const apiHost = process.env.REACT_APP_API_HOST;
+
+      const apiUrl = `${apiHost}/api/students-age-group-data`;
+
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: token,
+      };
+
+      const response = await axios.get(apiUrl, { headers });
+      setStudentAgeGroupCount(response.data.data.studentCount);
+      setAgeGroupData(response.data.data.ageGroup);
+    };
+
+    const fetchStudentGenderGroupData = async () => {
+      const apiHost = process.env.REACT_APP_API_HOST;
+
+      const apiUrl = `${apiHost}/api/students-gender-group-data`;
+
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: token,
+      };
+
+      const response = await axios.get(apiUrl, { headers });
+      setStudentGenderCount(response.data.data.studentCount);
+      setGenderGroup(response.data.data.genderGroup);
+    };
+    
+
     const fetchCounts = async () => {
       try {
         const apiHost = process.env.REACT_APP_API_HOST;
@@ -181,6 +246,8 @@ const Home = () => {
     fetchAttendanceGraphData();
     fetchAssigneeGraphData();
     fetchCounts();
+    fetchStudentAgeGroupData();
+    fetchStudentGenderGroupData();
   }, []);
 
   const handleStartDateChange = (date, dateString) => {
@@ -230,12 +297,25 @@ const Home = () => {
 
       <div className="container">
         <div className="card">
-          <Card title={<div>Pathshala Growth</div>} bordered={true} hoverable>
+          { /*<Card title={<div>Pathshala Growth</div>} bordered={true} hoverable>
             <Line
               data={lineData}
               options={{
                 ...commonOptions,
                 title: { ...commonOptions.title, text: "Pathsala Growth" },
+              }}
+            />
+          </Card> */}
+          <Card
+            title={<div>Number of Students for Each Age Group</div>}
+            bordered={true}
+            hoverable
+          >
+            <Bar
+              data={ageGroupBarData}
+              options={{
+                ...commonOptions,
+                title: { ...commonOptions.title, text: "Age Group Data" },
               }}
             />
           </Card>
@@ -257,7 +337,22 @@ const Home = () => {
           </Card>
         </div>
         </div>
-              <div className="container">
+        <div className="container">
+        <div className="card">
+          <Card
+            title={<div>Number of Students for Each Gender</div>}
+            bordered={true}
+            hoverable
+          >
+            <Bar
+              data={studentGenderBarData}
+              options={{
+                ...commonOptions,
+                title: { ...commonOptions.title, text: "Students By Gender" },
+              }}
+            />
+          </Card>
+        </div>
         <div className="card">
           <Card
             title={<div>Student's attendance for Each Date</div>}
