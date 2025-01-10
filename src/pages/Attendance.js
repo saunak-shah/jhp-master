@@ -124,7 +124,7 @@ const StaffAttendance = () => {
 
   const fetchTeachersData = async () => {
     try {
-      const limit = 20;
+      const limit = 100;
       const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
