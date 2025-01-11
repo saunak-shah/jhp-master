@@ -23,15 +23,11 @@ const AttendanceView = () => {
   const [totalAttedanceCount, setTotalAttedanceCount] = useState(0);
   const [searchKey, setSearchKey] = useState(null);
 
-  const defaultToDate = moment(
-    moment(new Date()).format("YYYY-MM-DD"),
-    "YYYY-MM-DD"
-  );
-
-  const defaultFromDate = moment().startOf("month");
+  const defaultFromDate = moment().startOf("month").format('YYYY-MM-DD');
+  const defaultToDate = moment().endOf('day').format('YYYY-MM-DD');
   
-  const [fromDate, setFromDate] = useState(defaultFromDate);
-  const [toDate, setToDate] = useState(defaultToDate);
+  const [lowerDateLimit, setLowerDateLimit] = useState(defaultFromDate);
+  const [upperDateLimit, setUpperDateLimit] = useState(defaultToDate);
 
   const fetchData = async (
     offset,
@@ -61,7 +57,6 @@ const AttendanceView = () => {
       if (upperDateLimit) {
         apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
       }
-
       let date = moment().format();
 
       let reqObj = {
@@ -91,7 +86,7 @@ const AttendanceView = () => {
 
   const handleApplicantsSearchChange = async (value) => {
     setSearchKey(value);
-    await fetchData(0, pageSize, sortField, sortOrder, value);
+    await fetchData(0, pageSize, sortField, sortOrder, value, lowerDateLimit, upperDateLimit);
   };
 
   useEffect(() => {
@@ -107,15 +102,14 @@ const AttendanceView = () => {
       setLoading(true);
 
       let apiUrl = `/api/attendance_report?limit=${limit}&offset=${offset}`;
-      if (fromDate) {
-        apiUrl = apiUrl + `&lowerDateLimit=${fromDate}`;
+      if (lowerDateLimit) {
+        apiUrl = apiUrl + `&lowerDateLimit=${lowerDateLimit}`;
       }
 
-      if (toDate) {
-        apiUrl = apiUrl + `&upperDateLimit=${toDate}`;
+      if (upperDateLimit) {
+        apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
       }
       let date = moment().format();
-
       let reqObj = {
         limit: 20,
         offset: 0,
@@ -149,36 +143,39 @@ const AttendanceView = () => {
     exportToExcel(data, "Monthly_Attendance");
   };
 
-  const handleFromDateChange = async (date) => {
-
+  const handleFromDateChange = async (date, dateString) => {
     if (!date) {
-      setFromDate(null);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey, null, toDate);
+      setLowerDateLimit(null);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey, null, upperDateLimit);
       return;
     }
 
-    if (toDate && date > toDate) {
+    if (upperDateLimit && date > upperDateLimit) {
       message.error('From date should be smaller than to date');
-      setFromDate(fromDate); 
+      setLowerDateLimit(lowerDateLimit); 
     } else {
-      setFromDate(date);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey, date, toDate);
+      const fromDate = moment(dateString).format("YYYY-MM-DD");
+      setLowerDateLimit(fromDate);
+
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey, fromDate, upperDateLimit);
     }
   };
 
-  const handleToDateChange = async (date) => {
+  const handleToDateChange = async (date, dateString) => {
     if (!date) {
-      setToDate(null);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey, fromDate, null);
+      setUpperDateLimit(null);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey, lowerDateLimit, null);
       return;
     }
 
-    if (fromDate && date < fromDate) {
+    if (lowerDateLimit && date < lowerDateLimit) {
       message.error('To date should be greater than from date');
-      setToDate(toDate);
+      setUpperDateLimit(upperDateLimit);
     } else {
-      setToDate(date);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey, fromDate, date);
+      const toDate = moment(dateString).format("YYYY-MM-DD");
+      setUpperDateLimit(toDate);
+      // setUpperDateLimit(date);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey, lowerDateLimit, toDate);
     }
 
   };
@@ -221,9 +218,10 @@ const AttendanceView = () => {
           <DatePicker
           style={{}}
           placeholder="Select from date"
-          defaultValue={dayjs(defaultFromDate)}
+          defaultValue={defaultFromDate}
+          value={dayjs(lowerDateLimit)}
           allowClear={true}
-          onChange={(date) => handleFromDateChange(date)}
+          onChange={handleFromDateChange}
         />
         </Space>
         <Space style={{ marginLeft: 10 }}>
@@ -232,9 +230,10 @@ const AttendanceView = () => {
           <DatePicker
           style={{}}
           placeholder="Select to date"
-          defaultValue={dayjs(defaultToDate)}
+          defaultValue={defaultToDate}
+          value={dayjs(upperDateLimit)}
           allowClear={true}
-          onChange={(date) => handleToDateChange(date)}
+          onChange={handleToDateChange}
         />
         </Space>
         <Button

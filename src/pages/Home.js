@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Card, DatePicker, message } from "antd";
 import axios from "axios";
 import { Bar, Line } from "react-chartjs-2";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -28,7 +29,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 const Home = () => {
@@ -52,8 +54,8 @@ const Home = () => {
   const [genderGroup, setGenderGroup] = useState([]);
 
   // Default values: today and 7 days ago
-  const defaultEndDate = moment();
-  const defaultStartDate = moment().subtract(7, "day");
+  const defaultEndDate = moment().endOf('day').format('YYYY-MM-DD');
+  const defaultStartDate = moment().startOf('day').subtract(6, "day").format('YYYY-MM-DD');
   const [lowerDateLimit, setLowerDateLimit] = useState(defaultStartDate);
   const [upperDateLimit, setUpperDateLimit] = useState(defaultEndDate);
   const [loading, setLoading] = useState(true);
@@ -68,6 +70,12 @@ const Home = () => {
       },
       title: {
         display: true,
+      },
+      datalabels: {
+        anchor: "end", // Place the labels outside the bar
+        align: "start", // Align the labels to the top
+        color: "#000", // Label color
+        formatter: (value) => value, // Format value as plain number
       },
     },
   };
@@ -253,18 +261,19 @@ const Home = () => {
   const handleStartDateChange = (date, dateString) => {
     if (new Date(dateString) > new Date(upperDateLimit)) {
       message.error("Start date should be less than end date");
-      setLowerDateLimit(defaultStartDate);
+      setLowerDateLimit(moment(defaultStartDate));
     } else {
-      setLowerDateLimit(dateString);
+      const defaultStartDate = moment(dateString);
+      setLowerDateLimit(moment(defaultStartDate));
     }
   };
 
   const handleEndDateChange = (date, dateString) => {
     if (new Date(dateString) < new Date(lowerDateLimit)) {
       message.error("End date should be greater than start date");
-      setUpperDateLimit(defaultEndDate);
+      setUpperDateLimit(moment(defaultEndDate));
     } else {
-      setUpperDateLimit(dateString);
+      setUpperDateLimit(moment(dateString));
     }
   };
 
