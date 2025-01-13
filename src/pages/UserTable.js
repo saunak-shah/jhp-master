@@ -1,14 +1,31 @@
 import React, { useEffect, useState } from "react";
-import { Input, Space, Button, Select, Modal, Form, message } from "antd";
+import {
+  Input,
+  Space,
+  Button,
+  Select,
+  Modal,
+  Form,
+  message,
+  DatePicker,
+} from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
-import { DeleteOutlined, SwapOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  SwapOutlined,
+} from "@ant-design/icons";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
-import '../css/Teacher.css'; // Import the CSS file
+import "../css/Teacher.css"; // Import the CSS file
 import { deleteData } from "../global/api";
 import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path is correct
 import { post } from "../global/api";
+import moment from "moment";
+import { StudentView } from "../components/StudentView";
+import StudentEditModal from "../components/StudentEdit";
 
 const { Option } = Select;
 
@@ -23,15 +40,30 @@ const UserTable = observer(() => {
   const [offset, setOffset] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [selectedValue, setSelectedValue] = useState(null);
+  const [selectedTeacherValue, setSelectedTeacherValue] = useState(null);
+  const [selectedGenderValue, setSelectedGenderValue] = useState(null);
+
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isViewModalVisible, setViewModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
   const master_role_id = localStorage.getItem("master_role_id");
   const [currentStudent, setCurrentStudent] = useState(null);
+  const [searchKey, setSearchKey] = useState("");
+
+  const defaultToDate = moment(
+    moment(new Date()).format("YYYY-MM-DD"),
+    "YYYY-MM-DD"
+  );
+
+  const defaultFromDate = moment().startOf("month");
+
+  const [fromDate, setFromDate] = useState(defaultFromDate);
+  const [toDate, setToDate] = useState(defaultToDate);
 
   const [form] = Form.useForm();
-  
+
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
     setDataToDelete("");
@@ -39,11 +71,18 @@ const UserTable = observer(() => {
 
   const token = localStorage.getItem("token");
 
-  const handleFilterChange = (teacherId) => {
+  const handleTeacherFilterChange = (teacherId) => {
     setTeacherId(teacherId);
-    setSelectedValue(teacherId);
+    setSelectedTeacherValue(teacherId);
     setOffset(0);
-    // fetchData(offset, pageSize, null, teacherId);
+    fetchData(offset, pageSize, null, teacherId);
+    setCurrentPage(1);
+  };
+
+  const handleGenderFilterChange = (gender) => {
+    setSelectedGenderValue((val) => gender);
+    setOffset(0);
+    fetchData(offset, pageSize, null, teacherId);
     setCurrentPage(1);
   };
 
@@ -59,7 +98,6 @@ const UserTable = observer(() => {
     setDataToDelete({});
     fetchData(offset, pageSize);
   };
-
 
   const handleChangeTeacher = async (record) => {
     setCurrentStudent(record); // Set current course to edit
@@ -79,30 +117,61 @@ const UserTable = observer(() => {
     setLoading(false);
   };
 
+  const handleFromDateChange = async (date) => {
+    if (!date) {
+      setFromDate(null);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey, null);
+      return;
+    }
+
+    if (toDate && date > toDate) {
+      message.error("From date should be smaller than to date");
+      setFromDate(fromDate);
+    } else {
+      setFromDate(date);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
+    }
+  };
+
+  const handleToDateChange = async (date) => {
+    if (!date) {
+      setToDate(null);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
+      return;
+    }
+
+    if (fromDate && date < fromDate) {
+      message.error("To date should be greater than from date");
+      setToDate(toDate);
+    } else {
+      setToDate(date);
+      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
+    }
+  };
+
   const handleChangeAssignee = (record) => {
     setCurrentStudent(record); // Set current course to edit
     // setCurrentCourse(course); // Set current course to edit
     setIsModalVisible(true);
   };
-  
+
+  const handleStudentView = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    // setCurrentCourse(course); // Set current course to edit
+    setViewModalVisible(true);
+  };
+
+  const handleStudentEdit = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    // setCurrentCourse(course); // Set current course to edit
+    setEditModalVisible(true);
+  };
 
   const columns = [
     {
-      title: "First Name",
-      dataIndex: "first_name",
-      key: "first_name",
-      sorter: true,
-    },
-    {
-      title: "Last Name",
-      dataIndex: "last_name",
-      key: "last_name",
-      sorter: true,
-    },
-    {
-      title: "Fathe Name",
-      dataIndex: "father_name",
-      key: "father_name",
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
       sorter: true,
     },
     { title: "Email", dataIndex: "email", key: "email", sorter: true },
@@ -112,7 +181,19 @@ const UserTable = observer(() => {
       key: "phone_number",
       sorter: true,
     },
+    {
+      title: "Enrolled On",
+      dataIndex: "created_at",
+      key: "created_at",
+      sorter: true,
+    },
     { title: "Gender", dataIndex: "gender", key: "gender", sorter: true },
+    {
+      title: "Assigned To",
+      dataIndex: "assigned_to",
+      key: "assigned_to",
+      sorter: true,
+    },
     {
       title: "Action",
       key: "action",
@@ -120,22 +201,35 @@ const UserTable = observer(() => {
         return (
           <Space>
             <Button
-                type="primary"
-                danger
-                icon={<DeleteOutlined />}
-                onClick={() => handleDelete(record)}
-              >
-                Delete
-              </Button>
-              <Button
-                type="primary"
-                icon={<SwapOutlined />}
-                onClick={() => handleChangeAssignee(record)}
-              >
-                Change Teacher
-              </Button>
+              type="primary"
+              icon={<EyeOutlined />}
+              onClick={() => handleStudentView(record)}
+            >
+              View
+            </Button>
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleStudentEdit(record)}
+            >
+              Edit
+            </Button>
+            <Button
+              type="primary"
+              icon={<SwapOutlined />}
+              onClick={() => handleChangeAssignee(record)}
+            >
+              Change Teacher
+            </Button>
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            >
+              Delete
+            </Button>
           </Space>
-          
         );
       },
     },
@@ -143,6 +237,7 @@ const UserTable = observer(() => {
 
   const handleUserSearchChange = (value) => {
     value = value.length > 0 ? value : null;
+    setSearchKey(value);
     fetchData(offset, pageSize, sortField, sortOrder, value);
   };
 
@@ -170,6 +265,18 @@ const UserTable = observer(() => {
       if (sortField) {
         apiUrl += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
       }
+      // Append gender filter
+      if (selectedGenderValue) {
+        apiUrl += `&gender=${selectedGenderValue}`;
+      }
+
+      if (fromDate) {
+        apiUrl += `&fromDate=${fromDate}`;
+      }
+
+      if (toDate) {
+        apiUrl += `&toDate=${toDate}`;
+      }
 
       const headers = {
         "Content-Type": "application/json",
@@ -178,6 +285,17 @@ const UserTable = observer(() => {
       const response = await axios.get(apiUrl, { headers });
       if (response.data && response.data.data) {
         setTotalUserCount(response.data.data.totalCount);
+        response.data.data.users.map((user) => {
+          user.assigned_to =
+            user.teacher.teacher_first_name +
+            " " +
+            user.teacher.teacher_last_name;
+
+          user.name =
+            user.first_name + " " + user.father_name + " " + user.last_name;
+
+          return user
+        });
         setUsers(response.data.data.users);
       } else {
         setUsers([]);
@@ -222,10 +340,24 @@ const UserTable = observer(() => {
     fetchData(0, pageSize);
     fetchTeachersData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId]);
+  }, [teacherId, selectedGenderValue, fromDate, toDate]);
 
   return (
     <div className="main-container">
+      <StudentView
+        data={currentStudent}
+        isViewModalVisible={isViewModalVisible}
+        setViewModalVisibility={setViewModalVisible}
+      />
+
+      <StudentEditModal
+        data={currentStudent}
+        isEditModalVisible={isEditModalVisible}
+        setEditModalVisibility={setEditModalVisible}
+        fetchData={fetchData}
+        offset={offset}
+        pageSize={pageSize}
+      />
       <Modal
         title="Confirm Deletion"
         open={isDeleteModalVisible}
@@ -245,47 +377,88 @@ const UserTable = observer(() => {
           onChange={(e) => handleUserSearchChange(e.target.value)}
         />
       </Space>
-      {master_role_id != 2 ? (
-        <Space style={{ float: "right", marginTop: '10px'}}>
-        Filter by teacher:
-        <Select
-          onChange={handleFilterChange}
-          showSearch={true}
-          placeholder="Select Teacher"
-          optionFilterProp="children"
-          value={selectedValue}
-          filterOption={(input, option) =>
-            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-          style={{ width: 200 }}
-        >
-          <Option key={"None"} value={undefined}>
-            None
-          </Option>
+      {master_role_id !== 2 ? (
+        <Space style={{ float: "right", marginTop: "10px" }}>
+          <Space>
+            <DatePicker
+              style={{}}
+              placeholder="From date"
+              // defaultValue={dayjs(defaultFromDate)}
+              allowClear={true}
+              onChange={(date) => handleFromDateChange(date)}
+            />
+            <DatePicker
+              style={{}}
+              placeholder="To date"
+              // defaultValue={dayjs(defaultToDate)}
+              allowClear={true}
+              onChange={(date) => handleToDateChange(date)}
+            />
+            <Select
+              onChange={handleGenderFilterChange}
+              showSearch={true}
+              placeholder="Select Gender"
+              optionFilterProp="children"
+              value={selectedGenderValue}
+              allowClear={true}
+              filterOption={(input, option) =>
+                (option?.children ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              style={{ width: 200 }}
+            >
+              <Option key={"M"} value={"Male"}>
+                Male
+              </Option>
+              <Option key={"F"} value={"Female"}>
+                Female
+              </Option>
+            </Select>
+          </Space>
 
-          {teachers.map((teacher, index) => (
-            <Option key={index} value={teacher.teacher_id}>
-              {teacher.teacher_first_name + ' ' +teacher.teacher_last_name}
-            </Option>
-          ))}
-        </Select>
-      </Space>
-      ) : ''}
-      
+          <Space>
+            <Select
+              onChange={handleTeacherFilterChange}
+              showSearch={true}
+              allowClear={true}
+              placeholder="Select Teacher"
+              optionFilterProp="children"
+              value={selectedTeacherValue}
+              filterOption={(input, option) =>
+                (option?.children ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              style={{ width: 200 }}
+            >
+              {teachers.map((teacher, index) => (
+                <Option key={index} value={teacher.teacher_id}>
+                  {teacher.teacher_first_name + " " + teacher.teacher_last_name}
+                </Option>
+              ))}
+            </Select>
+          </Space>
+        </Space>
+      ) : (
+        ""
+      )}
+
       <div className="table-container">
-      <TableView
-        data={users}
-        columns={columns}
-        loading={loading}
-        currentPage={currentPage}
-        totalCount={totalUserCount}
-        setSortField={setSortField}
-        setSortOrder={setSortOrder}
-        setOffset={setOffset}
-        setCurrentPage={setCurrentPage}
-        fetchData={fetchData}
-      />
+        <TableView
+          data={users}
+          columns={columns}
+          loading={loading}
+          currentPage={currentPage}
+          totalCount={totalUserCount}
+          setSortField={setSortField}
+          setSortOrder={setSortOrder}
+          setOffset={setOffset}
+          setCurrentPage={setCurrentPage}
+          fetchData={fetchData}
+        />
       </div>
+
       <ChangeTeacher
         form={form}
         visible={isModalVisible}
