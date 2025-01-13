@@ -15,7 +15,7 @@ export const StudentView = ({
       width={600}
     >
       {" "}
-      {data && (
+      {data && data.username && (
         <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
           {/* Student ID */}
           <Col span={8}>
@@ -90,15 +90,19 @@ export const StudentView = ({
           </Col>
 
           {/* Assigned To */}
-          <Col span={8}>
-            <Text strong>Assigned To:</Text>
-          </Col>
-          <Col span={16}>
-            <Text>
-              {data.teacher.teacher_first_name} {data.teacher.teacher_last_name}
-            </Text>
-          </Col>
-
+          {data.teacher && data.teacher.teacher_first_name && (
+            <>
+              <Col span={8}>
+                <Text strong>Assigned To:</Text>
+              </Col>
+              <Col span={16}>
+                <Text>
+                  {data.teacher.teacher_first_name}{" "}
+                  {data.teacher.teacher_last_name}
+                </Text>
+              </Col>
+            </>
+          )}
           {/* Registered On */}
           <Col span={8}>
             <Text strong>Registered On:</Text>

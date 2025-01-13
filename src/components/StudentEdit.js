@@ -35,7 +35,7 @@ const StudentEditModal = ({
     const response = await post(updateProfileUrl, values);
 
     if (response.status === 200) {
-      message.success("Teacher updated");
+      message.success("Student data updated");
       fetchData(offset, pageSize);
     } else {
       message.error(response.error);

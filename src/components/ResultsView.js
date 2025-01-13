@@ -134,8 +134,8 @@ const ResultsView = () => {
   };
 
   const isStudentPass = (record) => {
-    if (record.score > record.course_passing_score) {
-      return <Button type="primary">Pass</Button>;
+    if (record.score >= record.course_passing_score) {
+      return <Button type="primary" style={{backgroundColor: "green"}}>Pass</Button>;
     }
     return <Button type="" danger style={{backgroundColor: "red", color: "white"}}>Fail</Button>;
   };

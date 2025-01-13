@@ -22,7 +22,6 @@ import TableView from "../components/TableView";
 import "../css/Teacher.css"; // Import the CSS file
 import { deleteData } from "../global/api";
 import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path is correct
-import { post } from "../global/api";
 import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
@@ -97,24 +96,6 @@ const UserTable = observer(() => {
     setDeleteModalVisibility(false);
     setDataToDelete({});
     fetchData(offset, pageSize);
-  };
-
-  const handleChangeTeacher = async (record) => {
-    setCurrentStudent(record); // Set current course to edit
-    setLoading(true);
-    const endpoint = `/api/teachers/assign`;
-
-    // course.course_max_attempts = parseInt(course.course_max_attempts);
-
-    const res = await post(endpoint, record);
-    if (res.status === 200) {
-      fetchData(0, pageSize);
-      message.success(`Teacher changed successfully.`);
-      setIsModalVisible(false);
-    } else {
-      message.error(`${res.message}`);
-    }
-    setLoading(false);
   };
 
   const handleFromDateChange = async (date) => {
@@ -294,7 +275,9 @@ const UserTable = observer(() => {
           user.name =
             user.first_name + " " + user.father_name + " " + user.last_name;
 
-          return user
+          user.created_at = moment(user.created_at).format("DD-MM-YYYY");
+
+          return user;
         });
         setUsers(response.data.data.users);
       } else {
@@ -463,9 +446,13 @@ const UserTable = observer(() => {
         form={form}
         visible={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        onSubmit={handleChangeTeacher}
         initialData={currentStudent}
         teachersData={teachers}
+        setCurrentStudent={setCurrentStudent}
+        setLoading={setLoading}
+        fetchData={fetchData}
+        pageSize={pageSize}
+        setIsModalVisible={setIsModalVisible}
       />
     </div>
   );
