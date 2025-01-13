@@ -38,7 +38,7 @@ const StudentEditModal = ({
       message.success("Teacher updated");
       fetchData(offset, pageSize);
     } else {
-      message.success(response.error);
+      message.error(response.error);
       // throw new Error("Failed to update teacher.");
     }
     hideModal();
