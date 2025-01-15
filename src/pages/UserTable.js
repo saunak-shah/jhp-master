@@ -51,15 +51,9 @@ const UserTable = observer(() => {
   const [currentStudent, setCurrentStudent] = useState(null);
   const [searchKey, setSearchKey] = useState("");
 
-  const defaultToDate = moment(
-    moment(new Date()).format("YYYY-MM-DD"),
-    "YYYY-MM-DD"
-  );
 
-  const defaultFromDate = moment().startOf("month");
-
-  const [fromDate, setFromDate] = useState(defaultFromDate);
-  const [toDate, setToDate] = useState(defaultToDate);
+  const [fromDate, setFromDate] = useState();
+  const [toDate, setToDate] = useState();
 
   const [form] = Form.useForm();
 
@@ -252,6 +246,8 @@ const UserTable = observer(() => {
         apiUrl += `&gender=${selectedGenderValue}`;
       }
 
+      console.log(fromDate)
+      console.log(toDate)
       if (fromDate) {
         apiUrl += `&fromDate=${fromDate}`;
       }
