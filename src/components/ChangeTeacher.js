@@ -1,10 +1,29 @@
 import React, { useEffect } from 'react';
-import { Modal, Input, DatePicker, Form, Select, Button } from 'antd';
+import { Modal, Form, Select, message } from 'antd';
 import moment from 'moment';
+import { post } from '../global/api';
 const { Option } = Select;
 
-const ChangeTeacher = ({ visible, onCancel, onSubmit, initialData, teachersData }) => {
+const ChangeTeacher = ({ visible, onCancel, initialData, teachersData, setCurrentStudent, setLoading, fetchData, pageSize, setIsModalVisible }) => {
   const [form] = Form.useForm();
+
+  const handleChangeTeacher = async (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    setLoading(true);
+    const endpoint = `/api/teachers/assign`;
+
+    // course.course_max_attempts = parseInt(course.course_max_attempts);
+
+    const res = await post(endpoint, record);
+    if (res.status === 200) {
+      fetchData(0, pageSize);
+      message.success(`Teacher changed successfully.`);
+      setIsModalVisible(false);
+    } else {
+      message.error(`${res.message}`);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     if (visible) {
@@ -22,7 +41,7 @@ const ChangeTeacher = ({ visible, onCancel, onSubmit, initialData, teachersData 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      onSubmit({...values, student_id: initialData?.student_id});
+      handleChangeTeacher({...values, student_id: initialData?.student_id});
       onCancel(); // Optionally close the modal after submission
     } catch (errorInfo) {
       console.log('Validation Failed:', errorInfo);
