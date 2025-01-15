@@ -21,7 +21,7 @@ const ResultsView = () => {
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
-  const fetchData = async (offset, limit, sortField = "student_apply_course_id", sortOrder = "asc", searchKey = null) => {  
+  const fetchData = async (offset, limit, sortField = "result_id", sortOrder = "asc", searchKey = null) => {  
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
@@ -134,8 +134,8 @@ const ResultsView = () => {
   };
 
   const isStudentPass = (record) => {
-    if (record.score > record.course_passing_score) {
-      return <Button type="primary">Pass</Button>;
+    if (record.score >= record.course_passing_score) {
+      return <Button type="primary" style={{backgroundColor: "green"}}>Pass</Button>;
     }
     return <Button type="" danger style={{backgroundColor: "red", color: "white"}}>Fail</Button>;
   };
@@ -148,7 +148,7 @@ const ResultsView = () => {
   const columns = [
     { title: "Course Name", dataIndex: "course_name", key: "course_name" },
     { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Score", dataIndex: "score", key: "score" },
+    { title: "Your Score", dataIndex: "score", key: "score" },
     {
       title: "Passing Score",
       dataIndex: "course_passing_score",
