@@ -154,6 +154,7 @@ const UserTable = observer(() => {
       dataIndex: "name",
       key: "name",
       sorter: true,
+      width: 300
     },
     { title: "Email", dataIndex: "email", key: "email", sorter: true },
     {
@@ -268,9 +269,9 @@ const UserTable = observer(() => {
         setTotalUserCount(response.data.data.totalCount);
         response.data.data.users.map((user) => {
           user.assigned_to =
-            user.teacher.teacher_first_name +
+            (user.teacher?.teacher_first_name || "-") +
             " " +
-            user.teacher.teacher_last_name;
+            (user.teacher?.teacher_last_name || "-");
 
           user.name =
             user.first_name + " " + user.father_name + " " + user.last_name;

@@ -231,6 +231,7 @@ const StaffAttendance = () => {
       dataIndex: "name",
       key: "name",
       sorter: true,
+      width: 300,
       render: (_, record) =>
         `${record.first_name || ""} ${record.father_name || ""} ${
           record.last_name || ""
@@ -340,7 +341,7 @@ const StaffAttendance = () => {
           />
           <div className="button-container">
             <Form.Item>
-              <Button type="primary" htmlType="submit" style={{marginTop: '20px'}}>
+              <Button type="primary" htmlType="submit" style={{margin: '30px', float: 'right'}}>
                 Submit
               </Button>
             </Form.Item>
