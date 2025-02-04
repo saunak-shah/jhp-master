@@ -20,7 +20,7 @@ import {
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import "../css/Teacher.css"; // Import the CSS file
-import { deleteData } from "../global/api";
+import { deleteData, put } from "../global/api";
 import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path is correct
 import moment from "moment";
 import { StudentView } from "../components/StudentView";
@@ -140,6 +140,23 @@ const UserTable = observer(() => {
     setIsModalVisible(true);
   };
 
+  const handleApproveUser = async (record) => {
+    setLoading(true);
+    const endpoint = `/api/students/approve`;
+    const res = await put(endpoint, {
+      id: record.student_id,
+    });
+
+    // api implement
+    if (res.status === 200) {
+      fetchData(offset, pageSize);
+      message.success("Data updated successfully.");
+    } else{
+      message.error("There is some error.");
+    }
+    setLoading(false);
+  };
+
   const handleStudentView = (record) => {
     setCurrentStudent(record); // Set current course to edit
     // setCurrentCourse(course); // Set current course to edit
@@ -207,6 +224,15 @@ const UserTable = observer(() => {
             >
               Change Teacher
             </Button>
+            {record.status === 1 ? (
+              <Button
+              type="primary"
+              onClick={() => handleApproveUser(record)}
+            >
+              Approve
+            </Button>
+            ): ''}
+            
             <Button
               type="primary"
               danger
