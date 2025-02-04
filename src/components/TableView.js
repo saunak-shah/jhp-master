@@ -45,7 +45,7 @@ function TableView({
             `Showing ${range[0]}-${range[1]} of ${total} items`, // Custom message for total count
         }}
         scroll={{
-          y: 800, // Set a fixed height for vertical scrolling
+          y: 'max-content', // Set a fixed height for vertical scrolling
           x: "max-content", // Enable horizontal scrolling for wide columns
         }}
       />

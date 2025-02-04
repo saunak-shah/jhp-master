@@ -29,6 +29,7 @@ import StudentEditModal from "../components/StudentEdit";
 const { Option } = Select;
 
 const UserTable = observer(() => {
+  let filter = {};
   const { Search } = Input;
   const [sortField, setSortField] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -41,13 +42,14 @@ const UserTable = observer(() => {
   const [loading, setLoading] = useState(false);
   const [selectedTeacherValue, setSelectedTeacherValue] = useState(null);
   const [selectedGenderValue, setSelectedGenderValue] = useState(null);
+  const [selectedStatusValue, setSelectedStatusValue] = useState(null);
 
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isViewModalVisible, setViewModalVisible] = useState(false);
   const [isEditModalVisible, setEditModalVisible] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
-  const master_role_id = localStorage.getItem("master_role_id");
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
   const [currentStudent, setCurrentStudent] = useState(null);
   const [searchKey, setSearchKey] = useState("");
 
@@ -76,6 +78,14 @@ const UserTable = observer(() => {
     setSelectedGenderValue((val) => gender);
     setOffset(0);
     fetchData(offset, pageSize, null, teacherId);
+    setCurrentPage(1);
+  };
+
+  const handleStatusFilterChange = (status) => {
+    setSelectedStatusValue(status);
+    setOffset(0);
+    filter = {...filter, status};
+    fetchData(offset, pageSize, null, teacherId, null, filter);
     setCurrentPage(1);
   };
 
@@ -222,7 +232,8 @@ const UserTable = observer(() => {
     limit,
     sortField = "first_name",
     sortOrder = "asc",
-    searchKey = null
+    searchKey = null,
+    filter = {}
   ) => {
     setLoading(true);
     try {
@@ -246,8 +257,12 @@ const UserTable = observer(() => {
         apiUrl += `&gender=${selectedGenderValue}`;
       }
 
-      console.log(fromDate)
-      console.log(toDate)
+      // Append status filter
+      if (filter.status) {
+        apiUrl += `&status=${filter.status}`;
+      }
+      console.log(fromDate);
+      console.log(toDate);
       if (fromDate) {
         apiUrl += `&fromDate=${fromDate}`;
       }
@@ -359,16 +374,24 @@ const UserTable = observer(() => {
       </Space>
       {master_role_id !== 2 ? (
         <Space style={{ float: "right", marginTop: "10px" }}>
-          <Space>
+          <Space
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "8px",
+              justifyContent: "space-between",
+              width: "100%",
+            }}
+          >
             <DatePicker
-              style={{}}
+              style={{ width: "100%", maxWidth: "150px" }}
               placeholder="From date"
               // defaultValue={dayjs(defaultFromDate)}
               allowClear={true}
               onChange={(date) => handleFromDateChange(date)}
             />
             <DatePicker
-              style={{}}
+              style={{ width: "100%", maxWidth: "150px" }}
               placeholder="To date"
               // defaultValue={dayjs(defaultToDate)}
               allowClear={true}
@@ -386,13 +409,35 @@ const UserTable = observer(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              style={{ width: 200 }}
+              style={{ width: "100%", maxWidth: "120px" }}
             >
               <Option key={"M"} value={"Male"}>
                 Male
               </Option>
               <Option key={"F"} value={"Female"}>
                 Female
+              </Option>
+            </Select>
+
+            <Select
+              onChange={handleStatusFilterChange}
+              showSearch={true}
+              placeholder="Select Status"
+              optionFilterProp="children"
+              value={selectedStatusValue}
+              allowClear={true}
+              filterOption={(input, option) =>
+                (option?.children ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              style={{ width: "100%", maxWidth: "120px" }}
+            >
+              <Option key={"1"} value={"Pending"}>
+                Pending
+              </Option>
+              <Option key={"2"} value={"Approve"}>
+                Approve
               </Option>
             </Select>
           </Space>
@@ -410,8 +455,14 @@ const UserTable = observer(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              style={{ width: 200 }}
+              style={{ width: "100%", maxWidth: "180px" }}
             >
+              <Option key={"None"} value="None">
+                None
+              </Option>
+              <Option key={"0"} value="0">
+                No Assignee
+              </Option>
               {teachers.map((teacher, index) => (
                 <Option key={index} value={teacher.teacher_id}>
                   {teacher.teacher_first_name + " " + teacher.teacher_last_name}

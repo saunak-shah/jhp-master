@@ -35,8 +35,8 @@ const AttendanceView = () => {
     sortField,
     sortOrder,
     searchKey = null,
-    lowerDateLimit = null,
-    upperDateLimit = null
+    fromDate = null,
+    toDate = null
   ) => {
     try {
       setLoading(true);
@@ -50,12 +50,15 @@ const AttendanceView = () => {
         apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
       }
 
+      const startDate = (fromDate) ? fromDate : lowerDateLimit;
+      const endDate = (toDate) ? toDate : upperDateLimit;
+
       if (lowerDateLimit) {
-        apiUrl = apiUrl + `&lowerDateLimit=${lowerDateLimit}`;
+        apiUrl = apiUrl + `&lowerDateLimit=${startDate}`;
       }
 
       if (upperDateLimit) {
-        apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
+        apiUrl = apiUrl + `&upperDateLimit=${endDate}`;
       }
       let date = moment().format();
 

@@ -25,7 +25,7 @@ const Group = observer(() => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
-  const master_role_id = localStorage.getItem("master_role_id");
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
   const [isEdit, setIsEdit] = useState(false);
   const [currentGroup, setCurrentGroup] = useState(null);
 

@@ -27,7 +27,8 @@ const StaffAttendance = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [todayAttendanceCount, setTodayAttendanceCount] = useState("Fetching...");
+  const [todayAttendanceCount, setTodayAttendanceCount] =
+    useState("Fetching...");
   const [offset, setOffset] = useState(0);
   const [sortField, setSortField] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -202,6 +203,7 @@ const StaffAttendance = () => {
   };
 
   const onFinish = async () => {
+    setLoading(true);
     const payload = {
       attendance: staff.map((staff) => ({
         student_id: staff.student_id,
@@ -244,6 +246,7 @@ const StaffAttendance = () => {
       render: (_, record) => (
         <Tooltip title={date}>
           <Checkbox
+            className="custom-checkbox"
             checked={record.attendance[i].checked}
             disabled={record.attendance[i].disabled}
             onChange={(e) =>
@@ -279,13 +282,12 @@ const StaffAttendance = () => {
         title="Attendance"
         extra={
           <>
-          <span style={{ fontSize: "20px", fontWeight: "bold" }}>
-            Today's Attendance Count:  {todayAttendanceCount}
-          </span> 
-          
+            <span style={{ fontSize: "20px", fontWeight: "bold" }}>
+              Today's Attendance Count: {todayAttendanceCount}
+            </span>
           </>
         }
-        className="attendance-card"
+        style={{ margin: "50px" }}
       >
         <Button
           type="primary"
@@ -325,28 +327,34 @@ const StaffAttendance = () => {
         ) : (
           ""
         )}
-        <Form onFinish={onFinish}>
-          <TableView
-            data={staff}
-            columns={columns}
-            loading={loading}
-            currentPage={currentPage}
-            totalCount={totalCount}
-            setSortField={setSortField}
-            setSortOrder={setSortOrder}
-            setOffset={setOffset}
-            setCurrentPage={setCurrentPage}
-            // fetchData={fetchData}
-            fetchData={handleFetchData} // Pass the wrapper instead of fetchData
-          />
-          <div className="button-container">
-            <Form.Item>
-              <Button type="primary" htmlType="submit" style={{margin: '30px', float: 'right'}}>
-                Submit
-              </Button>
-            </Form.Item>
-          </div>
-        </Form>
+        <div className="table-container">
+          <Form onFinish={onFinish}>
+            <TableView
+              data={staff}
+              columns={columns}
+              loading={loading}
+              currentPage={currentPage}
+              totalCount={totalCount}
+              setSortField={setSortField}
+              setSortOrder={setSortOrder}
+              setOffset={setOffset}
+              setCurrentPage={setCurrentPage}
+              // fetchData={fetchData}
+              fetchData={handleFetchData} // Pass the wrapper instead of fetchData
+            />
+            <div className="button-container">
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  style={{ margin: "30px", float: "right" }}
+                >
+                  Submit
+                </Button>
+              </Form.Item>
+            </div>
+          </Form>
+        </div>
       </Card>
     </div>
   );
