@@ -29,7 +29,6 @@ import StudentEditModal from "../components/StudentEdit";
 const { Option } = Select;
 
 const UserTable = observer(() => {
-  let filter = {};
   const { Search } = Input;
   const [sortField, setSortField] = useState("first_name");
   const [sortOrder, setSortOrder] = useState("asc");
@@ -42,7 +41,7 @@ const UserTable = observer(() => {
   const [loading, setLoading] = useState(false);
   const [selectedTeacherValue, setSelectedTeacherValue] = useState(null);
   const [selectedGenderValue, setSelectedGenderValue] = useState(null);
-  const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+  const [selectedStatusValue, setSelectedStatusValue] = useState("Approve");
 
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -84,8 +83,7 @@ const UserTable = observer(() => {
   const handleStatusFilterChange = (status) => {
     setSelectedStatusValue(status);
     setOffset(0);
-    filter = {...filter, status};
-    fetchData(offset, pageSize, null, teacherId, null, filter);
+    fetchData(offset, pageSize, null, teacherId, null);
     setCurrentPage(1);
   };
 
@@ -256,10 +254,9 @@ const UserTable = observer(() => {
   const fetchData = async (
     offset,
     limit,
-    sortField = "first_name",
-    sortOrder = "asc",
+    sortField,
+    sortOrder,
     searchKey = null,
-    filter = {}
   ) => {
     setLoading(true);
     try {
@@ -274,18 +271,22 @@ const UserTable = observer(() => {
       if (searchKey) {
         apiUrl += `&searchKey=${encodeURIComponent(searchKey)}`;
       }
+
       // Append sorting parameters
-      if (sortField) {
-        apiUrl += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+      if (!sortField) {
+        sortField = sortField || "first_name";
+        sortOrder = sortOrder || "asc";
       }
+      apiUrl += `&sortBy=${sortField}&sortOrder=${sortOrder}`;
+
       // Append gender filter
       if (selectedGenderValue) {
         apiUrl += `&gender=${selectedGenderValue}`;
       }
 
       // Append status filter
-      if (filter.status) {
-        apiUrl += `&status=${filter.status}`;
+      if (selectedStatusValue) {
+        apiUrl += `&status=${selectedStatusValue}`;
       }
       console.log(fromDate);
       console.log(toDate);
@@ -361,7 +362,7 @@ const UserTable = observer(() => {
     fetchData(0, pageSize);
     fetchTeachersData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId, selectedGenderValue, fromDate, toDate]);
+  }, [teacherId, selectedGenderValue, selectedStatusValue, fromDate, toDate]);
 
   return (
     <div className="main-container">
