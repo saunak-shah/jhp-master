@@ -6,8 +6,6 @@ import authStore from '../stores/authStore';
 import '../css/Header.css'; // Import the CSS file
 import { allowModules } from '../pages/constants';
 
-const { Header: AntHeader } = Layout;
-
 const Header = ({ history }) => {
   const [userName, setUserName] = useState('');
   const [registerNo, setRegisterNo] = useState('');

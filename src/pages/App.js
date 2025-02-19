@@ -18,7 +18,6 @@ import Teacher from "./Teacher";
 import ApplicantsView from "../components/ApplicantsView";
 import AttendanceReport from "../pages/AttendanceReport";
 import ResultsView from "../components/ResultsView";
-import Result from "./Result";
 import Group from "./Group";
 
 const App = observer(() => {

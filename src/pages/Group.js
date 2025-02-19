@@ -10,8 +10,6 @@ import { deleteData } from "../global/api";
 import { post } from "../global/api";
 import AddGroup from "../components/AddGroup";
 
-const { Option } = Select;
-
 const Group = observer(() => {
   const { Search } = Input;
   const [sortField, setSortField] = useState("group_name");

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, message, Space } from "antd";
+import { Button, DatePicker, Drawer, List, message, Space } from "antd";
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -11,8 +11,11 @@ import TableView from "../components/TableView";
 import * as XLSX from "xlsx";
 import FormItemLabel from "antd/es/form/FormItemLabel";
 import dayjs from 'dayjs';
+import attendanceStore from "../stores/attendanceStore";
+import { observer } from "mobx-react-lite";
 
-const AttendanceView = () => {
+
+const AttendanceView = observer(() => {
   const navigate = useNavigate();
   const [applicants, setApplicants] = useState([]);
   const [sortField, setSortField] = useState("attendance_count");
@@ -191,6 +194,18 @@ const AttendanceView = () => {
       dataIndex: "attendance_count",
       key: "attendance_count",
       sorter: true,
+      render:(_, item) => (
+        <p style={{
+          fontSize: "16px",
+          fontWeight: "bold",
+          cursor: "pointer",
+          color: "blue",
+        }} 
+        onClick={() => attendanceStore.openDrawer(item)}
+        >
+           {item.attendance_count}
+        </p>
+      )
     },
   ];
 
@@ -267,8 +282,28 @@ const AttendanceView = () => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
       />
+
+      {/* Drawer to show attendance details */}
+      <Drawer
+        title="Attendance Details"
+        placement="right"
+        width={400}
+        onClose={() => attendanceStore.closeDrawer()}
+        open={attendanceStore.isDrawerOpen}
+      >
+        <List
+          dataSource={attendanceStore.attendanceDetails}
+          renderItem={(item) => (
+            <List.Item>
+              <span>
+                {moment(item.date, "YYYY/MM/DD").format("DD-MM-YYYY")}
+              </span>
+            </List.Item>
+          )}
+        />
+      </Drawer>
     </div>
   );
-};
+});
 
 export default AttendanceView;
