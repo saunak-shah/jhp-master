@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Drawer, List, message, Space } from "antd";
+import { Button, DatePicker, Drawer, List, message, Space, Select } from "antd";
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -13,6 +13,8 @@ import FormItemLabel from "antd/es/form/FormItemLabel";
 import dayjs from 'dayjs';
 import attendanceStore from "../stores/attendanceStore";
 import { observer } from "mobx-react-lite";
+import axios from "axios";
+const { Option } = Select;
 
 
 const AttendanceView = observer(() => {
@@ -25,6 +27,11 @@ const AttendanceView = observer(() => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalAttedanceCount, setTotalAttedanceCount] = useState(0);
   const [searchKey, setSearchKey] = useState(null);
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacherValue, setSelectedTeacherValue] = useState(null);
+  const [selectedGenderValue, setSelectedGenderValue] = useState(null);
+
+  const master_role_id = localStorage.getItem("master_role_id");
 
   const defaultFromDate = moment().startOf("month").format('YYYY-MM-DD');
   const defaultToDate = moment().endOf('day').format('YYYY-MM-DD');
@@ -63,6 +70,15 @@ const AttendanceView = observer(() => {
       if (upperDateLimit) {
         apiUrl = apiUrl + `&upperDateLimit=${endDate}`;
       }
+
+      if(selectedTeacherValue){
+        apiUrl = apiUrl + `&teacherId=${selectedTeacherValue}`;
+      }
+
+      if(selectedGenderValue){
+        apiUrl = apiUrl + `&gender=${selectedGenderValue}`;
+      }
+
       let date = moment().format();
 
       let reqObj = {
@@ -90,6 +106,49 @@ const AttendanceView = observer(() => {
     }
   };
 
+  const fetchTeachersData = async () => {
+    try {
+      const limit = 100;
+      const offset = 0;
+      const apiHost = process.env.REACT_APP_API_HOST;
+      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
+
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: localStorage.getItem("token") || "",
+      };
+      const response = await axios.get(apiUrl, { headers });
+
+      if (
+        response.data &&
+        response.data.data &&
+        response.data.data.teachers.length > 0
+      ) {
+        setTeachers(response.data.data.teachers);
+      } else {
+        setTeachers([]);
+      }
+    } catch (error) {
+      console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenderFilterChange = (gender) => {
+    setSelectedGenderValue(gender);
+    setOffset(0);
+    setCurrentPage(1);
+  };
+
+   const handleTeacherFilterChange = (teacherId) => {
+      setSelectedTeacherValue(teacherId);
+      setOffset(0);
+      setCurrentPage(1);
+    };
+
+
+
   const handleApplicantsSearchChange = async (value) => {
     setSearchKey(value);
     await fetchData(0, pageSize, sortField, sortOrder, value, lowerDateLimit, upperDateLimit);
@@ -97,6 +156,10 @@ const AttendanceView = observer(() => {
 
   useEffect(() => {
     fetchData(offset, pageSize);
+  }, [selectedGenderValue, selectedTeacherValue]);
+
+  useEffect(() => {
+    fetchTeachersData();
   }, []);
 
   const fetchAllAttendanceData = async () => {
@@ -183,9 +246,7 @@ const AttendanceView = observer(() => {
       // setUpperDateLimit(date);
       await fetchData(0, pageSize, sortField, sortOrder, searchKey, lowerDateLimit, toDate);
     }
-
   };
-
 
   const columns = [
     { title: "Name", dataIndex: "full_name", key: "full_name" },
@@ -231,6 +292,56 @@ const AttendanceView = observer(() => {
         />
       </Space>
       <Space style={{ float: "right" }}>
+        <Space>
+          {master_role_id !== 2 && (
+            <Space>
+              <Select
+                onChange={handleGenderFilterChange}
+                showSearch={true}
+                placeholder="Select Gender"
+                optionFilterProp="children"
+                value={selectedGenderValue}
+                allowClear={true}
+                filterOption={(input, option) =>
+                  (option?.children ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                style={{ width: 200 }}
+              >
+                <Option key={"M"} value={"Male"}>
+                  Male
+                </Option>
+                <Option key={"F"} value={"Female"}>
+                  Female
+                </Option>
+              </Select>
+
+              <Select
+                onChange={handleTeacherFilterChange}
+                showSearch={true}
+                allowClear={true}
+                placeholder="Select Teacher"
+                optionFilterProp="children"
+                value={selectedTeacherValue}
+                filterOption={(input, option) =>
+                  (option?.children ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                style={{ width: 200 }}
+              >
+                {teachers.map((teacher, index) => (
+                  <Option key={index} value={teacher.teacher_id}>
+                    {teacher.teacher_first_name +
+                      " " +
+                      teacher.teacher_last_name}
+                  </Option>
+                ))}
+              </Select>
+            </Space>
+          )}
+        </Space>
         <Space>
           <FormItemLabel label="From" />
           <DatePicker

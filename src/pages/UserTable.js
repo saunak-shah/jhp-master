@@ -25,7 +25,7 @@ import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path i
 import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
-
+import dayjs from 'dayjs';
 const { Option } = Select;
 
 const UserTable = observer(() => {
@@ -52,6 +52,12 @@ const UserTable = observer(() => {
   const [currentStudent, setCurrentStudent] = useState(null);
   const [searchKey, setSearchKey] = useState("");
 
+  const defaultToDate = moment(
+    moment(new Date()).format("YYYY-MM-DD"),
+    "YYYY-MM-DD"
+  ).endOf("day");
+
+  const defaultFromDate = moment().startOf("month").startOf("day");
 
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
@@ -413,14 +419,14 @@ const UserTable = observer(() => {
             <DatePicker
               style={{ width: "100%", maxWidth: "150px" }}
               placeholder="From date"
-              // defaultValue={dayjs(defaultFromDate)}
+              defaultValue={dayjs(defaultFromDate)}
               allowClear={true}
               onChange={(date) => handleFromDateChange(date)}
             />
             <DatePicker
               style={{ width: "100%", maxWidth: "150px" }}
               placeholder="To date"
-              // defaultValue={dayjs(defaultToDate)}
+              defaultValue={dayjs(defaultToDate)}
               allowClear={true}
               onChange={(date) => handleToDateChange(date)}
             />
