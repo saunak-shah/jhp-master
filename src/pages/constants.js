@@ -11,3 +11,5 @@ export const allowModules = {
     Result: 8,
     Group: 9
 }
+
+export const ATTENDANCE_DAYS = 2;

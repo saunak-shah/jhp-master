@@ -8,6 +8,7 @@ import {
   message,
   Space,
   Select,
+  DatePicker
 } from "antd";
 import moment from "moment";
 import { post } from "../global/api";
@@ -15,10 +16,12 @@ import { useNavigate } from "react-router-dom";
 import "../css/Teacher.css"; // Import the CSS file
 import TableView from "../components/TableView";
 import { DownloadOutlined } from "@ant-design/icons";
-import { pageSize } from "../pages/constants";
+import { pageSize, ATTENDANCE_DAYS } from "../pages/constants";
 import axios from "axios";
+import dayjs from "dayjs";
 
 const { Option } = Select;
+const { RangePicker } = DatePicker;
 
 const StaffAttendance = () => {
   // Inside your Exam component
@@ -37,16 +40,63 @@ const StaffAttendance = () => {
   const [teacherId, setTeacherId] = useState(0);
   const token = localStorage.getItem("token");
   const master_role_id = Number(localStorage.getItem("master_role_id"));
-  let daysLength = 6;
-  // Teacher role show only 2 days
-  if (Number(master_role_id) === 2) {
-    daysLength = 1;
-  }
+  const [lastSelectedDays, setLastSelectedDays] = useState([]);
+
+  // const [dates, setDates] = useState(null);
+  const [dates, setDates] = useState([
+    dayjs().subtract(ATTENDANCE_DAYS, "day"), // Two days before today
+    dayjs(), // Today
+  ]);
+
+  const disabledDate = (current) => {
+    return current && current > dayjs().endOf("day");
+  };
+
+
+  /* const disabledDate = (current) => {
+    if (!dates || !dates[0]) {
+      return false;
+    }
+    const startDate = dates[0];
+    const tooLate = startDate.add(ATTENDANCE_DAYS, "day").isBefore(current, "day");
+    const tooEarly = startDate.subtract(ATTENDANCE_DAYS, "day").isAfter(current, "day");
+    return tooLate || tooEarly;
+  }; */
+
+  const handleDateChange = (val) => {
+    if (val && val.length > 0) {
+      const startDate = val[0];
+      // console.log("Start Date:", startDate.format("YYYY-MM-DD"));
+      // Calculate the new default end date
+      const newDate = startDate.add(ATTENDANCE_DAYS, "day");
+      let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
+
+      if (endDate.isAfter(newDate)) {
+        endDate = newDate;
+      }
+      // console.log("Final End Date:", endDate.format("YYYY-MM-DD"));
+      setDates([startDate, endDate]);
+      console.log("teacherIdteacherId", teacherId)
+      fetchData(0, 10, "first_name", "asc", teacherId);
+    }
+  };
+
+  /* let daysLength = ATTENDANCE_DAYS;
   const last10Days = [];
   for (let i = daysLength; i >= 0; i--) {
     const date = moment().subtract(i, "days").format("DD/MM/YYYY");
     last10Days.push(date);
-  }
+  } */
+  const getLast10Days = (startDate, endDate) => {
+    const days = [];
+    let currentDate = dayjs(startDate);
+    while (currentDate.isBefore(endDate) || currentDate.isSame(endDate, "day")) {
+      days.push(currentDate.format("DD/MM/YYYY"));
+      currentDate = currentDate.add(1, "day");
+    }
+    return days;
+  };
+  const last10Days = dates ? getLast10Days(dates[0], dates[1]) : getLast10Days(moment().subtract(ATTENDANCE_DAYS, "days"), moment());
 
   const [staff, setStaff] = useState([]);
   const [uncheckedData, setUncheckedData] = useState([]);
@@ -61,18 +111,14 @@ const StaffAttendance = () => {
     try {
       setLoading(true);
       const apiHost = process.env.REACT_APP_API_HOST;
+      const startDate = dates[0].startOf("day");
+      const endDate = dates[1].endOf("day");
 
-      let uperdate = moment().endOf("day").format();
-      let lowerdate = moment().startOf("day").subtract(6, "days").format();
+      const lowerDate = encodeURIComponent(startDate.format());
+      const upperDate = encodeURIComponent(endDate.format());
 
-      if (Number(master_role_id) === 2) {
-        lowerdate = moment().startOf("day").subtract(2, "days").format();
-      }
 
-      lowerdate = encodeURIComponent(lowerdate);
-      uperdate = encodeURIComponent(uperdate);
-
-      let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerdate}&upperDateLimit=${uperdate}&limit=${limit}&offset=${offset}`;
+      let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerDate}&upperDateLimit=${upperDate}&limit=${limit}&offset=${offset}`;
 
       if (teacherId && teacherId !== "None") {
         apiURL += `&teacherId=${teacherId}`;
@@ -153,16 +199,38 @@ const StaffAttendance = () => {
   };
 
   useEffect(() => {
+    if (dates && dates[0] && dates[1]) {
+      const start = dayjs(dates[0]);
+      const end = dayjs(dates[1]);
+      const range = [];
+  
+      for (let i = 0; i <= end.diff(start, "day"); i++) {
+        range.push(start.add(i, "day").format("DD/MM/YYYY"));
+      }
+      
+      setLastSelectedDays(range); // Update state when date range changes
+    } else {
+      // Default to last 2 days + today when no date selected
+      const defaultRange = [];
+      for (let i = 2; i >= 0; i--) {
+        defaultRange.push(dayjs().subtract(i, "day").format("DD/MM/YYYY"));
+      }
+      setLastSelectedDays(defaultRange);
+    }
+  
     fetchData(offset, pageSize);
     fetchTeachersData();
     getTotalCount();
-  }, []);
+  }, [dates]);
 
   const handleFetchData = (offset, limit, sortField, sortOrder) => {
     fetchData(offset, limit, sortField, sortOrder, teacherId);
   };
 
   const handleCheckboxChange = (key, index, checked) => {
+    console.log("key=========", key)
+    console.log("index=========", index)
+    console.log("checked=========", checked)
     if (!checked) {
       const uncheckedStaff = staff
         .filter((item) => item.student_id === key)
@@ -203,6 +271,7 @@ const StaffAttendance = () => {
   };
 
   const onFinish = async () => {
+    console.log("last10Days", last10Days)
     setLoading(true);
     const payload = {
       attendance: staff.map((staff) => ({
@@ -239,7 +308,7 @@ const StaffAttendance = () => {
           record.last_name || ""
         }`,
     },
-    ...last10Days.map((date, i) => ({
+    ...lastSelectedDays.map((date, i) => ({
       title: date,
       dataIndex: `day${i + 1}`,
       key: `day${i + 1}`,
@@ -247,8 +316,8 @@ const StaffAttendance = () => {
         <Tooltip title={date}>
           <Checkbox
             className="custom-checkbox"
-            checked={record.attendance[i].checked}
-            disabled={record.attendance[i].disabled}
+            checked={record.attendance[i]?.checked}
+            disabled={record.attendance[i]?.disabled}
             onChange={(e) =>
               handleCheckboxChange(record.student_id, i, e.target.checked)
             }
@@ -287,7 +356,6 @@ const StaffAttendance = () => {
             </span>
           </>
         }
-        style={{ margin: "50px" }}
       >
         <Button
           type="primary"
@@ -327,6 +395,13 @@ const StaffAttendance = () => {
         ) : (
           ""
         )}
+        <Space style={{ float: "right", marginTop: "10px" }}>
+        <RangePicker
+          value={dates}
+          onChange={handleDateChange} // Trigger API call when dates change
+          disabledDate={disabledDate}
+        />
+        </Space>
         <div className="table-container">
           <Form onFinish={onFinish}>
             <TableView

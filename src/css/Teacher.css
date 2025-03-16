@@ -13,6 +13,12 @@
     width: 20px;
     height: 20px;
   }
+
+  .att-report-search{
+    flex: "auto";
+    min-width: 250;
+    max-width: fit-content;
+  }
   
   @media (max-width: 768px) { /* Adjustments for tablets and mobile devices */
     .table-container {

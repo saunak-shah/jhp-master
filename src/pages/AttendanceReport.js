@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Drawer, List, message, Space, Select } from "antd";
+import { Button, DatePicker, Drawer, List, message, Space, Select, Flex } from "antd";
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -14,6 +14,8 @@ import dayjs from 'dayjs';
 import attendanceStore from "../stores/attendanceStore";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
+import "../css/Teacher.css"; // Import the CSS file
+
 const { Option } = Select;
 
 
@@ -271,149 +273,111 @@ const AttendanceView = observer(() => {
   ];
 
   return (
-    <div>
-      <Button
-        type="default"
-        style={{
-          margin: "20px",
-        }}
-        onClick={() => navigate(-1)}
-        icon={<LeftOutlined />}
-      >
+    <div className="main-container">
+    <Flex
+      wrap="wrap"
+      gap={8} // Reduced space between items
+      align="center"
+      justify="space-between"
+      style={{ marginBottom: 20 }}
+    >
+      <Button type="default" onClick={() => navigate(-1)} icon={<LeftOutlined />}>
         Back
       </Button>
 
-      <Space style={{ marginTop: 20, marginRight: 20 }}>
-        <Search
-          style={{ marginTop: 0, marginLeft: 10 }}
-          placeholder="Search applicants"
-          enterButton
-          onChange={(e) => handleApplicantsSearchChange(e.target.value)}
-        />
-      </Space>
-      <Space style={{ float: "right" }}>
-        <Space>
-          {master_role_id !== 2 && (
-            <Space>
-              <Select
-                onChange={handleGenderFilterChange}
-                showSearch={true}
-                placeholder="Select Gender"
-                optionFilterProp="children"
-                value={selectedGenderValue}
-                allowClear={true}
-                filterOption={(input, option) =>
-                  (option?.children ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                style={{ width: 200 }}
-              >
-                <Option key={"M"} value={"Male"}>
-                  Male
-                </Option>
-                <Option key={"F"} value={"Female"}>
-                  Female
-                </Option>
-              </Select>
+      {/* Search Bar */}
+      <div className="att-report-search">
+      <Search
+        placeholder="Search applicants"
+        enterButton
+        onChange={(e) => handleApplicantsSearchChange(e.target.value)}
+      />
+      </div>
+      
 
-              <Select
-                onChange={handleTeacherFilterChange}
-                showSearch={true}
-                allowClear={true}
-                placeholder="Select Teacher"
-                optionFilterProp="children"
-                value={selectedTeacherValue}
-                filterOption={(input, option) =>
-                  (option?.children ?? "")
-                    .toLowerCase()
-                    .includes(input.toLowerCase())
-                }
-                style={{ width: 200 }}
-              >
-                {teachers.map((teacher, index) => (
-                  <Option key={index} value={teacher.teacher_id}>
-                    {teacher.teacher_first_name +
-                      " " +
-                      teacher.teacher_last_name}
-                  </Option>
-                ))}
-              </Select>
-            </Space>
-          )}
-        </Space>
-        <Space>
-          <FormItemLabel label="From" />
-          <DatePicker
-          style={{}}
-          placeholder="Select from date"
-          defaultValue={defaultFromDate}
-          value={dayjs(lowerDateLimit)}
-          allowClear={true}
-          onChange={handleFromDateChange}
-        />
-        </Space>
-        <Space style={{ marginLeft: 10 }}>
-          <FormItemLabel label="To" />
+      {/* Filters */}
+      <Flex wrap="wrap" gap={8} style={{ flex: 1, justifyContent: "flex-end" }}>
+        {master_role_id !== 2 && (
+          <Select
+            onChange={handleGenderFilterChange}
+            showSearch
+            placeholder="Select Gender"
+            allowClear
+            style={{ width: 150 }}
+          >
+            <Option value="Male">Male</Option>
+            <Option value="Female">Female</Option>
+          </Select>
+        )}
 
-          <DatePicker
-          style={{}}
-          placeholder="Select to date"
-          defaultValue={defaultToDate}
-          value={dayjs(upperDateLimit)}
-          allowClear={true}
-          onChange={handleToDateChange}
-        />
-        </Space>
-        <Button
-          type="primary"
-          style={{
-            margin: "20px",
-            float: "right",
-          }}
-          onClick={() => exportDataToExcel()}
-          icon={<DownloadOutlined />}
+        <Select
+          onChange={handleTeacherFilterChange}
+          showSearch
+          placeholder="Select Teacher"
+          allowClear
+          style={{ width: 180 }}
         >
+          {teachers.map((teacher, index) => (
+            <Option key={index} value={teacher.teacher_id}>
+              {teacher.teacher_first_name} {teacher.teacher_last_name}
+            </Option>
+          ))}
+        </Select>
+
+        <DatePicker
+          placeholder="From Date"
+          value={dayjs(lowerDateLimit)}
+          allowClear
+          onChange={handleFromDateChange}
+          style={{ width: 140 }}
+        />
+
+        <DatePicker
+          placeholder="To Date"
+          value={dayjs(upperDateLimit)}
+          allowClear
+          onChange={handleToDateChange}
+          style={{ width: 140 }}
+        />
+
+        <Button type="primary" onClick={exportDataToExcel} icon={<DownloadOutlined />}>
           Export To Excel
         </Button>
-      </Space>
+      </Flex>
+    </Flex>
 
-      <TableView
-        style={{
-          margin: "20px",
-        }}
-        data={applicants}
-        columns={columns}
-        loading={loading}
-        currentPage={currentPage}
-        totalCount={totalAttedanceCount}
-        setSortField={setSortField}
-        setSortOrder={setSortOrder}
-        setOffset={setOffset}
-        setCurrentPage={setCurrentPage}
-        fetchData={fetchData}
+    <TableView
+      style={{ margin: "20px" }}
+      data={applicants}
+      columns={columns}
+      loading={loading}
+      currentPage={currentPage}
+      totalCount={totalAttedanceCount}
+      setSortField={setSortField}
+      setSortOrder={setSortOrder}
+      setOffset={setOffset}
+      setCurrentPage={setCurrentPage}
+      fetchData={fetchData}
+    />
+
+    <Drawer
+      title="Attendance Details"
+      placement="right"
+      width={400}
+      onClose={() => attendanceStore.closeDrawer()}
+      open={attendanceStore.isDrawerOpen}
+    >
+      <List
+        dataSource={attendanceStore.attendanceDetails}
+        renderItem={(item) => (
+          <List.Item>
+            <span>{dayjs(item.date, "YYYY/MM/DD").format("DD-MM-YYYY")}</span>
+          </List.Item>
+        )}
       />
-
-      {/* Drawer to show attendance details */}
-      <Drawer
-        title="Attendance Details"
-        placement="right"
-        width={400}
-        onClose={() => attendanceStore.closeDrawer()}
-        open={attendanceStore.isDrawerOpen}
-      >
-        <List
-          dataSource={attendanceStore.attendanceDetails}
-          renderItem={(item) => (
-            <List.Item>
-              <span>
-                {moment(item.date, "YYYY/MM/DD").format("DD-MM-YYYY")}
-              </span>
-            </List.Item>
-          )}
-        />
-      </Drawer>
-    </div>
+    </Drawer>
+  </div>
+    
   );
 });
 
