@@ -1,28 +1,82 @@
-import React, { useEffect } from 'react';
-import { Modal, Input, DatePicker, Form } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Modal, Input, Form, Upload, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
-const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
+const allowedTypes = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
+
+const AddEditCourse = ({ visible, onCancel, onSubmit, initialData }) => {
   const [form] = Form.useForm();
+  const [uploading, setUploading] = useState(false);
+  const [fileUploadURL, setfileURL] = useState(null);
+
   const isCreating = !initialData;
 
   useEffect(() => {
     if (visible) {
       const formValues = {
         ...initialData,
-        course_date: initialData?.course_date ? moment(initialData.course_date) : null,
-        registration_starting_date: initialData?.registration_starting_date ? moment(initialData.registration_starting_date) : null,
-        registration_closing_date: initialData?.registration_closing_date ? moment(initialData.registration_closing_date) : null,
       };
       form.setFieldsValue(formValues);
     } else {
       form.resetFields();
     }
   }, [initialData, form, visible]);
+
+
+  const handleFileUpload = async (file) => {
+    if (!allowedTypes.includes(file.type)) {
+      message.error('Only PDF or Word files are allowed!');
+      return Upload.LIST_IGNORE;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      message.error('File must be smaller than 10MB!');
+      return Upload.LIST_IGNORE;
+    }
+
+    try {
+      setUploading(true);
+      // 1. Get pre-signed URL from backend
+      const apiHost = process.env.REACT_APP_API_HOST;
+
+      const res = await fetch(`${apiHost}/api/generate-presigned-url?fileName=${file.name}&fileType=${file.type}`);
+      const { uploadURL, key } = await res.json();
+
+      // 2. Upload file to S3
+      await fetch(uploadURL, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': file.type,
+        },
+        body: file,
+      });
+
+      // 3. Set S3 file URL in form
+      const fileUrl = `https://attachment.jhpparivar.in/${key}`;
+      console.log("fileUrl===================", fileUrl);
+      form.setFieldsValue({ file_url: fileUrl });
+      setfileURL(fileUrl)
+
+      message.success('File uploaded successfully');
+      return false; // Prevent default Upload from adding it to file list
+    } catch (err) {
+      console.error('Upload error:', err);
+      message.error('Upload failed');
+      return Upload.LIST_IGNORE;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
-      onSubmit({...values, course_id: initialData?.course_id}, isCreating);
+      onSubmit({...values, file_url: fileUploadURL, course_id: initialData?.course_id}, isCreating);
       onCancel(); // Optionally close the modal after submission
     } catch (errorInfo) {
       console.log('Validation Failed:', errorInfo);
@@ -37,6 +91,7 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
       onCancel={onCancel}
       okText={isCreating ? 'Create' : 'Update'}
       cancelText="Cancel"
+      okButtonProps={{ disabled: uploading }}
       style={{ top: 20 }} // Top position for better visibility
       bodyStyle={{ overflowY: 'auto', maxHeight: '70vh' }} // Scrollable body
     >
@@ -50,24 +105,18 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         </Form.Item>
         <Form.Item
           name="file_url"
-          label="File URL"
-          rules={[{ required: true, message: 'Please input the course name!' }]}
+          label="Upload File (PDF/DOCX)"
+          rules={[{ required: true, message: 'Please upload a file!' }]}
         >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="course_date"
-          label="Exam Date"
-          rules={[{ required: true, message: 'Please select the exam date!' }]}
-        >
-          <DatePicker format="YYYY-MM-DD" />
-        </Form.Item>
-        <Form.Item
-          name="course_duration_in_hours"
-          label="Exam Duration (In minute)"
-          rules={[{ required: true, message: 'Please input the exam duration!' }]}
-        >
-          <Input />
+          <Upload
+            beforeUpload={handleFileUpload}
+            showUploadList={false}
+            accept=".pdf,.doc,.docx"
+          >
+            <button disabled={uploading}>
+              <UploadOutlined /> {uploading ? 'Uploading...' : 'Click to Upload'}
+            </button>
+          </Upload>
         </Form.Item>
         <Form.Item
           name="course_description"
@@ -76,51 +125,9 @@ const AddEditStudent = ({ visible, onCancel, onSubmit, initialData }) => {
         >
           <Input.TextArea rows={3} />
         </Form.Item>
-        <Form.Item
-          name="course_score"
-          label="Marks"
-          rules={[{ required: true, message: 'Please input the exam marks!' }]}
-        >
-          <Input type='number'/>
-        </Form.Item>
-        <Form.Item
-          name="course_location"
-          label="Exam Location"
-          rules={[{ required: true, message: 'Please input the exam location!' }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="course_passing_score"
-          label="Passing Score"
-          rules={[{ required: true, message: 'Please input the passing marks!' }]}
-        >
-          <Input type="number" />
-        </Form.Item>
-        <Form.Item
-          name="course_max_attempts"
-          label="Exam Maximum Attempts"
-          rules={[{ required: true, message: 'Please input the exam maximum attempts!' }]}
-        >
-          <Input type="number" />
-        </Form.Item>
-        <Form.Item
-          name="registration_starting_date"
-          label="Registration Start Date"
-          rules={[{ required: true, message: 'Please select the exam registration date!' }]}
-        >
-          <DatePicker format="YYYY-MM-DD" />
-        </Form.Item>
-        <Form.Item
-          name="registration_closing_date"
-          label="Registration Closing Date"
-          rules={[{ required: true, message: 'Please select the exam closing date!' }]}
-        >
-          <DatePicker format="YYYY-MM-DD" />
-        </Form.Item>
       </Form>
     </Modal>
   );
 };
 
-export default AddEditStudent;
+export default AddEditCourse;

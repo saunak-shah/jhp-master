@@ -140,7 +140,6 @@ const UserTable = observer(() => {
 
   const handleChangeAssignee = (record) => {
     setCurrentStudent(record); // Set current course to edit
-    // setCurrentCourse(course); // Set current course to edit
     setIsModalVisible(true);
   };
 
@@ -163,13 +162,11 @@ const UserTable = observer(() => {
 
   const handleStudentView = (record) => {
     setCurrentStudent(record); // Set current course to edit
-    // setCurrentCourse(course); // Set current course to edit
     setViewModalVisible(true);
   };
 
   const handleStudentEdit = (record) => {
     setCurrentStudent(record); // Set current course to edit
-    // setCurrentCourse(course); // Set current course to edit
     setEditModalVisible(true);
   };
 

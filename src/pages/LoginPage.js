@@ -3,17 +3,7 @@ import { Form, Input, Button, Card, Typography, message, Checkbox } from "antd";
 import authStore from "../stores/authStore";
 import logo from "../assets/logo.jpeg"; // Import your logo image
 import "../css/index.css";
-import {
-  InstagramFilled,
-  FacebookFilled,
-  YoutubeFilled,
-} from "@ant-design/icons";
 import Cookies from 'js-cookie'; // Import js-cookie library
-const iconStyle = {
-  fontSize: "24px", // Adjust the size as needed
-  margin: "0 8px", // Add some margin for spacing
-  color: "white", // Ensure the icon color is white
-};
 
 const { Title, Text } = Typography;
 const LoginForm = ({ toggleForm, history }) => {
@@ -22,8 +12,10 @@ const LoginForm = ({ toggleForm, history }) => {
 
   useEffect(() => {
     // Load stored login details if they exist
-    const userId = localStorage.getItem("teacher_id");
-    const username = localStorage.getItem("teacher_username");
+    // const userId = localStorage.getItem("teacher_id");
+    const userId = authStore.user?.teacher_id;
+    // const username = localStorage.getItem("teacher_username");
+    const username = authStore.user?.teacher_username;
     const storedRememberMe = localStorage.getItem("rememberMe") === "true";
 
     if (storedRememberMe && userId) {
@@ -32,10 +24,6 @@ const LoginForm = ({ toggleForm, history }) => {
         remember: storedRememberMe,
       });
     }
-
-    // Add background styling when component mounts
-
-    
   }, [form]);
 
   async function postData(url = "", data = {}) {
@@ -80,13 +68,29 @@ const LoginForm = ({ toggleForm, history }) => {
           }
         })
         .then((data) => {
+          const userData = {
+            teacher_id: data.data.teacher_id,
+            teacher_username: data.data.teacher_username,
+            teacher_first_name: data.data.teacher_first_name,
+            teacher_last_name: data.data.teacher_last_name,
+            token: data.data.token,
+            master_role_id: data.data.master_role_id,
+            role_access: data.data.role_access,
+          };
+
+          // Save user data in localStorage
+          localStorage.setItem('user', JSON.stringify(userData));
+
+          // Store in mobx store
+          authStore.login(userData);
+
           localStorage.setItem("teacher_id", data.data.teacher_id || "");
-          localStorage.setItem("teacher_username", data.data.teacher_username || "");
-          localStorage.setItem("teacher_first_name", data.data.teacher_first_name || "");
-          localStorage.setItem("teacher_last_name", data.data.teacher_last_name || "");
+          // localStorage.setItem("teacher_username", data.data.teacher_username || "");
+          // localStorage.setItem("teacher_first_name", data.data.teacher_first_name || "");
+          // localStorage.setItem("teacher_last_name", data.data.teacher_last_name || "");
           localStorage.setItem("token", data.data.token);
           localStorage.setItem("master_role_id", data.data.master_role_id);
-          localStorage.setItem('role_access', JSON.stringify(data.data.role_access));
+          // localStorage.setItem('role_access', JSON.stringify(data.data.role_access));
 
 
           if (form.getFieldValue("remember")) {
@@ -95,10 +99,10 @@ const LoginForm = ({ toggleForm, history }) => {
           } else {
             Cookies.remove('token'); // Remove the cookie if not remembering the user
           }
-          localStorage.setItem('isAuthenticated', 'true');
+          // localStorage.setItem('isAuthenticated', 'true');
           // Update authentication state
-          authStore.login();
-          // history.push('/home'); // Redirect to Home page
+          // authStore.login();
+          history.push('/home'); // Redirect to Home page
         })
         .catch((error) => {
           console.error("Error during post or processing response:", error);

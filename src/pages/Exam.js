@@ -13,6 +13,7 @@ import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import { debounce } from 'lodash';
 import '../css/Teacher.css'; // Import the CSS file
+import moment from "moment";
 
 
 const Exam = () => {
@@ -47,21 +48,29 @@ const Exam = () => {
       sorter: true,
     },
     {
-      title: "Marks",
-      dataIndex: "course_score",
-      key: "course_score",
+      title: "File",
+      dataIndex: "file_url",
+      key: "file_url",
+      sorter: true,
+      render: (fileUrl) => {
+        if (!fileUrl) return "-";
+        return (
+          <a href={fileUrl} target="_blank" rel="noopener noreferrer" download>
+            Download
+          </a>
+        );
+      },
+    },
+    {
+      title: "Course Description",
+      dataIndex: "course_description",
+      key: "course_description",
       sorter: true,
     },
     {
-      title: "Passing Marks",
-      dataIndex: "course_passing_score",
-      key: "course_passing_score",
-      sorter: true,
-    },
-    {
-      title: "Exam Duration (In minute)",
-      dataIndex: "course_duration_in_hours",
-      key: "course_duration_in_hours",
+      title: "Created Date",
+      dataIndex: "created_at",
+      key: "created_at",
       sorter: true,
     },
     {
@@ -88,17 +97,9 @@ const Exam = () => {
             <Button
               type="primary"
               icon={<DatabaseOutlined />}
-              onClick={() => navigate(`/applicants/${record.course_id}`)}
+              onClick={() => navigate(`/exam/schedule/${record.course_id}`)}
             >
-              View Applicants
-            </Button>
-
-            <Button
-              type="primary"
-              icon={<DatabaseOutlined />}
-              onClick={() => navigate(`/results/${record.course_id}`)}
-            >
-              View Results
+              Schecule Exam
             </Button>
           </Space>
         );
@@ -121,18 +122,12 @@ const Exam = () => {
       message.error("No course ID provided for editing.");
       return;
     }
-
     setLoading(true);
     const endpoint = isEdit
       ? `/api/courses/${course.course_id}`
       : "/api/courses";
 
     course.is_active = true;
-    course.category = "A";
-    course.course_duration_in_hours = parseInt(course.course_duration_in_hours);
-    course.course_score = parseInt(course.course_score);
-    course.course_passing_score = parseInt(course.course_passing_score);
-    course.course_max_attempts = parseInt(course.course_max_attempts);
 
     const res = await post(endpoint, course);
     if (res.status === 200) {
@@ -202,6 +197,10 @@ const Exam = () => {
           rawData.data.courses &&
           rawData.data.courses.length > 0
         ) {
+          rawData.data.courses.map((course) => {
+            course.created_at = moment(course.created_at).format("DD-MM-YYYY");
+            return course;
+          });
           setCourses(rawData.data.courses);
           setTotalCoursesCount(rawData.data.totalCount);
         } else {

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Space, Modal, Input, message } from "antd";
+import { Button, Space, Modal, Input, message, Tag } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import {
   DownloadOutlined,
@@ -38,7 +38,6 @@ const ApplicantsView = () => {
   ) => {
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
-
     let apiUrl = `${apiHost}/api/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
     if (searchKey && searchKey.length > 0) {
       apiUrl = apiUrl + `&searchKey=${searchKey}`;
@@ -60,12 +59,12 @@ const ApplicantsView = () => {
       response.data.data.registrations.length > 0
     ) {
       response.data.data.registrations.map((data) => {
-        data.updated_at =
-          new Date(data.updated_at).getDate() +
+        data.created_at =
+          new Date(data.created_at).getDate() +
           "/" +
-          new Date(data.updated_at).getMonth() +
+          new Date(data.created_at).getMonth() +
           "/" +
-          new Date(data.updated_at).getFullYear();
+          new Date(data.created_at).getFullYear();
         data.email = data.student.email;
         data.name = data.student.first_name + " " + data.student.last_name;
         data.score =
@@ -105,12 +104,6 @@ const ApplicantsView = () => {
         data.data.registrations.length > 0
       ) {
         data.data.registrations.map((data) => {
-          data.updated_at =
-            new Date(data.updated_at).getDate() +
-            "/" +
-            new Date(data.updated_at).getMonth() +
-            "/" +
-            new Date(data.updated_at).getFullYear();
 
           data.created_at =
             new Date(data.created_at).getDate() +
@@ -119,7 +112,15 @@ const ApplicantsView = () => {
             "/" +
             new Date(data.created_at).getFullYear();
           data.email = data.email;
-        });
+          data.exam_status = "Not available";
+          const score = data?.score;
+          const passingScore = data?.passing_score;
+            if (score >= passingScore) {
+              data.exam_status = "Pass";
+            } else {
+              data.exam_status = "Fail";
+            }
+          });
         setLoading(false);
         return data.data.registrations;
       }
@@ -130,7 +131,7 @@ const ApplicantsView = () => {
 
   const handleApplicantsSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, value);
+    fetchData(offset, pageSize, sortField, sortOrder, value);
   };
 
   useEffect(() => {
@@ -151,18 +152,12 @@ const ApplicantsView = () => {
   };
 
   const columns = [
-    {
-      title: "RegistrationId",
-      dataIndex: "student_apply_course_id",
-      key: "student_apply_course_id",
-      sorter: true,
-    },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Email", dataIndex: "email", key: "email" },
     {
       title: "Applied On",
-      dataIndex: "updated_at",
-      key: "updated_at",
+      dataIndex: "created_at",
+      key: "created_at",
       sorter: true,
     },
     {
@@ -170,6 +165,38 @@ const ApplicantsView = () => {
       dataIndex: "score",
       key: "score",
       sorter: true,
+    },
+    {
+      title: "Total marks",
+      dataIndex: "course_passing_score",
+      key: "course_passing_score",
+      sorter: true,
+      render: (_, record) => record.result[0]?.course_passing_score ?? "-",
+    },
+    {
+      title: "Course Score",
+      dataIndex: "course_score",
+      key: "course_score",
+      sorter: true,
+      render: (_, record) => record.result[0]?.course_score ?? "-",
+    },
+    {
+      title: "Status",
+      dataIndex: "exam_status",
+      key: "exam_status",
+      sorter: true,
+      render: (_, record) => {
+        const score = record.result[0]?.score;
+        const passingScore = record.result[0]?.course_passing_score;
+    
+        if (score == null) {
+          return <Tag color="default">Not available</Tag>;
+        } else if (score >= passingScore) {
+          return <Tag color="green">Pass</Tag>;
+        } else {
+          return <Tag color="red">Fail</Tag>;
+        }
+      },
     },
     {
       title: "Action",

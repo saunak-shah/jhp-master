@@ -4,6 +4,7 @@ import "../css/Profile.css"; // Import the CSS file for styling
 import TextArea from "antd/es/input/TextArea";
 import axios from "axios";
 import moment from "moment";
+import authStore from "../stores/authStore";
 
 const Profile = () => {
   const [form] = Form.useForm();
@@ -16,7 +17,8 @@ const Profile = () => {
       try {
         let token = localStorage.getItem("token") || "";
 
-        const teacher_id = parseInt(localStorage.getItem("teacher_id") || "");
+        const teacher_id = authStore.user?.teacher_id;
+        // const teacher_id = parseInt(localStorage.getItem("teacher_id") || "");
 
         const apiHost = process.env.REACT_APP_API_HOST;
         const apiUrl = `${apiHost}/api/teachers/${teacher_id}`;

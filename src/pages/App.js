@@ -18,6 +18,7 @@ import Teacher from "./Teacher";
 import ApplicantsView from "../components/ApplicantsView";
 import AttendanceReport from "../pages/AttendanceReport";
 import ResultsView from "../components/ResultsView";
+import ScheduleExam from "../components/ScheduleExam";
 import Group from "./Group";
 
 const App = observer(() => {
@@ -46,6 +47,7 @@ const App = observer(() => {
               <Route path="/home" element={<Home />} />
               <Route path="/applicants/:examId" element={<ApplicantsView />} /> // New route for viewing applicants
               <Route path="/results/:examId" element={<ResultsView />} /> // New route for viewing results
+              <Route path="/exam/schedule/:examId" element={<ScheduleExam />} /> // New route for schedule new exam
               <Route path="/attendance/report" element={<AttendanceReport />} /> // New route for viewing applicants
               <Route path="/admin" element={<AdminUsers />} />
               <Route path="/student" element={<UserTable />} />

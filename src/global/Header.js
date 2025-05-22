@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { Layout, Menu, Dropdown, Avatar, Button, Drawer } from 'antd';
 import { MenuOutlined, UserOutlined, LogoutOutlined, UnlockOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,10 +7,16 @@ import authStore from '../stores/authStore';
 import '../css/Header.css'; // Import the CSS file
 import { allowModules } from '../pages/constants';
 
-const Header = ({ history }) => {
-  const [userName, setUserName] = useState('');
+const Header = observer(() => {
+
+  const userName = authStore.user
+  ? `${authStore.user.teacher_first_name} ${authStore.user.teacher_last_name}`
+  : "Guest";
+
+
+  // const [userName, setUserName] = useState('');
   const [registerNo, setRegisterNo] = useState('');
-  const [roleAccess, setRoleAccess] = useState([]);
+  // const [roleAccess, setRoleAccess] = useState([]);
   const [drawerVisible, setDrawerVisible] = useState(false); // Drawer visibility state
   const navigate = useNavigate()
 
@@ -17,14 +24,9 @@ const Header = ({ history }) => {
     const firstName = localStorage.getItem('teacher_first_name');
     const lastName = localStorage.getItem('teacher_last_name');
     setRegisterNo(localStorage.getItem('register_no'));
-    if (firstName && lastName) {
+   /*  if (firstName && lastName) {
       setUserName(`${firstName} ${lastName}`);
-    }
-    // Retrieve role_access and parse it as an array
-    const roleAccessStored = localStorage.getItem('role_access');
-    if (roleAccessStored) {
-      setRoleAccess(JSON.parse(roleAccessStored));
-    }
+    } */
   }, []);
 
   const toggleDrawer = () => {
@@ -121,30 +123,7 @@ const Header = ({ history }) => {
       label: <Link to="/teacher" className="header-menu-item">Teacher</Link>,
       onClick: () => handleMenuItemClick('/teacher') 
     },
-    /* {
-      key: 'profile',
-      roles: [allowModules.Profile],
-      label: (
-        <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar size="small" icon={<UserOutlined />} />
-            <span style={{ marginLeft: '8px' }}>
-              {userName}
-            </span>
-          </div>
-        </Dropdown>
-
-      ),
-      style: { float: 'right', marginLeft: 'auto' }
-    } */
   ];  // Filter items based on role access
-
-  /* return (
-    <AntHeader className="header" style={{ backgroundColor: "#001529" }}>
-      <div className="logo" />
-      <Menu theme="dark" mode="horizontal" style={{ backgroundColor: "#001529", fontSize: "18px", fontFamily: "sans-serif", color: 'white' }} defaultSelectedKeys={['2']} items={mainMenuItems} />
-    </AntHeader>
-  ); */
 
   return (
     <Layout.Header className="main-header-custom">
@@ -187,6 +166,6 @@ const Header = ({ history }) => {
       </Drawer>
     </Layout.Header>
   );
-};
+});
 
 export default Header;
