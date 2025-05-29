@@ -49,7 +49,7 @@ const ScheduleExam = () => {
 
 
   const deleteExam = async () => {
-    const endpoint = `/api/exam/schedule/${dataToDelete.course_id}`;
+    const endpoint = `/api/exam/schedule/${dataToDelete.schedule_id}`;
     const res = await deleteData(endpoint, dataToDelete);
     if(res.status === 200){
       fetchData(offset, pageSize);

@@ -68,8 +68,8 @@ const ApplicantsView = () => {
         data.email = data.student.email;
         data.name = data.student.first_name + " " + data.student.last_name;
         data.score =
-          data.result.length > 0 && data.result[0].score
-            ? data.result[0].score
+          data.result.length > 0 && data.result[0]?.score
+            ? data.result[0]?.score
             : "Not Available";
       });
       setTotalApplicantsCount(response.data.data.totalCount);
@@ -161,24 +161,24 @@ const ApplicantsView = () => {
       sorter: true,
     },
     {
-      title: "Result",
+      title: "Total marks",
+      dataIndex: "total_marks",
+      key: "total_marks",
+      sorter: true,
+      render: (_, record) => record.exam_schedule?.total_marks ?? "-",
+    },
+    {
+      title: "Passing Marks",
+      dataIndex: "passing_score",
+      key: "passing_score",
+      sorter: true,
+      render: (_, record) => record.exam_schedule?.passing_score ?? "-",
+    },
+    {
+      title: "Your Score",
       dataIndex: "score",
       key: "score",
       sorter: true,
-    },
-    {
-      title: "Total marks",
-      dataIndex: "course_passing_score",
-      key: "course_passing_score",
-      sorter: true,
-      render: (_, record) => record.result[0]?.course_passing_score ?? "-",
-    },
-    {
-      title: "Course Score",
-      dataIndex: "course_score",
-      key: "course_score",
-      sorter: true,
-      render: (_, record) => record.result[0]?.course_score ?? "-",
     },
     {
       title: "Status",
