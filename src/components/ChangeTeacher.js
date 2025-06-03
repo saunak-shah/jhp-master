@@ -59,19 +59,13 @@ const ChangeTeacher = ({ visible, onCancel, initialData, teachersData, setCurren
       style={{ top: 20 }} // Top position for better visibility
       bodyStyle={{ overflowY: 'auto', maxHeight: '70vh' }} // Scrollable body
     >
-      {/* <Form form={form} layout="vertical" style={{ width: '90%' }}>
-        <Form.Item
-          name="course_name"
-          label="Exam Name"
-          rules={[{ required: true, message: 'Please input the exam name!' }]}
-        >
-          <Input />
-        </Form.Item>
-      </Form> */}
 
         <Form layout="vertical" form={form}>
           <Form.Item label="Select Guruji" name="assignee" rules={[{ required: true, message: 'Please select an assignee' }]}>
-            <Select placeholder="Select Guruji" style={{ width: '100%' }}>
+              
+            <Select placeholder="Select Guruji" style={{ width: '100%' }} showSearch={true}
+                  optionFilterProp="children"
+              allowClear={true} >
               {teachersData && teachersData.map(user => (
                   <Option key={user.teacher_id} value={user.teacher_id}>
                       {user.teacher_first_name} {user.teacher_last_name}

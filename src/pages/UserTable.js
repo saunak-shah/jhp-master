@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Input,
   Space,
@@ -26,6 +26,7 @@ import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
 import dayjs from 'dayjs';
+import { debounce } from "lodash";
 const { Option } = Select;
 
 const UserTable = observer(() => {
@@ -249,10 +250,23 @@ const UserTable = observer(() => {
   ];
 
   const handleUserSearchChange = (value) => {
-    value = value.length > 0 ? value : null;
-    setSearchKey(value);
-    fetchData(offset, pageSize, sortField, sortOrder, value);
+    debouncedSearch(value);
   };
+  
+// Wrap with useCallback to prevent unnecessary recreation
+const debouncedSearch = useCallback(
+  debounce((value) => {
+    const trimmedValue = value.trim();
+    if (trimmedValue.length < 3) {
+      setSearchKey(null);
+      fetchData(offset, pageSize, sortField, sortOrder, null);
+    } else {
+      setSearchKey(trimmedValue);
+      fetchData(offset, pageSize, sortField, sortOrder, trimmedValue);
+    }
+  }, 1000), // 1000ms debounce
+  [offset, pageSize, sortField, sortOrder]
+);
 
   const fetchData = async (
     offset,
