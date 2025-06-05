@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Input,
   Space,
@@ -8,6 +8,7 @@ import {
   Form,
   message,
   DatePicker,
+  Tag,
 } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
@@ -26,7 +27,6 @@ import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
 import dayjs from 'dayjs';
-import { debounce } from "lodash";
 const { Option } = Select;
 
 const UserTable = observer(() => {
@@ -52,6 +52,7 @@ const UserTable = observer(() => {
   const master_role_id = Number(localStorage.getItem("master_role_id"));
   const [currentStudent, setCurrentStudent] = useState(null);
   const [searchKey, setSearchKey] = useState("");
+  const searchRef = useRef(null);
 
   const defaultToDate = moment(
     moment(new Date()).format("YYYY-MM-DD"),
@@ -73,24 +74,24 @@ const UserTable = observer(() => {
   const token = localStorage.getItem("token");
 
   const handleTeacherFilterChange = (teacherId) => {
-    setTeacherId(teacherId);
-    setSelectedTeacherValue(teacherId);
-    setOffset(0);
-    fetchData(offset, pageSize, null, teacherId);
-    setCurrentPage(1);
+    if (!teacherId || teacherId === "None") {
+      setTeacherId(0); // 0 = all teachers
+      setSelectedTeacherValue(null);
+    } else {
+      setTeacherId(teacherId);
+      setSelectedTeacherValue(teacherId);
+    }  
   };
 
   const handleGenderFilterChange = (gender) => {
     setSelectedGenderValue((val) => gender);
     setOffset(0);
-    fetchData(offset, pageSize, null, teacherId);
     setCurrentPage(1);
   };
 
   const handleStatusFilterChange = (status) => {
     setSelectedStatusValue(status);
     setOffset(0);
-    fetchData(offset, pageSize, null, teacherId, null);
     setCurrentPage(1);
   };
 
@@ -200,6 +201,22 @@ const UserTable = observer(() => {
       sorter: true,
     },
     {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      sorter: true,
+      render: (_, record) => {
+        if (parseInt(record.status) == 1) {
+          return <Tag color="red">Pending</Tag>;
+        } else if (parseInt(record.status) == 2) {
+          return <Tag color="green">Approve</Tag>;
+        } else {
+          return <Tag color="default">Not Available</Tag>;
+        }
+      },
+      // render: (text, record) => parseInt(record.status) === 2 ? "Approve" : "Pending"
+    },
+    {
       title: "Action",
       key: "action",
       render: (text, record) => {
@@ -250,23 +267,10 @@ const UserTable = observer(() => {
   ];
 
   const handleUserSearchChange = (value) => {
-    debouncedSearch(value);
-  };
-  
-// Wrap with useCallback to prevent unnecessary recreation
-const debouncedSearch = useCallback(
-  debounce((value) => {
     const trimmedValue = value.trim();
-    if (trimmedValue.length < 3) {
-      setSearchKey(null);
-      fetchData(offset, pageSize, sortField, sortOrder, null);
-    } else {
-      setSearchKey(trimmedValue);
-      fetchData(offset, pageSize, sortField, sortOrder, trimmedValue);
-    }
-  }, 1000), // 1000ms debounce
-  [offset, pageSize, sortField, sortOrder]
-);
+    setSearchKey(trimmedValue.length > 0 ? trimmedValue : null);
+    // fetchData(offset, pageSize, sortField, sortOrder, value);
+  };
 
   const fetchData = async (
     offset,
@@ -323,14 +327,13 @@ const debouncedSearch = useCallback(
       if (response.data && response.data.data) {
         setTotalUserCount(response.data.data.totalCount);
         response.data.data.users.map((user) => {
-          user.assigned_to =
-            (user.teacher?.teacher_first_name || "-") +
-            " " +
-            (user.teacher?.teacher_last_name || "-");
+          const teacher = user.teacher;
 
-          user.name =
-            user.first_name + " " + user.father_name + " " + user.last_name;
+          user.assigned_to = teacher
+            ? `${teacher.teacher_first_name || ""} ${teacher.teacher_last_name || ""}`.trim()
+            : "No Assignee";
 
+          user.name = `${user.first_name} ${user.father_name} ${user.last_name}`;
           user.created_at = moment(user.created_at).format("DD-MM-YYYY");
 
           return user;
@@ -376,10 +379,17 @@ const debouncedSearch = useCallback(
   };
 
   useEffect(() => {
-    fetchData(0, pageSize);
-    fetchTeachersData();
+    if (searchRef.current) clearTimeout(searchRef.current);
+
+    searchRef.current = setTimeout(() => {
+      fetchData(0, pageSize, sortField, sortOrder, searchKey);
+      setOffset(0);
+      setCurrentPage(1);
+      fetchTeachersData();
+    }, 500); // Debounce 
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId, selectedGenderValue, selectedStatusValue, fromDate, toDate]);
+  }, [teacherId, selectedGenderValue, selectedStatusValue, fromDate, toDate, searchKey]);
 
   return (
     <div className="main-container">
@@ -487,31 +497,31 @@ const debouncedSearch = useCallback(
           </Space>
 
           <Space>
-            <Select
+          <Select
               onChange={handleTeacherFilterChange}
-              showSearch={true}
-              allowClear={true}
+              showSearch
+              allowClear
               placeholder="Select Teacher"
               optionFilterProp="children"
               value={selectedTeacherValue}
               filterOption={(input, option) =>
-                (option?.children ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
+                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
               }
               style={{ width: "100%", maxWidth: "180px" }}
             >
-              <Option key={"None"} value="None">
-                None
-              </Option>
-              <Option key={"0"} value="0">
-                No Assignee
-              </Option>
-              {teachers.map((teacher, index) => (
-                <Option key={index} value={teacher.teacher_id}>
-                  {teacher.teacher_first_name + " " + teacher.teacher_last_name}
-                </Option>
-              ))}
+              {/* Static options */}
+              <Option key="None" value="None">None</Option>
+              <Option key="0" value="0">No Assignee</Option>
+
+              {/* Dynamic teacher options */}
+              {teachers?.map((teacher) => {
+                const name = `${teacher.teacher_first_name || ""} ${teacher.teacher_last_name || ""}`.trim();
+                return (
+                  <Option key={teacher.teacher_id} value={teacher.teacher_id}>
+                    {name || "Unnamed Teacher"}
+                  </Option>
+                );
+              })}
             </Select>
           </Space>
         </Space>
@@ -531,6 +541,7 @@ const debouncedSearch = useCallback(
           setOffset={setOffset}
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
+          searchKey={searchKey}
         />
       </div>
 

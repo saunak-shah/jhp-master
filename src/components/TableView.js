@@ -13,6 +13,7 @@ function TableView({
   setOffset,
   setCurrentPage,
   fetchData,
+  searchKey
 }) {
   const handleChange = (pagination, filters, sorter) => {
     const newSortField = sorter.field;
@@ -26,7 +27,7 @@ function TableView({
     setCurrentPage(pagination.current);
 
     // Pass the newSortField and newSortOrder directly to fetchData
-    fetchData(newOffset, pagination.pageSize, newSortField, newSortOrder);
+    fetchData(newOffset, pagination.pageSize, newSortField, newSortOrder, searchKey);
   };
 
   return (
