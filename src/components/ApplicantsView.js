@@ -59,12 +59,14 @@ const ApplicantsView = () => {
       response.data.data.registrations.length > 0
     ) {
       response.data.data.registrations.map((data) => {
+        const createdAtDate = new Date(data.created_at);
         data.created_at =
-          new Date(data.created_at).getDate() +
+          createdAtDate.getDate() +
           "/" +
-          new Date(data.created_at).getMonth() +
+          (createdAtDate.getMonth() + 1) + // <-- Add +1 here
           "/" +
-          new Date(data.created_at).getFullYear();
+          createdAtDate.getFullYear();
+
         data.email = data.student.email;
         data.name = data.student.first_name + " " + data.student.last_name;
         data.score =
@@ -105,12 +107,14 @@ const ApplicantsView = () => {
       ) {
         data.data.registrations.map((data) => {
 
-          data.created_at =
-            new Date(data.created_at).getDate() +
-            "/" +
-            new Date(data.created_at).getMonth() +
-            "/" +
-            new Date(data.created_at).getFullYear();
+          const createdAtDate = new Date(data.created_at);
+            data.created_at =
+              createdAtDate.getDate() +
+              "/" +
+              (createdAtDate.getMonth() + 1) + // <-- Add +1 here
+              "/" +
+              createdAtDate.getFullYear();
+              
           data.email = data.email;
           data.exam_status = "Not available";
           const score = data?.score;
@@ -158,6 +162,12 @@ const ApplicantsView = () => {
       title: "Applied On",
       dataIndex: "created_at",
       key: "created_at",
+      sorter: true,
+    },
+    {
+      title: "Reg Id",
+      dataIndex: "reg_id",
+      key: "reg_id",
       sorter: true,
     },
     {
