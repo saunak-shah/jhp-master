@@ -29,10 +29,16 @@ const StudentEditModal = ({
   const handleSubmit = async (values) => {
    
     const updateProfileUrl = `/api/students/update_profile`;
-    values = {
-      data: values,
-    };
-    const response = await post(updateProfileUrl, values);
+    // Example: convert moment date to string
+  // const birthDate = values.birth_date ? values.birth_date.format("YYYY-MM-DD") : null;
+
+  const payload = {
+    student_id: data.student_id,
+    ...values,
+    // birth_date: birthDate,
+  };
+
+    const response = await post(updateProfileUrl, {data: payload});
 
     if (response.status === 200) {
       message.success("Student data updated");
@@ -55,6 +61,7 @@ const StudentEditModal = ({
       >
         {data && (
           <Form
+            key={data?.student_id}  // This forces Form to recreate on different student
             layout="vertical"
             initialValues={{
               first_name: data.first_name,

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button, Space, Modal, Input, message, Tag } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import {
+  DeleteOutlined,
   DownloadOutlined,
   EditOutlined,
   LeftOutlined,
@@ -11,7 +12,7 @@ import * as XLSX from "xlsx";
 import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import axios from "axios";
-import { post } from "../global/api";
+import { post, deleteData } from "../global/api";
 
 const ApplicantsView = () => {
   const [applicants, setApplicants] = useState([]);
@@ -25,7 +26,9 @@ const ApplicantsView = () => {
   const [isUpdateModelVisible, setUpdateModelVisibility] = useState(false);
   const [dataToUpdate, setDataToUpdate] = useState({});
   const [scoreToUpdate, setScoreToUpdate] = useState(0);
-  
+  const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
+  const [dataToDelete, setDataToDelete] = useState({});
+
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
 
@@ -133,6 +136,25 @@ const ApplicantsView = () => {
     return null;
   };
 
+  const handleDelete = (record) => {
+    setDeleteModalVisibility(true);
+    setDataToDelete(record);
+  };
+
+
+  const deleteApplicant = async () => {
+    const applicantId = dataToDelete.student_apply_course_id;
+    const endpoint = `/api/exam/registration/${applicantId}`;
+    const res = await deleteData(endpoint, dataToDelete);
+    if(res.status === 200){
+      fetchData(offset, pageSize);
+    } else{
+      message.error(res.message);
+    }
+    setDeleteModalVisibility(false);
+    setDataToDelete({});
+  };
+
   const handleApplicantsSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
     fetchData(offset, pageSize, sortField, sortOrder, value);
@@ -221,6 +243,14 @@ const ApplicantsView = () => {
             >
               Update Result
             </Button>
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record)}
+            >
+              Delete
+            </Button>
           </Space>
         );
       },
@@ -235,6 +265,11 @@ const ApplicantsView = () => {
     setUpdateModelVisibility(true);
     setDataToUpdate(record);
     setScoreToUpdate(record.score);
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteModalVisibility(false);
+    setDataToDelete("");
   };
 
   const handleUpdateScoreChange = (value) => {
@@ -273,6 +308,16 @@ const ApplicantsView = () => {
 
   return (
     <div className="main-container">
+      <Modal
+        title="Confirm Deletion"
+        open={isDeleteModalVisible}
+        onOk={deleteApplicant}
+        onCancel={handleDeleteCancel}
+        okText="Yes"
+        cancelText="No"
+      >
+        <p>Are you sure you want to delete this record?</p>
+      </Modal>
       <Modal
         title="Confirm Updation"
         open={isUpdateModelVisible}
