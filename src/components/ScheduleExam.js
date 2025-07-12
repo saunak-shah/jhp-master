@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Space, message, Form, Modal } from "antd";
+import { Button, Space, message, Form, Modal, Select } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DatabaseOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, LeftOutlined, PlusOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -9,6 +9,7 @@ import { post, deleteData, put } from "../global/api";
 import AddExamForm from "../components/AddExamForm"; // Make sure the path is correct
 import axios from "axios";
 import moment from "moment";
+import { Option } from "antd/es/mentions";
 
 
 const ScheduleExam = () => {
@@ -26,6 +27,8 @@ const ScheduleExam = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalExamScheduleCount, setTotalExamScheduleCount] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [selectedStatusValue, setSelectedStatusValue] = useState("true");
+
 
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
@@ -72,6 +75,11 @@ const ScheduleExam = () => {
     if (sortField) {
       apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
     }
+
+    // Append exam status filter
+    if (selectedStatusValue) {
+      apiUrl += `&is_exam_active=${selectedStatusValue}`;
+    }
     let headers = {
       "Content-Type": "application/json",
       Authorization: token,
@@ -108,7 +116,6 @@ const ScheduleExam = () => {
     setLoading(true);
     const endpoint = `/api/exam/schedule/`;
 
-      exam.is_active = true;
       exam.total_marks = parseInt(exam.total_marks);
       exam.passing_score = parseInt(exam.passing_score);
 
@@ -129,6 +136,12 @@ const ScheduleExam = () => {
     setDeleteModalVisibility(false);
     setDataToDelete("");
   };
+
+  const handleExamStatusFilterChange = (status) => {
+    setSelectedStatusValue(status);
+    setOffset(0);
+    setCurrentPage(1);
+  };
   
   const handleResultSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
@@ -138,7 +151,7 @@ const ScheduleExam = () => {
   useEffect(() => {
     fetchData(offset, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [selectedStatusValue]);
 
   const columns = [
     { title: "Exam Name", dataIndex: "exam_name", key: "exam_name" },
@@ -208,6 +221,28 @@ const ScheduleExam = () => {
           enterButton
           onChange={(e) => handleResultSearchChange(e.target.value)}
         />
+
+        <Select
+              onChange={handleExamStatusFilterChange}
+              showSearch={true}
+              placeholder="Select Status"
+              optionFilterProp="children"
+              value={selectedStatusValue}
+              allowClear={true}
+              filterOption={(input, option) =>
+                (option?.children ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
+              }
+              style={{ width: "100%", maxWidth: "120px" }}
+            >
+              <Option key={"1"} value={"true"}>
+                Active
+              </Option>
+              <Option key={"2"} value={"false"}>
+                DeActive
+              </Option>
+            </Select>
 
         <Button className="button-class"
             type="primary"

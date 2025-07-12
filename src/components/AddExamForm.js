@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Input, DatePicker, Form } from "antd";
+import { Modal, Input, DatePicker, Form, Switch } from "antd";
 import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 
@@ -24,6 +24,10 @@ const AddEditExam = ({ visible, onCancel, onSubmit, initialData }) => {
         end_time: initialData?.end_time
           ? dayjs(initialData.end_time)
           : null,
+        is_exam_active:
+        initialData?.is_exam_active !== undefined
+          ? initialData.is_exam_active
+          : true,
       };
       console.log("formValuesformValuesformValues", formValues)
       form.setFieldsValue(formValues);
@@ -132,6 +136,13 @@ const AddEditExam = ({ visible, onCancel, onSubmit, initialData }) => {
           ]}
         >
           <Input type="number" />
+        </Form.Item>
+        <Form.Item
+          name="is_exam_active"
+          label="Exam Active"
+          valuePropName="checked" // Important for Switch!
+        >
+          <Switch checkedChildren="Active" unCheckedChildren="Inactive" />
         </Form.Item>
       </Form>
     </Modal>
