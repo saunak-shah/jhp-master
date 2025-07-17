@@ -378,6 +378,11 @@ const UserTable = observer(() => {
     }
   };
 
+  // Fetch teachers only ONCE on mount
+  useEffect(() => {
+    fetchTeachersData();
+  }, []);
+
   useEffect(() => {
     if (searchRef.current) clearTimeout(searchRef.current);
 
@@ -385,11 +390,18 @@ const UserTable = observer(() => {
       fetchData(0, pageSize, sortField, sortOrder, searchKey);
       setOffset(0);
       setCurrentPage(1);
-      fetchTeachersData();
-    }, 500); // Debounce 
+    }, 500);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId, selectedGenderValue, selectedStatusValue, fromDate, toDate, searchKey]);
+    // Clean up the timer if the component unmounts or dependencies change
+    return () => clearTimeout(searchRef.current);
+  }, [
+    teacherId,
+    selectedGenderValue,
+    selectedStatusValue,
+    fromDate,
+    toDate,
+    searchKey
+  ]);
 
   return (
     <div className="main-container">
