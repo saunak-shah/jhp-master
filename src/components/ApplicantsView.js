@@ -109,25 +109,26 @@ const ApplicantsView = () => {
         data.data.registrations.length > 0
       ) {
         data.data.registrations.map((data) => {
-
           const createdAtDate = new Date(data.created_at);
-            data.created_at =
-              createdAtDate.getDate() +
-              "/" +
-              (createdAtDate.getMonth() + 1) + // <-- Add +1 here
-              "/" +
-              createdAtDate.getFullYear();
-              
+          data.created_at =
+            createdAtDate.getDate() +
+            "/" +
+            (createdAtDate.getMonth() + 1) + // <-- Add +1 here
+            "/" +
+            createdAtDate.getFullYear();
+
           data.email = data.email;
           data.exam_status = "Not available";
           const score = data?.score;
           const passingScore = data?.passing_score;
-            if (score >= passingScore) {
-              data.exam_status = "Pass";
-            } else {
-              data.exam_status = "Fail";
-            }
-          });
+          if (score == null || score == undefined) {
+            data.exam_status = "Not available";
+          } else if (score >= passingScore) {
+            data.exam_status = "Pass";
+          } else {
+            data.exam_status = "Fail";
+          }
+        });
         setLoading(false);
         return data.data.registrations;
       }
