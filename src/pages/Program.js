@@ -21,7 +21,6 @@ const Program = () => {
   const [loading, setLoading] = useState(false);
   const [totalProgramsCount, setTotalProgramsCount] = useState(0);
   const [programs, setPrograms] = useState([]);
-  console.log("🚀 ~ Program ~ programs:", programs);
   const [isEdit, setIsEdit] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
@@ -170,7 +169,6 @@ const Program = () => {
   };
 
   const editProgram = (program) => {
-    console.log("🚀 ~ editProgram ~ program:", program);
     setCurrentProgram(program); // Set current program to edit
     setIsModalVisible(true);
     setIsEdit(true);
@@ -202,7 +200,6 @@ const Program = () => {
     sortOrder = "asc",
     searchKey = null
   ) => {
-    console.log("🚀 ~ fetchData ~ offset:", offset);
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;

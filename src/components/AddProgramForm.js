@@ -37,7 +37,6 @@ const AddEditProgram = ({ visible, onCancel, onSubmit, initialData }) => {
             ? initialData.is_program_active
             : true,
       };
-      console.log("🚀 ~ useEffect ~ formValues:", formValues)
       form.setFieldsValue(formValues);
     } else {
       form.resetFields();

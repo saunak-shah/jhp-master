@@ -126,7 +126,6 @@ const ProgramApplicantsView = () => {
 
 
   const deleteApplicant = async () => {
-    console.log("🚀 ~ deleteApplicant ~ dataToDelete:", dataToDelete)
     const applicantId = dataToDelete.reg_id;
     const endpoint = `/api/programs/registration/${applicantId}`;
     const res = await deleteData(endpoint, dataToDelete);
