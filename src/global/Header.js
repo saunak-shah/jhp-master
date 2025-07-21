@@ -123,6 +123,12 @@ const Header = observer(() => {
       label: <Link to="/teacher" className="header-menu-item">Teacher</Link>,
       onClick: () => handleMenuItemClick('/teacher') 
     },
+    {
+      key: 'program',
+      roles: [allowModules.Program],  // Specific to teachers
+      label: <Link to="/program" className="header-menu-item">Programs</Link>,
+      onClick: () => handleMenuItemClick('/program') 
+    },
   ];  // Filter items based on role access
 
   return (
