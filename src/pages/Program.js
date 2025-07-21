@@ -279,7 +279,7 @@ const Program = () => {
       <Space style={{ marginBottom: 16 }}>
         <Search
           className="search-class"
-          placeholder="Search exams"
+          placeholder="Search programs"
           enterButton
           onChange={(e) => debouncedSearchHandler(e.target.value)}
         />
