@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Space, message, Form, Modal } from "antd";
+import { Input, Button, Space, message, Form, Modal, Select } from "antd";
 import AddProgramForm from "../components/AddProgramForm"; // Make sure the path is correct
-import { EditOutlined, DeleteOutlined, PlusOutlined, DatabaseOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  PlusOutlined,
+  DatabaseOutlined,
+} from "@ant-design/icons";
 import { post, deleteData } from "../global/api";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
@@ -9,6 +14,7 @@ import { debounce } from "lodash";
 import "../css/Teacher.css"; // Import the CSS file
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { Option } from "antd/es/mentions";
 
 const Program = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -24,6 +30,7 @@ const Program = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const [selectedStatusValue, setSelectedStatusValue] = useState(true);
 
   const navigate = useNavigate();
 
@@ -120,7 +127,9 @@ const Program = () => {
             <Button
               type="primary"
               icon={<DatabaseOutlined />}
-              onClick={() => navigate(`/applicants/programs/${record.program_id}`)}
+              onClick={() =>
+                navigate(`/applicants/programs/${record.program_id}`)
+              }
             >
               View Applicants
             </Button>
@@ -132,7 +141,7 @@ const Program = () => {
 
   const handleProgramSearchChange = async (value) => {
     value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, sortField, sortOrder, value);
+    fetchData(0, pageSize, selectedStatusValue, sortField, sortOrder, value);
   };
 
   // Debounce search key handler
@@ -149,16 +158,14 @@ const Program = () => {
       ? `/api/programs/${program.program_id}`
       : "/api/programs";
 
-    program.is_program_active = true;
-
     const res = await post(endpoint, program);
     if (res.status === 200) {
-      fetchData(0, pageSize);
       message.success(`Program ${isEdit ? "updated" : "added"} successfully.`);
       setIsModalVisible(false);
     } else {
       message.error(`${res.message}`);
     }
+    fetchData(0, pageSize, selectedStatusValue);
     setLoading(false);
   };
 
@@ -196,6 +203,7 @@ const Program = () => {
   const fetchData = async (
     offset,
     limit,
+    status = true,
     sortField = "program_id",
     sortOrder = "asc",
     searchKey = null
@@ -203,7 +211,7 @@ const Program = () => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
-      let apiUrl = `${apiHost}/api/programs?limit=${limit}&offset=${offset}`;
+      let apiUrl = `${apiHost}/api/programs?limit=${limit}&offset=${offset}&is_program_active=${Boolean(status)}`;
       if (searchKey && searchKey.length > 0) {
         apiUrl = apiUrl + `&searchKey=${searchKey}`;
       }
@@ -259,6 +267,13 @@ const Program = () => {
     }
   };
 
+  const handleProgramStatusFilterChange = (status) => {
+    setSelectedStatusValue(status);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, status);
+  };
+
   useEffect(() => {
     fetchData(0, pageSize);
   }, []); // Only fetch when searchKey changes after debounce
@@ -284,15 +299,38 @@ const Program = () => {
           onChange={(e) => debouncedSearchHandler(e.target.value)}
         />
       </Space>
-      <Button
-        className="button-class"
-        type="primary"
-        block
-        icon={<PlusOutlined />}
-        onClick={addProgram}
-      >
-        Add Program
-      </Button>
+
+      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
+        <Select
+          onChange={handleProgramStatusFilterChange}
+          showSearch={true}
+          placeholder="Select Status"
+          optionFilterProp="children"
+          value={selectedStatusValue}
+          allowClear={true}
+          filterOption={(input, option) =>
+            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+          }
+          style={{ width: "100%", maxWidth: "120px" }}
+        >
+          <Option key={"1"} value={true}>
+            Active
+          </Option>
+          <Option key={"2"} value={false}>
+            Inactive
+          </Option>
+        </Select>
+
+        <Button
+          className="button-class"
+          type="primary"
+          block
+          icon={<PlusOutlined />}
+          onClick={addProgram}
+        >
+          Add Program
+        </Button>
+      </Space>
       <div className="table-container">
         <TableView
           data={programs}
