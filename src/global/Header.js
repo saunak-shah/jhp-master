@@ -126,7 +126,7 @@ const Header = observer(() => {
     {
       key: 'program',
       roles: [allowModules.Program],  // Specific to teachers
-      label: <Link to="/program" className="header-menu-item">Programs</Link>,
+      label: <Link to="/program" className="header-menu-item">Program</Link>,
       onClick: () => handleMenuItemClick('/program') 
     },
   ];  // Filter items based on role access
