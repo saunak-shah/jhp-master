@@ -79,7 +79,9 @@ const ApplyForProgramModal = ({
         message.error("Application failed.");
       }
     } catch (err) {
-      message.error(`${err.response.data.message || "Failed to apply for the program."}`);
+      message.error(
+        `${err.response.data.message || "Failed to apply for the program."}`
+      );
       console.error(err);
     } finally {
       setLoading(false);
@@ -112,6 +114,9 @@ const ApplyForProgramModal = ({
           showSearch
           placeholder="Select a program"
           optionFilterProp="children"
+          filterOption={(input, option) =>
+            option?.children?.toLowerCase().includes(input.toLowerCase())
+          }
           onChange={(value) => setSelectedProgramId(value)}
           style={{ width: "100%" }}
           value={selectedProgramId}
