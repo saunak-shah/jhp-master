@@ -9,7 +9,8 @@ export const allowModules = {
     Teacher: 6,
     Profile: 7,
     Result: 8,
-    Group: 9
+    Group: 9,
+    Program: 10,
 }
 
 export const ATTENDANCE_DAYS = 2;

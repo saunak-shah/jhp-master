@@ -20,6 +20,8 @@ import AttendanceReport from "../pages/AttendanceReport";
 import ResultsView from "../components/ResultsView";
 import ScheduleExam from "../components/ScheduleExam";
 import Group from "./Group";
+import Program from "./Program";
+import ProgramApplicantsView from "../components/ProgramApplicantsView";
 
 const App = observer(() => {
   const [isLogin, setIsLogin] = useState(true);
@@ -45,10 +47,11 @@ const App = observer(() => {
             <Routes>
               <Route path="/exam" element={<Exam />} />
               <Route path="/home" element={<Home />} />
-              <Route path="/applicants/:examId" element={<ApplicantsView />} /> // New route for viewing applicants
-              <Route path="/results/:examId" element={<ResultsView />} /> // New route for viewing results
-              <Route path="/exam/schedule/:examId" element={<ScheduleExam />} /> // New route for schedule new exam
-              <Route path="/attendance/report" element={<AttendanceReport />} /> // New route for viewing applicants
+              <Route path="/applicants/:examId" element={<ApplicantsView />} />
+              <Route path="/applicants/programs/:programId" element={<ProgramApplicantsView />} />
+              <Route path="/results/:examId" element={<ResultsView />} />
+              <Route path="/exam/schedule/:examId" element={<ScheduleExam />} />
+              <Route path="/attendance/report" element={<AttendanceReport />} />
               <Route path="/admin" element={<AdminUsers />} />
               <Route path="/student" element={<UserTable />} />
               <Route path="/attendance" element={<Attendance />} />
@@ -57,6 +60,7 @@ const App = observer(() => {
               {/* <Route path="/result" element={<Result />} /> */}
               <Route path="/changepassword" element={<ChangePassword />} />
               <Route path="/teacher" element={<Teacher />} />
+              <Route path="/program" element={<Program />} />
               <Route path="/" element={<Home />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
