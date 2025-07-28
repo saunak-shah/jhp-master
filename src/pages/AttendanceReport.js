@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Drawer, List, message, Space, Select, Flex } from "antd";
+import { Button, DatePicker, Drawer, List, message, Space, Select, Flex, Menu, Dropdown } from "antd";
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -40,6 +40,14 @@ const AttendanceView = observer(() => {
   
   const [lowerDateLimit, setLowerDateLimit] = useState(defaultFromDate);
   const [upperDateLimit, setUpperDateLimit] = useState(defaultToDate);
+
+  const [customExportDrawerVisible, setCustomExportDrawerVisible] = useState(false);
+  const [cutoffStartDate, setCutoffStartDate] = useState(null);
+  const [cutoffEndDate, setCutoffEndDate] = useState(null);
+  const [cutoffAttendance, setCutoffAttendance] = useState(null);
+  const [attnStartDate, setAttnStartDate] = useState(null);
+  const [attnEndDate, setAttnEndDate] = useState(null);
+
 
   const fetchData = async (
     offset,
@@ -137,6 +145,22 @@ const AttendanceView = observer(() => {
     }
   };
 
+  // Menu for dropdown
+const exportMenu = (
+  <Menu
+    onClick={({ key }) => {
+      if (key === "default") {
+        exportDataToExcel();
+      } else if (key === "custom") {
+        setCustomExportDrawerVisible(true);
+      }
+    }}
+  >
+    <Menu.Item key="default">Default Export</Menu.Item>
+    <Menu.Item key="custom">Custom Export</Menu.Item>
+  </Menu>
+);
+
   const handleGenderFilterChange = (gender) => {
     setSelectedGenderValue(gender);
     setOffset(0);
@@ -180,6 +204,56 @@ const AttendanceView = observer(() => {
       if (upperDateLimit) {
         apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
       }
+      let date = moment().format();
+      let reqObj = {
+        limit: 20,
+        offset: 0,
+        date,
+      };
+      const response = await post(apiUrl, reqObj);
+
+      if (!response.data || !response.data.attendance) {
+        throw new Error(`Unable to fetch attendance`);
+      }
+
+      return response.data.attendance;
+    } catch (error) {
+      console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
+    }
+
+    return null;
+  };
+
+  const fetchCustomAttendanceData = async (
+    fromDate = lowerDateLimit,
+    toDate = upperDateLimit,
+    teacherId = selectedTeacherValue,
+    cutoffStart = cutoffStartDate,
+    cutoffEnd = cutoffEndDate,
+    cutoffAttendanceVal = cutoffAttendance
+  ) => {
+    setLoading(true);
+
+    const limit = 10000;
+    const offset = 0;
+    try {
+      setLoading(true);
+
+      console.log("fromDate", fromDate)
+      console.log("toDate", toDate)
+      console.log("cutoffStart", cutoffStart)
+      console.log("cutoffEnd", cutoffEnd)
+      console.log("cutoffAttendance", cutoffAttendance)
+      let apiUrl = `/api/custom/attendance_report?limit=${limit}&offset=${offset}`;
+
+      if (fromDate) apiUrl += `&attendanceStartDate=${fromDate}`;
+      if (toDate) apiUrl += `&attendanceEndDate=${toDate}`;
+      if (cutoffStart) apiUrl += `&cutoffStartDate=${cutoffStart}`;
+      if (cutoffEnd) apiUrl += `&cutoffEndDate=${cutoffEnd}`;
+      if (cutoffAttendanceVal) apiUrl += `&cutoffAttendanceCount=${cutoffAttendanceVal}`;
+
       let date = moment().format();
       let reqObj = {
         limit: 20,
@@ -340,9 +414,12 @@ const AttendanceView = observer(() => {
           style={{ width: 140 }}
         />
 
-        <Button type="primary" onClick={exportDataToExcel} icon={<DownloadOutlined />}>
-          Export To Excel
-        </Button>
+        <Dropdown overlay={exportMenu} trigger={['click']}>
+          <Button icon={<DownloadOutlined />} type="primary">
+            Export To Excel
+          </Button>
+        </Dropdown>
+
       </Flex>
     </Flex>
 
@@ -359,6 +436,87 @@ const AttendanceView = observer(() => {
       setCurrentPage={setCurrentPage}
       fetchData={fetchData}
     />
+    
+      <Drawer
+      title="Custom Export"
+      placement="right"
+      open={customExportDrawerVisible}
+      onClose={() => setCustomExportDrawerVisible(false)}
+      width={360}
+    >
+      <Flex vertical gap={16}>
+        <div>
+          <label>Cut-off Start Date</label>
+          <DatePicker
+            placeholder="Select Cut-off Start Date"
+            value={cutoffStartDate ? dayjs(cutoffStartDate) : null}
+            onChange={(date, dateStr) => setCutoffStartDate(dateStr)}
+            style={{ width: "100%" }}
+          />
+        </div>
+
+        <div>
+          <label>Cut-off End Date</label>
+          <DatePicker
+            placeholder="Select Cut-off End Date"
+            value={cutoffEndDate ? dayjs(cutoffEndDate) : null}
+            onChange={(date, dateStr) => setCutoffEndDate(dateStr)}
+            style={{ width: "100%" }}
+          />
+        </div>
+
+        <div>
+          <label>Cut-off Attendance</label>
+          <Select
+            placeholder="Select attendance"
+            value={cutoffAttendance}
+            onChange={setCutoffAttendance}
+            style={{ width: "100%" }}
+            showSearch
+            optionFilterProp="children"
+          >
+            {[...Array(100)].map((_, i) => (
+              <Option key={i + 1} value={i + 1}>{i + 1}</Option>
+            ))}
+          </Select>
+        </div>
+
+        <div>
+          <label>Attendance Start Date</label>
+          <DatePicker
+            placeholder="Select Attendance Start Date"
+            value={attnStartDate ? dayjs(attnStartDate) : null}
+            onChange={(date, dateStr) => setAttnStartDate(dateStr)}
+            style={{ width: "100%" }}
+          />
+        </div>
+
+        <div>
+          <label>Attendance End Date</label>
+          <DatePicker
+            placeholder="Select Attendance End Date"
+            value={attnEndDate ? dayjs(attnEndDate) : null}
+            onChange={(date, dateStr) => setAttnEndDate(dateStr)}
+            style={{ width: "100%" }}
+          />
+        </div>
+
+        <Button
+          type="primary"
+          block
+          onClick={async () => {
+            const data = await fetchCustomAttendanceData(attnStartDate, attnEndDate);
+
+            exportToExcel(data, "Custom_Attendance");
+
+            // optionally pass cut-off info in filename or API later
+            setCustomExportDrawerVisible(false);
+          }}
+        >
+          Export
+        </Button>
+      </Flex>
+    </Drawer>
 
     <Drawer
       title="Attendance Details"
