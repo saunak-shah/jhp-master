@@ -26,7 +26,8 @@ import ChangeTeacher from "../components/ChangeTeacher"; // Make sure the path i
 import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
+import ApplyForProgramModal from "../components/ApplyForProgramModal";
 const { Option } = Select;
 
 const UserTable = observer(() => {
@@ -53,6 +54,10 @@ const UserTable = observer(() => {
   const [currentStudent, setCurrentStudent] = useState(null);
   const [searchKey, setSearchKey] = useState("");
   const searchRef = useRef(null);
+  const [isApplyProgramModalVisible, setIsApplyProgramModalVisible] =
+    useState(false);
+  const [selectedStudentForProgram, setSelectedStudentForProgram] =
+    useState(null);
 
   const defaultToDate = moment(
     moment(new Date()).format("YYYY-MM-DD"),
@@ -71,6 +76,11 @@ const UserTable = observer(() => {
     setDataToDelete("");
   };
 
+  const handleApplyForProgram = (record) => {
+    setSelectedStudentForProgram(record);
+    setIsApplyProgramModalVisible(true);
+  };
+
   const token = localStorage.getItem("token");
 
   const handleTeacherFilterChange = (teacherId) => {
@@ -80,7 +90,7 @@ const UserTable = observer(() => {
     } else {
       setTeacherId(teacherId);
       setSelectedTeacherValue(teacherId);
-    }  
+    }
   };
 
   const handleGenderFilterChange = (gender) => {
@@ -156,7 +166,7 @@ const UserTable = observer(() => {
     if (res.status === 200) {
       fetchData(offset, pageSize);
       message.success("Data updated successfully.");
-    } else{
+    } else {
       message.error("There is some error.");
     }
     setLoading(false);
@@ -178,7 +188,7 @@ const UserTable = observer(() => {
       dataIndex: "name",
       key: "name",
       sorter: true,
-      width: 300
+      width: 300,
     },
     { title: "Email", dataIndex: "email", key: "email", sorter: true },
     {
@@ -206,9 +216,9 @@ const UserTable = observer(() => {
       key: "status",
       sorter: true,
       render: (_, record) => {
-        if (parseInt(record.status) == 1) {
+        if (parseInt(record.status) === 1) {
           return <Tag color="red">Pending</Tag>;
-        } else if (parseInt(record.status) == 2) {
+        } else if (parseInt(record.status) === 2) {
           return <Tag color="green">Approve</Tag>;
         } else {
           return <Tag color="default">Not Available</Tag>;
@@ -238,20 +248,26 @@ const UserTable = observer(() => {
             </Button>
             <Button
               type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleApplyForProgram(record)}
+            >
+              Apply for program
+            </Button>
+            <Button
+              type="primary"
               icon={<SwapOutlined />}
               onClick={() => handleChangeAssignee(record)}
             >
               Change Teacher
             </Button>
             {record.status === 1 ? (
-              <Button
-              type="primary"
-              onClick={() => handleApproveUser(record)}
-            >
-              Approve
-            </Button>
-            ): ''}
-            
+              <Button type="primary" onClick={() => handleApproveUser(record)}>
+                Approve
+              </Button>
+            ) : (
+              ""
+            )}
+
             <Button
               type="primary"
               danger
@@ -277,7 +293,7 @@ const UserTable = observer(() => {
     limit,
     sortField,
     sortOrder,
-    searchKey = null,
+    searchKey = null
   ) => {
     setLoading(true);
     try {
@@ -330,7 +346,9 @@ const UserTable = observer(() => {
           const teacher = user.teacher;
 
           user.assigned_to = teacher
-            ? `${teacher.teacher_first_name || ""} ${teacher.teacher_last_name || ""}`.trim()
+            ? `${teacher.teacher_first_name || ""} ${
+                teacher.teacher_last_name || ""
+              }`.trim()
             : "No Assignee";
 
           user.name = `${user.first_name} ${user.father_name} ${user.last_name}`;
@@ -400,11 +418,20 @@ const UserTable = observer(() => {
     selectedStatusValue,
     fromDate,
     toDate,
-    searchKey
+    searchKey,
   ]);
 
   return (
     <div className="main-container">
+      <ApplyForProgramModal
+        visible={isApplyProgramModalVisible}
+        onCancel={() => setIsApplyProgramModalVisible(false)}
+        student={selectedStudentForProgram}
+        fetchData={fetchData}
+        offset={offset}
+        pageSize={pageSize}
+      />
+
       <StudentView
         data={currentStudent}
         isViewModalVisible={isViewModalVisible}
@@ -509,7 +536,7 @@ const UserTable = observer(() => {
           </Space>
 
           <Space>
-          <Select
+            <Select
               onChange={handleTeacherFilterChange}
               showSearch
               allowClear
@@ -517,17 +544,25 @@ const UserTable = observer(() => {
               optionFilterProp="children"
               value={selectedTeacherValue}
               filterOption={(input, option) =>
-                (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+                (option?.children ?? "")
+                  .toLowerCase()
+                  .includes(input.toLowerCase())
               }
               style={{ width: "100%", maxWidth: "180px" }}
             >
               {/* Static options */}
-              <Option key="None" value="None">None</Option>
-              <Option key="0" value="0">No Assignee</Option>
+              <Option key="None" value="None">
+                None
+              </Option>
+              <Option key="0" value="0">
+                No Assignee
+              </Option>
 
               {/* Dynamic teacher options */}
               {teachers?.map((teacher) => {
-                const name = `${teacher.teacher_first_name || ""} ${teacher.teacher_last_name || ""}`.trim();
+                const name = `${teacher.teacher_first_name || ""} ${
+                  teacher.teacher_last_name || ""
+                }`.trim();
                 return (
                   <Option key={teacher.teacher_id} value={teacher.teacher_id}>
                     {name || "Unnamed Teacher"}
