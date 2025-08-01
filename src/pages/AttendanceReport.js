@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useEffect, useState } from "react";
-import { Button, DatePicker, Drawer, List, message, Space, Select, Flex } from "antd";
+import { Button, DatePicker, Drawer, List, message, Space, Select, Flex, Menu, Dropdown } from "antd";
 import { useNavigate } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DownloadOutlined, LeftOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -15,6 +15,8 @@ import attendanceStore from "../stores/attendanceStore";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
 import "../css/Teacher.css"; // Import the CSS file
+import { InfoCircleOutlined } from "@ant-design/icons";
+import { Tooltip } from "antd";
 
 const { Option } = Select;
 
@@ -40,6 +42,14 @@ const AttendanceView = observer(() => {
   
   const [lowerDateLimit, setLowerDateLimit] = useState(defaultFromDate);
   const [upperDateLimit, setUpperDateLimit] = useState(defaultToDate);
+
+  const [customExportDrawerVisible, setCustomExportDrawerVisible] = useState(false);
+  const [cutoffStartDate, setCutoffStartDate] = useState(null);
+  const [cutoffEndDate, setCutoffEndDate] = useState(null);
+  const [cutoffAttendance, setCutoffAttendance] = useState(null);
+  const [attnStartDate, setAttnStartDate] = useState(null);
+  const [attnEndDate, setAttnEndDate] = useState(null);
+
 
   const fetchData = async (
     offset,
@@ -137,6 +147,22 @@ const AttendanceView = observer(() => {
     }
   };
 
+  // Menu for dropdown
+const exportMenu = (
+  <Menu
+    onClick={({ key }) => {
+      if (key === "default") {
+        exportDataToExcel();
+      } else if (key === "custom") {
+        setCustomExportDrawerVisible(true);
+      }
+    }}
+  >
+    <Menu.Item key="default">Default Export</Menu.Item>
+    <Menu.Item key="custom">Custom Export</Menu.Item>
+  </Menu>
+);
+
   const handleGenderFilterChange = (gender) => {
     setSelectedGenderValue(gender);
     setOffset(0);
@@ -180,6 +206,56 @@ const AttendanceView = observer(() => {
       if (upperDateLimit) {
         apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
       }
+      let date = moment().format();
+      let reqObj = {
+        limit: 20,
+        offset: 0,
+        date,
+      };
+      const response = await post(apiUrl, reqObj);
+
+      if (!response.data || !response.data.attendance) {
+        throw new Error(`Unable to fetch attendance`);
+      }
+
+      return response.data.attendance;
+    } catch (error) {
+      console.error("Error during API call:", error);
+    } finally {
+      setLoading(false);
+    }
+
+    return null;
+  };
+
+  const fetchCustomAttendanceData = async (
+    fromDate = lowerDateLimit,
+    toDate = upperDateLimit,
+    teacherId = selectedTeacherValue,
+    cutoffStart = cutoffStartDate,
+    cutoffEnd = cutoffEndDate,
+    cutoffAttendanceVal = cutoffAttendance
+  ) => {
+    setLoading(true);
+
+    const limit = 10000;
+    const offset = 0;
+    try {
+      setLoading(true);
+
+      console.log("fromDate", fromDate)
+      console.log("toDate", toDate)
+      console.log("cutoffStart", cutoffStart)
+      console.log("cutoffEnd", cutoffEnd)
+      console.log("cutoffAttendance", cutoffAttendance)
+      let apiUrl = `/api/custom/attendance_report?limit=${limit}&offset=${offset}`;
+
+      if (fromDate) apiUrl += `&attendanceStartDate=${fromDate}`;
+      if (toDate) apiUrl += `&attendanceEndDate=${toDate}`;
+      if (cutoffStart) apiUrl += `&cutoffStartDate=${cutoffStart}`;
+      if (cutoffEnd) apiUrl += `&cutoffEndDate=${cutoffEnd}`;
+      if (cutoffAttendanceVal) apiUrl += `&cutoffAttendanceCount=${cutoffAttendanceVal}`;
+
       let date = moment().format();
       let reqObj = {
         limit: 20,
@@ -274,110 +350,295 @@ const AttendanceView = observer(() => {
 
   return (
     <div className="main-container">
-    <Flex
-      wrap="wrap"
-      gap={8} // Reduced space between items
-      align="center"
-      justify="space-between"
-      style={{ marginBottom: 20 }}
-    >
-      <Button type="default" onClick={() => navigate(-1)} icon={<LeftOutlined />}>
-        Back
-      </Button>
-
-      {/* Search Bar */}
-      <div className="att-report-search">
-      <Search
-        placeholder="Search applicants"
-        enterButton
-        onChange={(e) => handleApplicantsSearchChange(e.target.value)}
-      />
-      </div>
-      
-
-      {/* Filters */}
-      <Flex wrap="wrap" gap={8} style={{ flex: 1, justifyContent: "flex-end" }}>
-        {master_role_id !== 2 && (
-          <Select
-            onChange={handleGenderFilterChange}
-            showSearch
-            placeholder="Select Gender"
-            allowClear
-            style={{ width: 150 }}
-          >
-            <Option value="Male">Male</Option>
-            <Option value="Female">Female</Option>
-          </Select>
-        )}
-
-        <Select
-          onChange={handleTeacherFilterChange}
-          showSearch
-          placeholder="Select Teacher"
-          allowClear
-          style={{ width: 180 }}
+      <Flex
+        wrap="wrap"
+        gap={8} // Reduced space between items
+        align="center"
+        justify="space-between"
+        style={{ marginBottom: 20 }}
+      >
+        <Button
+          type="default"
+          onClick={() => navigate(-1)}
+          icon={<LeftOutlined />}
         >
-          {teachers.map((teacher, index) => (
-            <Option key={index} value={teacher.teacher_id}>
-              {teacher.teacher_first_name} {teacher.teacher_last_name}
-            </Option>
-          ))}
-        </Select>
-
-        <DatePicker
-          placeholder="From Date"
-          value={dayjs(lowerDateLimit)}
-          allowClear
-          onChange={handleFromDateChange}
-          style={{ width: 140 }}
-        />
-
-        <DatePicker
-          placeholder="To Date"
-          value={dayjs(upperDateLimit)}
-          allowClear
-          onChange={handleToDateChange}
-          style={{ width: 140 }}
-        />
-
-        <Button type="primary" onClick={exportDataToExcel} icon={<DownloadOutlined />}>
-          Export To Excel
+          Back
         </Button>
+
+        {/* Search Bar */}
+        <div className="att-report-search">
+          <Search
+            placeholder="Search applicants"
+            enterButton
+            onChange={(e) => handleApplicantsSearchChange(e.target.value)}
+          />
+        </div>
+
+        {/* Filters */}
+        <Flex
+          wrap="wrap"
+          gap={8}
+          style={{ flex: 1, justifyContent: "flex-end" }}
+        >
+          {master_role_id !== 2 && (
+            <Select
+              onChange={handleGenderFilterChange}
+              showSearch
+              placeholder="Select Gender"
+              allowClear
+              style={{ width: 150 }}
+            >
+              <Option value="Male">Male</Option>
+              <Option value="Female">Female</Option>
+            </Select>
+          )}
+
+          <Select
+            onChange={handleTeacherFilterChange}
+            showSearch
+            placeholder="Select Teacher"
+            allowClear
+            style={{ width: 180 }}
+          >
+            {teachers.map((teacher, index) => (
+              <Option key={index} value={teacher.teacher_id}>
+                {teacher.teacher_first_name} {teacher.teacher_last_name}
+              </Option>
+            ))}
+          </Select>
+
+          <DatePicker
+            placeholder="From Date"
+            value={dayjs(lowerDateLimit)}
+            allowClear
+            onChange={handleFromDateChange}
+            style={{ width: 140 }}
+          />
+
+          <DatePicker
+            placeholder="To Date"
+            value={dayjs(upperDateLimit)}
+            allowClear
+            onChange={handleToDateChange}
+            style={{ width: 140 }}
+          />
+
+          <Dropdown overlay={exportMenu} trigger={["click"]}>
+            <Button icon={<DownloadOutlined />} type="primary">
+              Export To Excel
+            </Button>
+          </Dropdown>
+        </Flex>
       </Flex>
-    </Flex>
 
-    <TableView
-      style={{ margin: "20px" }}
-      data={applicants}
-      columns={columns}
-      loading={loading}
-      currentPage={currentPage}
-      totalCount={totalAttedanceCount}
-      setSortField={setSortField}
-      setSortOrder={setSortOrder}
-      setOffset={setOffset}
-      setCurrentPage={setCurrentPage}
-      fetchData={fetchData}
-    />
-
-    <Drawer
-      title="Attendance Details"
-      placement="right"
-      width={400}
-      onClose={() => attendanceStore.closeDrawer()}
-      open={attendanceStore.isDrawerOpen}
-    >
-      <List
-        dataSource={attendanceStore.attendanceDetails}
-        renderItem={(item) => (
-          <List.Item>
-            <span>{dayjs(item.date, "YYYY/MM/DD").format("DD-MM-YYYY")}</span>
-          </List.Item>
-        )}
+      <TableView
+        style={{ margin: "20px" }}
+        data={applicants}
+        columns={columns}
+        loading={loading}
+        currentPage={currentPage}
+        totalCount={totalAttedanceCount}
+        setSortField={setSortField}
+        setSortOrder={setSortOrder}
+        setOffset={setOffset}
+        setCurrentPage={setCurrentPage}
+        fetchData={fetchData}
       />
-    </Drawer>
-  </div>
-    
+
+      <Drawer
+        title="Custom Export"
+        placement="right"
+        open={customExportDrawerVisible}
+        onClose={() => setCustomExportDrawerVisible(false)}
+        width={360}
+      >
+        <Flex vertical gap={16}>
+          {/* === Section 1: Cut-off Filters === */}
+          <div
+            style={{
+              border: "1px solid #d9d9d9",
+              borderRadius: 8,
+              padding: 16,
+              backgroundColor: "#fafafa",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+                backgroundColor: "#fff",
+                padding: "4px 8px",
+                borderRadius: 4,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              }}
+            >
+              <span style={{ fontWeight: "bold", fontSize: 16 }}>
+                Cut-off Filters
+              </span>
+
+              <Tooltip
+                title={
+                  <div>
+                    <p>
+                      <strong>Cut-off Start Date:</strong> Select previous month 
+                        start date when last time gift distributed.
+                    </p>
+                    <p>
+                      <strong>Cut-off End Date:</strong> Select previous month 
+                        end date when last time gift distributed.
+                    </p>
+                    <p>
+                      <strong>Cut-off Attendance:</strong> Students above this
+                      count will be included.
+                    </p>
+                  </div>
+                }
+              >
+                <InfoCircleOutlined
+                  style={{ color: "#1890ff", cursor: "pointer", fontSize: 16 }}
+                />
+              </Tooltip>
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label>Cut-off Start Date</label>
+              <DatePicker
+                placeholder="Select Cut-off Start Date"
+                value={cutoffStartDate ? dayjs(cutoffStartDate) : null}
+                onChange={(date, dateStr) => setCutoffStartDate(dateStr)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label>Cut-off End Date</label>
+              <DatePicker
+                placeholder="Select Cut-off End Date"
+                value={cutoffEndDate ? dayjs(cutoffEndDate) : null}
+                onChange={(date, dateStr) => setCutoffEndDate(dateStr)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div>
+              <label>Cut-off Attendance</label>
+              <Select
+                placeholder="Select attendance"
+                value={cutoffAttendance}
+                onChange={setCutoffAttendance}
+                style={{ width: "100%" }}
+                showSearch
+                optionFilterProp="children"
+              >
+                {[...Array(100)].map((_, i) => (
+                  <Option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </div>
+
+          {/* === Section 2: Attendance Date Range === */}
+          <div
+            style={{
+              border: "1px solid #d9d9d9",
+              borderRadius: 8,
+              padding: 16,
+              backgroundColor: "#fafafa",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 16,
+                backgroundColor: "#fff",
+                padding: "4px 8px",
+                borderRadius: 4,
+                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              }}
+            >
+              <span style={{ fontWeight: "bold", fontSize: 16 }}>
+                Attendance Filters
+              </span>
+              <Tooltip
+                title={
+                  <div>
+                    <p>
+                      <strong>Attendance start date:</strong> Select Current month start date
+                    </p>
+                    <p>
+                      <strong>Attendance end date:</strong> Select current month end date.
+                    </p>
+                  </div>
+                }
+              >
+                <InfoCircleOutlined
+                  style={{ color: "#1890ff", cursor: "pointer", fontSize: 16 }}
+                />
+              </Tooltip>
+            </div>
+
+            <div style={{ marginBottom: 12 }}>
+              <label>Attendance Start Date</label>
+              <DatePicker
+                placeholder="Select Attendance Start Date"
+                value={attnStartDate ? dayjs(attnStartDate) : null}
+                onChange={(date, dateStr) => setAttnStartDate(dateStr)}
+                style={{ width: "100%" }}
+              />
+            </div>
+
+            <div>
+              <label>Attendance End Date</label>
+              <DatePicker
+                placeholder="Select Attendance End Date"
+                value={attnEndDate ? dayjs(attnEndDate) : null}
+                onChange={(date, dateStr) => setAttnEndDate(dateStr)}
+                style={{ width: "100%" }}
+              />
+            </div>
+          </div>
+
+          {/* === Export Button === */}
+          <Button
+            type="primary"
+            block
+            onClick={async () => {
+              const data = await fetchCustomAttendanceData(
+                attnStartDate,
+                attnEndDate
+              );
+              exportToExcel(data, "Custom_Attendance");
+              setCustomExportDrawerVisible(false);
+            }}
+          >
+            Export
+          </Button>
+        </Flex>
+      </Drawer>
+
+      <Drawer
+        title="Attendance Details"
+        placement="right"
+        width={400}
+        onClose={() => attendanceStore.closeDrawer()}
+        open={attendanceStore.isDrawerOpen}
+      >
+        <List
+          dataSource={attendanceStore.attendanceDetails}
+          renderItem={(item) => (
+            <List.Item>
+              <span>{dayjs(item.date, "YYYY/MM/DD").format("DD-MM-YYYY")}</span>
+            </List.Item>
+          )}
+        />
+      </Drawer>
+    </div>
   );
 });
 
