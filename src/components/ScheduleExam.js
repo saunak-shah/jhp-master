@@ -28,6 +28,7 @@ const ScheduleExam = () => {
   const [totalExamScheduleCount, setTotalExamScheduleCount] = useState(0);
   const [offset, setOffset] = useState(0);
   const [selectedStatusValue, setSelectedStatusValue] = useState("true");
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
 
 
   const token = localStorage.getItem("token") || "";
@@ -181,6 +182,7 @@ const ScheduleExam = () => {
             >
               Edit
             </Button>
+          {master_role_id != 2 ? (
             <Button
               type="primary"
               danger
@@ -189,6 +191,7 @@ const ScheduleExam = () => {
             >
               Delete
             </Button>
+            ) : ''}
             <Button
               type="primary"
               icon={<DatabaseOutlined />}

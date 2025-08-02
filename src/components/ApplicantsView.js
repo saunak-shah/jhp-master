@@ -13,6 +13,7 @@ import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import axios from "axios";
 import { post, deleteData } from "../global/api";
+import { StudentView } from "./StudentView";
 
 const ApplicantsView = () => {
   const [applicants, setApplicants] = useState([]);
@@ -28,6 +29,9 @@ const ApplicantsView = () => {
   const [scoreToUpdate, setScoreToUpdate] = useState(0);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const [isViewModalVisible, setViewModalVisible] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
 
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
@@ -161,6 +165,11 @@ const ApplicantsView = () => {
     fetchData(offset, pageSize, sortField, sortOrder, value);
   };
 
+  const handleStudentView = (record) => {
+    setCurrentStudent(record.student); // Set current course to edit
+    setViewModalVisible(true);
+  };
+
   useEffect(() => {
     fetchData(offset, pageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -179,7 +188,16 @@ const ApplicantsView = () => {
   };
 
   const columns = [
-    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Name", dataIndex: "name", key: "name",
+    render: (text, record) => (
+        <a
+          onClick={() => handleStudentView(record)}
+          style={{ color: "#1677ff", cursor: "pointer" }}
+        >
+          {text}
+        </a>
+      ), 
+    },
     { title: "Email", dataIndex: "email", key: "email" },
     {
       title: "Applied On",
@@ -237,6 +255,8 @@ const ApplicantsView = () => {
       render: (text, record) => {
         return (
           <Space>
+
+          {master_role_id != 2 ? (
             <Button
               type="primary"
               icon={<EditOutlined />}
@@ -244,6 +264,8 @@ const ApplicantsView = () => {
             >
               Update Result
             </Button>
+            ) : ''}
+          {master_role_id != 2 ? (
             <Button
               type="primary"
               danger
@@ -252,6 +274,7 @@ const ApplicantsView = () => {
             >
               Delete
             </Button>
+            ) : ''}
           </Space>
         );
       },
@@ -319,6 +342,11 @@ const ApplicantsView = () => {
       >
         <p>Are you sure you want to delete this record?</p>
       </Modal>
+      <StudentView
+        data={currentStudent}
+        isViewModalVisible={isViewModalVisible}
+        setViewModalVisibility={setViewModalVisible}
+      />
       <Modal
         title="Confirm Updation"
         open={isUpdateModelVisible}

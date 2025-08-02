@@ -30,6 +30,7 @@ const Exam = () => {
   const [isEdit, setIsEdit] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const master_role_id = Number(localStorage.getItem("master_role_id"));
   
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
@@ -86,14 +87,16 @@ const Exam = () => {
             >
               Edit
             </Button>
-            <Button
-              type="primary"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
-            >
-              Delete
-            </Button>
+            {master_role_id != 2 ? (
+              <Button
+                type="primary"
+                danger
+                icon={<DeleteOutlined />}
+                onClick={() => handleDelete(record)}
+              >
+                Delete
+              </Button>
+            ) : ''}
             <Button
               type="primary"
               icon={<DatabaseOutlined />}

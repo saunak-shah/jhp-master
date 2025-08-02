@@ -189,6 +189,14 @@ const UserTable = observer(() => {
       key: "name",
       sorter: true,
       width: 300,
+      render: (text, record) => (
+        <a
+          onClick={() => handleStudentView(record)}
+          style={{ color: "#1677ff", cursor: "pointer" }}
+        >
+          {text}
+        </a>
+      ),    
     },
     { title: "Email", dataIndex: "email", key: "email", sorter: true },
     {
@@ -232,13 +240,6 @@ const UserTable = observer(() => {
       render: (text, record) => {
         return (
           <Space>
-            <Button
-              type="primary"
-              icon={<EyeOutlined />}
-              onClick={() => handleStudentView(record)}
-            >
-              View
-            </Button>
             <Button
               type="primary"
               icon={<EditOutlined />}
