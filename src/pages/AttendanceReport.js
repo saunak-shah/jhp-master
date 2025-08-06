@@ -670,7 +670,7 @@ const exportMenu = (
                 attnEndDate
               );
               exportToExcel(data, "Custom_Attendance");
-              setCustomExportDrawerVisible(false);
+              // setCustomExportDrawerVisible(false);
             }}
           >
             Export
