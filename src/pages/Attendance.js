@@ -316,7 +316,7 @@ const StaffAttendance = () => {
           onClick={() => handleStudentView(record)}
           style={{ color: "#1677ff", cursor: "pointer" }}
         >
-          {text}
+            {`${record.first_name || ""} ${record.father_name || ""} ${record.last_name || ""}`}
         </a>
       ),    
     },

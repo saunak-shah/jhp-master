@@ -17,6 +17,7 @@ import axios from "axios";
 import "../css/Teacher.css"; // Import the CSS file
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
+import { StudentView } from "../components/StudentView";
 
 const { Option } = Select;
 
@@ -50,6 +51,8 @@ const AttendanceView = observer(() => {
   const [attnStartDate, setAttnStartDate] = useState(null);
   const [attnEndDate, setAttnEndDate] = useState(null);
   const [currentAttendanceCutoff, setcurrentAttendanceCutoff] = useState(null);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [isViewModalVisible, setViewModalVisible] = useState(false);
 
 
   const fetchData = async (
@@ -297,6 +300,11 @@ const exportMenu = (
     exportToExcel(data, "Monthly_Attendance");
   };
 
+  const handleStudentView = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    setViewModalVisible(true);
+  };
+
   const handleFromDateChange = async (date, dateString) => {
     if (!date) {
       setLowerDateLimit(null);
@@ -334,7 +342,16 @@ const exportMenu = (
   };
 
   const columns = [
-    { title: "Name", dataIndex: "full_name", key: "full_name" },
+    { title: "Name", dataIndex: "full_name", key: "full_name" ,
+    render: (text, record) => (
+      <a
+        onClick={() => handleStudentView(record)}
+        style={{ color: "#1677ff", cursor: "pointer" }}
+      >
+          {`${record.first_name || ""} ${record.father_name || ""} ${record.last_name || ""}`}
+      </a>
+    ),  },
+
     {
       title: "Attendance Count",
       dataIndex: "attendance_count",
@@ -429,7 +446,11 @@ const exportMenu = (
             onChange={handleToDateChange}
             style={{ width: 140 }}
           />
-
+          <StudentView
+            data={currentStudent}
+            isViewModalVisible={isViewModalVisible}
+            setViewModalVisibility={setViewModalVisible}
+          />
           <Dropdown overlay={exportMenu} trigger={["click"]}>
             <Button icon={<DownloadOutlined />} type="primary">
               Export To Excel
