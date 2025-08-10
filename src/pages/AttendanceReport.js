@@ -342,16 +342,7 @@ const exportMenu = (
   };
 
   const columns = [
-    { title: "Name", dataIndex: "full_name", key: "full_name" ,
-    render: (text, record) => (
-      <a
-        onClick={() => handleStudentView(record)}
-        style={{ color: "#1677ff", cursor: "pointer" }}
-      >
-          {`${record.first_name || ""} ${record.father_name || ""} ${record.last_name || ""}`}
-      </a>
-    ),  },
-
+    { title: "Name", dataIndex: "full_name", key: "full_name"},
     {
       title: "Attendance Count",
       dataIndex: "attendance_count",
