@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Space, message, Form, Modal, Select } from "antd";
+import { Button, Space, message, Form, Modal, Select, Switch } from "antd";
 import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
 import { DatabaseOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, LeftOutlined, PlusOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
@@ -62,6 +62,37 @@ const ScheduleExam = () => {
     }
     setDeleteModalVisibility(false);
     setDataToDelete({});
+  };
+
+  const handlePublishToggle = async (record, checked) => {
+    try {
+      const payload = {
+        is_result_publish: checked,
+        schedule_id: record.schedule_id,
+      };
+  
+      const apiHost = process.env.REACT_APP_API_HOST;
+      const url = `${apiHost}/api/exam/result/publish`;
+  
+      let headers = {
+        "Content-Type": "application/json",
+        Authorization: token,
+      };
+  
+      const res = await axios.put(url, payload, { headers });
+  
+      if (res.status === 200) {
+        message.success(
+          `Result ${checked ? "published" : "unpublished"} successfully.`
+        );
+        fetchData(offset, pageSize); // refresh table
+      } else {
+        message.error(res.data?.message || "Failed to update publish status");
+      }
+    } catch (error) {
+      console.error("Publish toggle error:", error);
+      message.error("Error while updating publish status");
+    }
   };
 
   const fetchData = async (offset, limit, sortField = "schedule_id", sortOrder = "asc", searchKey = null) => {  
@@ -169,6 +200,20 @@ const ScheduleExam = () => {
     render: (_, record) =>
       `${moment(record.created_at).format("DD-MM-YYYY HH:MM A") || ""}
     `},
+    // Inside columns array
+    {
+      title: "Result",
+      dataIndex: "is_result_publish",
+      key: "is_result_publish",
+      render: (value, record) => (
+        <Switch
+          checked={!!value} // true/false
+          onChange={(checked) => handlePublishToggle(record, checked)}
+          checkedChildren="Published"
+          unCheckedChildren="Unpublished"
+        />
+      ),
+    },
     {
       title: "Action",
       key: "action",
