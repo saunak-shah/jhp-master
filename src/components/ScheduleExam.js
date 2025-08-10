@@ -208,6 +208,7 @@ const ScheduleExam = () => {
       render: (value, record) => (
         <Switch
           checked={!!value} // true/false
+          disabled={master_role_id === 2} // disable for role 2
           onChange={(checked) => handlePublishToggle(record, checked)}
           checkedChildren="Published"
           unCheckedChildren="Unpublished"
