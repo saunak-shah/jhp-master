@@ -360,6 +360,12 @@ const ApplicantsView = () => {
           type="number"
           value={scoreToUpdate}
           onChange={(e) => handleUpdateScoreChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault(); // Prevent form submission side-effects
+              updateStudentScore();
+            }
+          }}      
         ></Input>
       </Modal>
       <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>

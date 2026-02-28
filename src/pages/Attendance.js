@@ -67,12 +67,13 @@ const StaffAttendance = () => {
   }; */
 
   const handleDateChange = (val) => {
-    if (val && val.length > 0) {
+    if (!val) return;
+    // if (val && val.length > 0) {
       const startDate = val[0];
+      let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
       // console.log("Start Date:", startDate.format("YYYY-MM-DD"));
       // Calculate the new default end date
       const newDate = startDate.add(ATTENDANCE_DAYS, "day");
-      let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
 
       if (endDate.isAfter(newDate)) {
         endDate = newDate;
@@ -80,8 +81,8 @@ const StaffAttendance = () => {
       // console.log("Final End Date:", endDate.format("YYYY-MM-DD"));
       setDates([startDate, endDate]);
       console.log("teacherIdteacherId", teacherId)
-      fetchData(0, 10, "first_name", "asc", teacherId);
-    }
+      // fetchData(0, 10, "first_name", "asc", teacherId);
+    // }
   };
 
   /* let daysLength = ATTENDANCE_DAYS;
@@ -221,7 +222,8 @@ const StaffAttendance = () => {
       setLastSelectedDays(defaultRange);
     }
   
-    fetchData(offset, pageSize);
+    // fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, teacherId);
     fetchTeachersData();
     getTotalCount();
   }, [dates]);
