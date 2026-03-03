@@ -19,6 +19,7 @@ import { DownloadOutlined } from "@ant-design/icons";
 import { pageSize, ATTENDANCE_DAYS } from "../pages/constants";
 import axios from "axios";
 import dayjs from "dayjs";
+import { StudentView } from "../components/StudentView";
 
 const { Option } = Select;
 const { RangePicker } = DatePicker;
@@ -41,6 +42,8 @@ const StaffAttendance = () => {
   const token = localStorage.getItem("token");
   const master_role_id = Number(localStorage.getItem("master_role_id"));
   const [lastSelectedDays, setLastSelectedDays] = useState([]);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [isViewModalVisible, setViewModalVisible] = useState(false);
 
   // const [dates, setDates] = useState(null);
   const [dates, setDates] = useState([
@@ -64,12 +67,13 @@ const StaffAttendance = () => {
   }; */
 
   const handleDateChange = (val) => {
-    if (val && val.length > 0) {
+    if (!val) return;
+    // if (val && val.length > 0) {
       const startDate = val[0];
+      let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
       // console.log("Start Date:", startDate.format("YYYY-MM-DD"));
       // Calculate the new default end date
       const newDate = startDate.add(ATTENDANCE_DAYS, "day");
-      let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
 
       if (endDate.isAfter(newDate)) {
         endDate = newDate;
@@ -77,8 +81,8 @@ const StaffAttendance = () => {
       // console.log("Final End Date:", endDate.format("YYYY-MM-DD"));
       setDates([startDate, endDate]);
       console.log("teacherIdteacherId", teacherId)
-      fetchData(0, 10, "first_name", "asc", teacherId);
-    }
+      // fetchData(0, 10, "first_name", "asc", teacherId);
+    // }
   };
 
   /* let daysLength = ATTENDANCE_DAYS;
@@ -218,7 +222,8 @@ const StaffAttendance = () => {
       setLastSelectedDays(defaultRange);
     }
   
-    fetchData(offset, pageSize);
+    // fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, teacherId);
     fetchTeachersData();
     getTotalCount();
   }, [dates]);
@@ -270,6 +275,11 @@ const StaffAttendance = () => {
     setCurrentPage(1);
   };
 
+  const handleStudentView = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    setViewModalVisible(true);
+  };
+
   const onFinish = async () => {
     console.log("last10Days", last10Days)
     setLoading(true);
@@ -303,10 +313,14 @@ const StaffAttendance = () => {
       key: "name",
       sorter: true,
       width: 300,
-      render: (_, record) =>
-        `${record.first_name || ""} ${record.father_name || ""} ${
-          record.last_name || ""
-        }`,
+      render: (text, record) => (
+        <a
+          onClick={() => handleStudentView(record)}
+          style={{ color: "#1677ff", cursor: "pointer" }}
+        >
+            {`${record.first_name || ""} ${record.father_name || ""} ${record.last_name || ""}`}
+        </a>
+      ),    
     },
     ...lastSelectedDays.map((date, i) => ({
       title: date,
@@ -365,6 +379,11 @@ const StaffAttendance = () => {
         >
           Attendance Report
         </Button>
+        <StudentView
+        data={currentStudent}
+        isViewModalVisible={isViewModalVisible}
+        setViewModalVisibility={setViewModalVisible}
+      />
         {master_role_id !== 2 ? (
           <Space style={{ float: "right", marginTop: "10px" }}>
             Filter by teacher:

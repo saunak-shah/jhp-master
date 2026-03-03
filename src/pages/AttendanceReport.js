@@ -17,6 +17,7 @@ import axios from "axios";
 import "../css/Teacher.css"; // Import the CSS file
 import { InfoCircleOutlined } from "@ant-design/icons";
 import { Tooltip } from "antd";
+import { StudentView } from "../components/StudentView";
 
 const { Option } = Select;
 
@@ -49,6 +50,9 @@ const AttendanceView = observer(() => {
   const [cutoffAttendance, setCutoffAttendance] = useState(null);
   const [attnStartDate, setAttnStartDate] = useState(null);
   const [attnEndDate, setAttnEndDate] = useState(null);
+  const [currentAttendanceCutoff, setcurrentAttendanceCutoff] = useState(null);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [isViewModalVisible, setViewModalVisible] = useState(false);
 
 
   const fetchData = async (
@@ -234,7 +238,8 @@ const exportMenu = (
     teacherId = selectedTeacherValue,
     cutoffStart = cutoffStartDate,
     cutoffEnd = cutoffEndDate,
-    cutoffAttendanceVal = cutoffAttendance
+    cutoffAttendanceVal = cutoffAttendance,
+    currentAttendanceCutoffVal = currentAttendanceCutoff
   ) => {
     setLoading(true);
 
@@ -242,12 +247,11 @@ const exportMenu = (
     const offset = 0;
     try {
       setLoading(true);
-
+      
       console.log("fromDate", fromDate)
       console.log("toDate", toDate)
       console.log("cutoffStart", cutoffStart)
       console.log("cutoffEnd", cutoffEnd)
-      console.log("cutoffAttendance", cutoffAttendance)
       let apiUrl = `/api/custom/attendance_report?limit=${limit}&offset=${offset}`;
 
       if (fromDate) apiUrl += `&attendanceStartDate=${fromDate}`;
@@ -255,7 +259,13 @@ const exportMenu = (
       if (cutoffStart) apiUrl += `&cutoffStartDate=${cutoffStart}`;
       if (cutoffEnd) apiUrl += `&cutoffEndDate=${cutoffEnd}`;
       if (cutoffAttendanceVal) apiUrl += `&cutoffAttendanceCount=${cutoffAttendanceVal}`;
-
+      if (currentAttendanceCutoffVal) apiUrl += `&currentAttendanceCutoff=${currentAttendanceCutoffVal}`;
+      if(selectedGenderValue){
+        apiUrl = apiUrl + `&gender=${selectedGenderValue}`;
+      }
+      if(selectedTeacherValue){
+        apiUrl = apiUrl + `&teacherId=${selectedTeacherValue}`;
+      }
       let date = moment().format();
       let reqObj = {
         limit: 20,
@@ -288,6 +298,11 @@ const exportMenu = (
   const exportDataToExcel = async () => {
     const data = await fetchAllAttendanceData();
     exportToExcel(data, "Monthly_Attendance");
+  };
+
+  const handleStudentView = (record) => {
+    setCurrentStudent(record); // Set current course to edit
+    setViewModalVisible(true);
   };
 
   const handleFromDateChange = async (date, dateString) => {
@@ -327,7 +342,7 @@ const exportMenu = (
   };
 
   const columns = [
-    { title: "Name", dataIndex: "full_name", key: "full_name" },
+    { title: "Name", dataIndex: "full_name", key: "full_name"},
     {
       title: "Attendance Count",
       dataIndex: "attendance_count",
@@ -422,7 +437,11 @@ const exportMenu = (
             onChange={handleToDateChange}
             style={{ width: 140 }}
           />
-
+          <StudentView
+            data={currentStudent}
+            isViewModalVisible={isViewModalVisible}
+            setViewModalVisibility={setViewModalVisible}
+          />
           <Dropdown overlay={exportMenu} trigger={["click"]}>
             <Button icon={<DownloadOutlined />} type="primary">
               Export To Excel
@@ -602,6 +621,55 @@ const exportMenu = (
                 style={{ width: "100%" }}
               />
             </div>
+
+            <div>
+              <label>Current Attendance Cut Off</label>
+              <Select
+                placeholder="Select attendance"
+                value={currentAttendanceCutoff}
+                onChange={setcurrentAttendanceCutoff}
+                style={{ width: "100%" }}
+                showSearch
+                optionFilterProp="children"
+              >
+                {[...Array(100)].map((_, i) => (
+                  <Option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </div>
+
+          <div>
+          
+          {master_role_id !== 2 && (
+            <Select
+              onChange={handleGenderFilterChange}
+              showSearch
+              placeholder="Select Gender"
+              allowClear
+              style={{ width: 150 }}
+            >
+              <Option value="Male">Male</Option>
+              <Option value="Female">Female</Option>
+            </Select>
+          )}
+          </div>
+          <div>
+          <Select
+            onChange={handleTeacherFilterChange}
+            showSearch
+            placeholder="Select Teacher"
+            allowClear
+            style={{ width: 180 }}
+          >
+            {teachers.map((teacher, index) => (
+              <Option key={index} value={teacher.teacher_id}>
+                {teacher.teacher_first_name} {teacher.teacher_last_name}
+              </Option>
+            ))}
+          </Select>
           </div>
 
           {/* === Export Button === */}
@@ -614,7 +682,7 @@ const exportMenu = (
                 attnEndDate
               );
               exportToExcel(data, "Custom_Attendance");
-              setCustomExportDrawerVisible(false);
+              // setCustomExportDrawerVisible(false);
             }}
           >
             Export

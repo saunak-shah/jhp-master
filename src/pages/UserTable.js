@@ -14,6 +14,7 @@ import { observer } from "mobx-react-lite";
 import axios from "axios";
 import {
   DeleteOutlined,
+  DownloadOutlined,
   EditOutlined,
   EyeOutlined,
   SwapOutlined,
@@ -27,6 +28,7 @@ import moment from "moment";
 import { StudentView } from "../components/StudentView";
 import StudentEditModal from "../components/StudentEdit";
 import dayjs from "dayjs";
+import * as XLSX from "xlsx";
 import ApplyForProgramModal from "../components/ApplyForProgramModal";
 const { Option } = Select;
 
@@ -170,6 +172,22 @@ const UserTable = observer(() => {
       message.error("There is some error.");
     }
     setLoading(false);
+  };
+
+  const exportToExcel = (data, fileName) => {
+    try {
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+      XLSX.writeFile(workbook, `${fileName}.xlsx`);  
+    } catch (error) {
+      console.log("error to export students", error)
+    }
+  };
+
+  const exportDataToExcel = async () => {
+    const data = await fetchData(0, "null", sortField, sortOrder, searchKey);
+    exportToExcel(data, "Students");
   };
 
   const handleStudentView = (record) => {
@@ -342,31 +360,41 @@ const UserTable = observer(() => {
       };
       const response = await axios.get(apiUrl, { headers });
       if (response.data && response.data.data) {
-        setTotalUserCount(response.data.data.totalCount);
-        response.data.data.users.map((user) => {
+        const users = response.data.data.users.map((user) => {
           const teacher = user.teacher;
-
           user.assigned_to = teacher
-            ? `${teacher.teacher_first_name || ""} ${
-                teacher.teacher_last_name || ""
-              }`.trim()
+            ? `${teacher.teacher_first_name || ""} ${teacher.teacher_last_name || ""}`.trim()
             : "No Assignee";
-
-          user.name = `${user.first_name} ${user.father_name} ${user.last_name}`;
+          user.name = `${user.first_name} ${user.father_name || ""} ${user.last_name}`;
           user.created_at = moment(user.created_at).format("DD-MM-YYYY");
-
+          
+          // This condition is for download students
+          if(limit === "null"){
+            user.birth_date = moment(user.birth_date).format("DD-MM-YYYY");
+            
+            delete user.organization_id;
+            delete user.student_id;
+            delete user.updated_at;
+          }
+          delete user.password;
           return user;
         });
-        setUsers(response.data.data.users);
+        setTotalUserCount(response.data.data.totalCount);
+        setUsers(users);
+
+        return users; 
       } else {
         setUsers([]);
+        return []; // return empty array
       }
     } catch (error) {
       console.error("Error during API call:", error);
+      return []; // prevent undefined
     } finally {
       setLoading(false);
     }
   };
+
 
   const fetchTeachersData = async () => {
     try {
@@ -571,6 +599,16 @@ const UserTable = observer(() => {
                 );
               })}
             </Select>
+            <Button
+              type="primary"
+              style={{
+                margin: "20px",
+              }}
+              onClick={() => exportDataToExcel()}
+              icon={<DownloadOutlined />}
+            >
+              Export Students
+            </Button>
           </Space>
         </Space>
       ) : (
