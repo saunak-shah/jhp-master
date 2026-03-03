@@ -15,7 +15,7 @@ import authStore from "./stores/authStore";
 import logo from "./assets/jhp-logo.jpg"; // Import your logo image
 
 const { Title, Text } = Typography;
-const SignupForm = () => {
+const SignupForm = ({ toggleForm }) => {
   const [form] = Form.useForm();
   const [error, setError] = useState(null);
 
@@ -197,7 +197,7 @@ const SignupForm = () => {
           >
             Sign Up
           </Button>
-          <p class="signup-text">Already have an account?? <a href="#">Login here</a>.</p>
+          <p>Already have an account? <a href='#' onClick={toggleForm}>Login Here</a></p>
         </Form.Item>
       </Form>
     </Card>

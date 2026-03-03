@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Card, Typography, message } from 'antd';
 import authStore from './stores/authStore';
-import logo from './assets/jhp-logo.jpg'; // Import your logo image
+import logo from './assets/logo.jpeg'; // Import your logo image
+import './index.css';
+
 
 
 const { Title, Text } = Typography;
@@ -51,7 +53,8 @@ const LoginForm = ({ toggleForm }) => {
   };
 
   return (
-    <Card style={{ width: 400, margin: 'auto', marginTop: 200, boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)' }}>
+    <Card className='main-login' style={{ 
+      width: 400, margin: 'auto', marginTop: 200}}>
       <img src={logo} alt="Logo" style={{ width: '30%', margin: 'auto', marginBottom: 20, display: 'block' }} />
       <Title level={3}>Login</Title>
       <Form form={form} layout="vertical">
@@ -66,6 +69,7 @@ const LoginForm = ({ toggleForm }) => {
           <Button style={{width:'150px', height: '40px', backgroundColor: '#f54290'}} type="primary" block onClick={handleLogin}>
             Log In
           </Button>
+          <p>Don't have an account? <a href='#' onClick={toggleForm}>Signup Here</a></p>
         </Form.Item>
       </Form>
     </Card>

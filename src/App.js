@@ -15,11 +15,12 @@ import Footer from "./global/Footer";
 
 
 const App = observer(() => {
-  const [showLogin, setShowLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(true);
 
   const toggleForm = () => {
-    setShowLogin(!showLogin);
+    setIsLogin(!isLogin);
   };
+
 
   return (
     <div style={{ textAlign: "center", marginTop: 0 }}>
@@ -37,18 +38,11 @@ const App = observer(() => {
         </div>
       ) : (
         <div>
-          {showLogin ? <LoginPage /> : <SignupForm />}
-          <p style={{ marginTop: 10 }}>
-            {showLogin
-              ? "Don't have an account? "
-              : "Already have an account? "}
-            <span
-              style={{ cursor: "pointer", color: "blue" }}
-              onClick={toggleForm}
-            >
-              {showLogin ? "Sign up here." : "Login here."}
-            </span>
-          </p>
+          {isLogin ? (
+            <LoginPage toggleForm={toggleForm} />
+          ) : (
+            <SignupForm toggleForm={toggleForm} />
+          )}
         </div>
       )}
     </div>
