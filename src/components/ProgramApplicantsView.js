@@ -68,6 +68,15 @@ const ProgramApplicantsView = () => {
 
         data.email = data.student.email;
         data.name = data.student.first_name + " " + data.student.last_name;
+        data.phone_number = data.student.phone_number;
+        if (data.student.birth_date) {
+          const dob = new Date(data.student.birth_date);
+          const diffMs = Date.now() - dob.getTime();
+          const ageDt = new Date(diffMs); 
+          data.age = Math.abs(ageDt.getUTCFullYear() - 1970);
+        } else {
+          data.age = "-";
+        }
       });
       setTotalApplicantsCount(response.data.data.totalCount);
       setApplicants(response.data.data.registrations);
@@ -110,6 +119,14 @@ const ProgramApplicantsView = () => {
             createdAtDate.getFullYear();
 
           data.email = data.email;
+          if (data.birth_date) {
+            const dob = new Date(data.birth_date);
+            const diffMs = Date.now() - dob.getTime();
+            const ageDt = new Date(diffMs); 
+            data.age = Math.abs(ageDt.getUTCFullYear() - 1970);
+          } else {
+            data.age = "-";
+          }
         });
         setLoading(false);
         return data.data.registrations;
@@ -172,6 +189,8 @@ const ProgramApplicantsView = () => {
       sorter: true,
     },
     { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Age", dataIndex: "age", key: "age" },
+    { title: "Mobile Number", dataIndex: "phone_number", key: "phone_number" },
     { title: "Email", dataIndex: "email", key: "email" },
     {
       title: "Applied On",
