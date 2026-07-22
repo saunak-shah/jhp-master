@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button, Space, message, Form, Modal, Select, Switch } from "antd";
-import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
+import { useNavigate, useParams } from "react-router-dom";
 import { DatabaseOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, LeftOutlined, PlusOutlined } from "@ant-design/icons";
 import Search from "antd/es/transfer/search";
 import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import { post, deleteData, put } from "../global/api";
-import AddExamForm from "../components/AddExamForm"; // Make sure the path is correct
+import AddExamForm from "../components/AddExamForm";
 import axios from "axios";
 import moment from "moment";
 import { Option } from "antd/es/mentions";
+import debounce from "lodash/debounce";
 
 
 const ScheduleExam = () => {
@@ -28,6 +29,7 @@ const ScheduleExam = () => {
   const [totalExamScheduleCount, setTotalExamScheduleCount] = useState(0);
   const [offset, setOffset] = useState(0);
   const [selectedStatusValue, setSelectedStatusValue] = useState("true");
+  const [searchKey, setSearchKey] = useState("");
   const master_role_id = Number(localStorage.getItem("master_role_id"));
 
 
@@ -56,7 +58,7 @@ const ScheduleExam = () => {
     const endpoint = `/api/exam/schedule/${dataToDelete.schedule_id}`;
     const res = await deleteData(endpoint, dataToDelete);
     if(res.status === 200){
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey);
     } else{
       message.error(res.message);
     }
@@ -85,7 +87,7 @@ const ScheduleExam = () => {
         message.success(
           `Result ${checked ? "published" : "unpublished"} successfully.`
         );
-        fetchData(offset, pageSize); // refresh table
+        fetchData(offset, pageSize, sortField, sortOrder, searchKey);
       } else {
         message.error(res.data?.message || "Failed to update publish status");
       }
@@ -95,20 +97,19 @@ const ScheduleExam = () => {
     }
   };
 
-  const fetchData = async (offset, limit, sortField = "schedule_id", sortOrder = "asc", searchKey = null) => {  
+  const fetchData = async (offset, limit, sortField = "schedule_id", sortOrder = "asc", searchKeyValue = null) => {  
     setLoading(true);
     const apiHost = process.env.REACT_APP_API_HOST;
 
     let apiUrl = `${apiHost}/api/exam/schedule/${examId}?limit=${limit}&offset=${offset}`;
-    if (searchKey && searchKey.length > 0) {
-      apiUrl = apiUrl + `&searchKey=${searchKey}`;
+    if (searchKeyValue && searchKeyValue.length > 0) {
+      apiUrl = apiUrl + `&searchKey=${searchKeyValue}`;
     }
 
     if (sortField) {
       apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
     }
 
-    // Append exam status filter
     if (selectedStatusValue) {
       apiUrl += `&is_exam_active=${selectedStatusValue}`;
     }
@@ -133,6 +134,7 @@ const ScheduleExam = () => {
       setExamSchedule(response.data.data.courses);
     } else {
       setExamSchedule([]);
+      setTotalExamScheduleCount(0);
     }
 
     setLoading(false);
@@ -155,7 +157,7 @@ const ScheduleExam = () => {
       res = isEdit ? await post(endpoint, exam) : await put(endpoint, exam);
 
     if (res.status === 200) {
-      fetchData(0, pageSize);
+      fetchData(0, pageSize, sortField, sortOrder, searchKey);
       message.success(`Exam ${isEdit ? "updated" : "added"} successfully.`);
       setIsModalVisible(false);
     } else {
@@ -175,52 +177,58 @@ const ScheduleExam = () => {
     setCurrentPage(1);
   };
   
-  const handleResultSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, sortField, sortOrder, value);
-  };
+  const handleSearchChange = useCallback(
+    debounce((value) => {
+      const key = value.length > 0 ? value : null;
+      setSearchKey(key);
+      setOffset(0);
+      setCurrentPage(1);
+    }, 500),
+    []
+  );
 
   useEffect(() => {
-    fetchData(offset, pageSize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
   }, [selectedStatusValue]);
 
   const columns = [
-    { title: "Exam Name", dataIndex: "exam_name", key: "exam_name" },
-    { title: "Reg. start date", dataIndex: "registration_starting_date", key: "start_date" },
-    { title: "Reg. close date", dataIndex: "registration_closing_date", key: "end_date" },
-    { title: "Location", dataIndex: "location", key: "location" },
-    { title: "Total Marks", dataIndex: "total_marks", key: "total_marks" },
-    { title: "Passing Marks", dataIndex: "passing_score", key: "passing_score" },
-    { title: "Exam Date & Time", dataIndex: "exam_date", key: "exam_date",
+    { title: "Exam Name", dataIndex: "exam_name", key: "exam_name", ellipsis: true, width: 150 },
+    { title: "Reg Start", dataIndex: "registration_starting_date", key: "start_date", width: 120 },
+    { title: "Reg Close", dataIndex: "registration_closing_date", key: "end_date", width: 120 },
+    { title: "Location", dataIndex: "location", key: "location", ellipsis: true, width: 120 },
+    { title: "Total Marks", dataIndex: "total_marks", key: "total_marks", width: 100 },
+    { title: "Pass Marks", dataIndex: "passing_score", key: "passing_score", width: 100 },
+    { title: "Schedule", dataIndex: "exam_date", key: "exam_date", width: 220,
     render: (_, record) =>
-      `${moment(record.start_time).format("DD-MM-YYYY HH:MM A") || ""}, ${moment(record.end_time).format("DD-MM-YYYY HH:MM A") || ""}
+      `${moment(record.start_time).format("DD-MM-YYYY HH:mm A") || ""} - ${moment(record.end_time).format("HH:mm A") || ""}
     `},
-    { title: "Create Date", dataIndex: "created_at", key: "created_at",
+    { title: "Created", dataIndex: "created_at", key: "created_at", width: 120,
     render: (_, record) =>
-      `${moment(record.created_at).format("DD-MM-YYYY HH:MM A") || ""}
+      `${moment(record.created_at).format("DD-MM-YYYY") || ""}
     `},
     // Inside columns array
     {
-      title: "Result",
+      title: "Pub Result",
       dataIndex: "is_result_publish",
       key: "is_result_publish",
+      width: 120,
       render: (value, record) => (
         <Switch
           checked={!!value} // true/false
           disabled={master_role_id === 2} // disable for role 2
           onChange={(checked) => handlePublishToggle(record, checked)}
-          checkedChildren="Published"
-          unCheckedChildren="Unpublished"
+          checkedChildren="Yes"
+          unCheckedChildren="No"
         />
       ),
     },
     {
       title: "Action",
       key: "action",
+      width: 280,
       render: (text, record) => {
         return (
-          <Space>
+          <Space size="small">
             <Button
               type="primary"
               icon={<EditOutlined />}
@@ -243,7 +251,7 @@ const ScheduleExam = () => {
               icon={<DatabaseOutlined />}
               onClick={() => navigate(`/applicants/${record.schedule_id}`)}
             >
-              View Applicants
+              Applicants
             </Button>
           </Space>
         );
@@ -263,56 +271,58 @@ const ScheduleExam = () => {
       >
         <p>Are you sure you want to delete this record?</p>
       </Modal>
-      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
-        <Search
-          style={{ marginTop: 0, marginLeft: 10 }}
-          placeholder="Search applicants"
-          enterButton
-          onChange={(e) => handleResultSearchChange(e.target.value)}
-        />
-
-        <Select
-              onChange={handleExamStatusFilterChange}
-              showSearch={true}
-              placeholder="Select Status"
-              optionFilterProp="children"
-              value={selectedStatusValue}
-              allowClear={true}
-              filterOption={(input, option) =>
-                (option?.children ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              style={{ width: "100%", maxWidth: "120px" }}
-            >
-              <Option key={"1"} value={"true"}>
-                Active
-              </Option>
-              <Option key={"2"} value={"false"}>
-                DeActive
-              </Option>
-            </Select>
-
-        <Button className="button-class"
-            type="primary"
-            block
-            icon={<PlusOutlined />}
-            onClick={addExam}
-        >
-            Add Exam
-      </Button>
-      </Space>
       <Button
         type="default"
         style={{
-          margin: "20px",
+          margin: "0 0 16px 0",
         }}
         onClick={() => navigate(-1)}
         icon={<LeftOutlined />}
       >
         Back
       </Button>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            placeholder="Search applicants"
+            enterButton
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Select
+            onChange={handleExamStatusFilterChange}
+            showSearch={true}
+            placeholder="Select Status"
+            optionFilterProp="children"
+            value={selectedStatusValue}
+            allowClear={true}
+            filterOption={(input, option) =>
+              (option?.children ?? "")
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+            style={{ maxWidth: "120px" }}
+          >
+            <Option key={"1"} value={"true"}>
+              Active
+            </Option>
+            <Option key={"2"} value={"false"}>
+              DeActive
+            </Option>
+          </Select>
+          <Button
+              type="primary"
+              block
+              icon={<PlusOutlined />}
+              onClick={addExam}
+          >
+              Add Exam
+          </Button>
+        </div>
+      </div>
 
+      <div className="table-container">
       <TableView
         data={examSchedules}
         columns={columns}
@@ -324,7 +334,10 @@ const ScheduleExam = () => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
+        hideOnMobile={["registration_starting_date", "registration_closing_date", "location", "total_marks", "created_at"]}
       />
+      </div>
       <AddExamForm
         form={form}
         visible={isModalVisible}

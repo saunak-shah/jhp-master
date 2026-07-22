@@ -1,6 +1,7 @@
 import { Card, Table } from "antd";
-import React from "react";
+import React, { useMemo } from "react";
 import { pageSize } from "../pages/constants";
+import useWindowSize from "../hooks/useWindowSize";
 
 function TableView({
   data,
@@ -13,12 +14,19 @@ function TableView({
   setOffset,
   setCurrentPage,
   fetchData,
-  searchKey
+  searchKey,
+  hideOnMobile,
 }) {
+  const { isMobile } = useWindowSize();
+
+  const filteredColumns = useMemo(() => {
+    if (!isMobile || !hideOnMobile || hideOnMobile.length === 0) return columns;
+    return columns.filter((col) => !hideOnMobile.includes(col.dataIndex));
+  }, [columns, isMobile, hideOnMobile]);
+
   const handleChange = (pagination, filters, sorter) => {
     const newSortField = sorter.field;
     const newSortOrder = (!sorter.order || sorter.order === "ascend") ? "asc" : "desc";
-    // Update state
     setSortField(newSortField);
     setSortOrder(newSortOrder);
 
@@ -26,28 +34,31 @@ function TableView({
     setOffset(newOffset);
     setCurrentPage(pagination.current);
 
-    // Pass the newSortField and newSortOrder directly to fetchData
     fetchData(newOffset, pagination.pageSize, newSortField, newSortOrder, searchKey);
   };
 
   return (
-    <Card>
+    <Card className="table-card">
       <Table
         dataSource={data}
-        columns={columns}
+        columns={filteredColumns}
         bordered={true}
         onChange={handleChange}
         loading={loading}
+        size={isMobile ? "small" : "middle"}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
           total: totalCount,
-          showTotal: (total, range) =>
-            `Showing ${range[0]}-${range[1]} of ${total} items`, // Custom message for total count
+          showSizeChanger: false,
+          showTotal: isMobile
+            ? (total) => `${total} items`
+            : (total, range) => `Showing ${range[0]}-${range[1]} of ${total} items`,
+          simple: isMobile,
         }}
         scroll={{
-          y: 'max-content', // Set a fixed height for vertical scrolling
-          x: "max-content", // Enable horizontal scrolling for wide columns
+          y: "calc(100vh - 320px)",
+          x: filteredColumns.length > 5 ? "max-content" : undefined,
         }}
       />
     </Card>

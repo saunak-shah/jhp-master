@@ -103,7 +103,7 @@ const Header = observer(() => {
       label: <Link to="/attendance" className="header-menu-item">Attendance</Link>,
       onClick: () => handleMenuItemClick('/attendance') 
     },
-
+   
     // {
     //   key: 'result',
     //   roles: [allowModules.Result],  // For example, if attendance is general access

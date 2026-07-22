@@ -6,9 +6,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #fffaf0;
-  min-height: 100vh; /* Ensures the height covers the full viewport */
-  min-width: 100vw; /* Ensures the width covers the full viewport */
-  overflow-x: hidden; /* Prevents horizontal scrolling */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
   background-size: cover; /* Ensures the image covers the whole screen */
   background-position: center; /* Centers the background image */
   background-repeat: no-repeat; /* Ensures no repetition of the image */
@@ -89,12 +89,29 @@ code {
 }
 
 .main-container {
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
-  margin-left: 16px;
+  padding-left: 16px;
+  padding-right: 30px;
   margin-top: 20px;
-  margin-inline-end: 30px;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .search-class{
@@ -109,7 +126,14 @@ code {
   float: right;
 }
 
-@media (max-width: 768px) { /* Adjustments for tablets and mobile devices */
+@media (max-width: 992px) {
+  .main-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+}
+
+@media (max-width: 768px) {
   .table-container {
     margin-left: 0;
     margin-right: 0;
@@ -118,9 +142,19 @@ code {
   .button-class {
     float: none;
     margin-top: 10px;
+    width: 100%;
   }
 
-  @media (max-width: 768px) {
+  .main-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .search-class {
+    width: 100%;
+    margin: 0;
+  }
+
   .chart-container {
     display: block;
   }
@@ -129,6 +163,4 @@ code {
     width: 100%;
     margin-bottom: 20px;
   }
-}
-
 }

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Button, Space, Modal, Input, message, Tag } from "antd";
-import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
+import React, { useEffect, useState, useCallback } from "react";
+import { Button, Space, Modal, Input, Select, message, Tag } from "antd";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -14,6 +14,7 @@ import { pageSize } from "../pages/constants";
 import axios from "axios";
 import { post, deleteData } from "../global/api";
 import { StudentView } from "./StudentView";
+import debounce from "lodash/debounce";
 
 const ApplicantsView = () => {
   const [applicants, setApplicants] = useState([]);
@@ -31,10 +32,44 @@ const ApplicantsView = () => {
   const [dataToDelete, setDataToDelete] = useState({});
   const [isViewModalVisible, setViewModalVisible] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
+  const [searchKey, setSearchKey] = useState("");
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacherValue, setSelectedTeacherValue] = useState(null);
+  const [teacherId, setTeacherId] = useState(0);
   const master_role_id = Number(localStorage.getItem("master_role_id"));
 
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
+
+  const fetchTeachersData = async () => {
+    try {
+      const apiHost = process.env.REACT_APP_API_HOST;
+      const apiUrl = `${apiHost}/api/teachers?limit=100&offset=0&sortBy=teacher_first_name&sortOrder=asc`;
+      const response = await axios.get(apiUrl, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+      });
+      if (response.data.data) {
+        setTeachers(response.data.data.teachers);
+      }
+    } catch (error) {
+      message.error("Failed to fetch teachers");
+    }
+  };
+
+  const handleTeacherFilterChange = (value) => {
+    if (!value) {
+      setTeacherId(0);
+      setSelectedTeacherValue(null);
+    } else {
+      setTeacherId(value);
+      setSelectedTeacherValue(value);
+    }
+    setOffset(0);
+    setCurrentPage(1);
+  };
 
   const fetchData = async (
     offset,
@@ -53,6 +88,11 @@ const ApplicantsView = () => {
     if (sortField) {
       apiUrl = apiUrl + `&sortBy=${sortField}&sortOrder=${sortOrder}`;
     }
+
+    if (teacherId) {
+      apiUrl = apiUrl + `&teacherId=${teacherId}`;
+    }
+
     let headers = {
       "Content-Type": "application/json",
       Authorization: token,
@@ -85,6 +125,7 @@ const ApplicantsView = () => {
       setApplicants(response.data.data.registrations);
     } else {
       setApplicants([]);
+      setTotalApplicantsCount(0);
     }
 
     setLoading(false);
@@ -97,6 +138,10 @@ const ApplicantsView = () => {
     const offset = 0;
     const apiHost = process.env.REACT_APP_API_HOST;
     let apiUrl = `${apiHost}/api/download/courses/registrations/${examId}?limit=${limit}&offset=${offset}`;
+
+    if (teacherId) {
+      apiUrl = apiUrl + `&teacherId=${teacherId}`;
+    }
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -152,7 +197,7 @@ const ApplicantsView = () => {
     const endpoint = `/api/exam/registration/${applicantId}`;
     const res = await deleteData(endpoint, dataToDelete);
     if(res.status === 200){
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey);
     } else{
       message.error(res.message);
     }
@@ -160,10 +205,15 @@ const ApplicantsView = () => {
     setDataToDelete({});
   };
 
-  const handleApplicantsSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, sortField, sortOrder, value);
-  };
+  const handleSearchChange = useCallback(
+    debounce((value) => {
+      const key = value.length > 0 ? value : null;
+      setSearchKey(key);
+      setOffset(0);
+      setCurrentPage(1);
+    }, 500),
+    []
+  );
 
   const handleStudentView = (record) => {
     setCurrentStudent(record.student); // Set current course to edit
@@ -172,8 +222,14 @@ const ApplicantsView = () => {
 
   useEffect(() => {
     fetchData(offset, pageSize);
+    fetchTeachersData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teacherId]);
 
   const exportToExcel = (data, fileName) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -199,6 +255,16 @@ const ApplicantsView = () => {
       ), 
     },
     { title: "Email", dataIndex: "email", key: "email" },
+    {
+      title: "Assigned To",
+      key: "assigned_to",
+      render: (_, record) => {
+        const teacher = record.student?.teacher;
+        return teacher
+          ? `${teacher.teacher_first_name} ${teacher.teacher_last_name}`
+          : "No Assignee";
+      },
+    },
     {
       title: "Applied On",
       dataIndex: "created_at",
@@ -368,29 +434,39 @@ const ApplicantsView = () => {
           }}      
         ></Input>
       </Modal>
-      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
-        <Search
-          style={{ marginTop: 0, marginLeft: 10 }}
-          placeholder="Search applicants"
-          enterButton
-          onChange={(e) => handleApplicantsSearchChange(e.target.value)}
-        />
-
-        <Button
-          type="primary"
-          style={{
-            margin: "20px",
-          }}
-          onClick={() => exportDataToExcel()}
-          icon={<DownloadOutlined />}
-        >
-          Export To Excel
-        </Button>
-      </Space>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            placeholder="Search applicants"
+            enterButton
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Select
+            placeholder="Filter by Teacher"
+            allowClear
+            style={{ width: 200 }}
+            value={selectedTeacherValue}
+            onChange={handleTeacherFilterChange}
+            options={teachers.map((t) => ({
+              value: t.teacher_id,
+              label: `${t.teacher_first_name} ${t.teacher_last_name}`,
+            }))}
+          />
+          <Button
+            type="primary"
+            onClick={() => exportDataToExcel()}
+            icon={<DownloadOutlined />}
+          >
+            Export To Excel
+          </Button>
+        </div>
+      </div>
       <Button
         type="default"
         style={{
-          margin: "20px",
+          margin: "0 0 16px 0",
         }}
         onClick={() => navigate(-1)}
         icon={<LeftOutlined />}
@@ -398,6 +474,7 @@ const ApplicantsView = () => {
         Back
       </Button>
 
+      <div className="table-container">
       <TableView
         data={applicants}
         columns={columns}
@@ -409,7 +486,10 @@ const ApplicantsView = () => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
+        hideOnMobile={["reg_id", "total_marks", "passing_score", "created_at"]}
       />
+      </div>
     </div>
   );
 };

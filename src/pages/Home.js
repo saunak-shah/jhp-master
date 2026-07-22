@@ -15,11 +15,10 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import "../css/Home.css"; // Import the CSS file
+import "../css/Home.css";
 import moment from "moment";
 import dayjs from 'dayjs';
 
-// Register ArcElement, Tooltip, and Legend for Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -34,10 +33,6 @@ ChartJS.register(
 );
 
 const Home = () => {
-  // const [data, setData] = useState([
-  //   { month: "Total Teachers", attendance: 23, icon: <UserOutlined /> },
-  //   { month: "Total Students", attendance: 637, icon: <TeamOutlined /> },
-  // ]);
   const [studentCount, setStudentCount] = useState(0);
   const [teacherCount, setTeacherCount] = useState(0);
 
@@ -53,9 +48,8 @@ const Home = () => {
   const [studentGenderCount, setStudentGenderCount] = useState([]);
   const [genderGroup, setGenderGroup] = useState([]);
 
-  // Default values: today and 7 days ago
-  const defaultEndDate = moment().endOf('day').format('YYYY-MM-DD');
-  const defaultStartDate = moment().startOf('day').subtract(6, "day").format('YYYY-MM-DD');
+  const defaultEndDate = moment();
+  const defaultStartDate = moment().subtract(6, "day");
   const [lowerDateLimit, setLowerDateLimit] = useState(defaultStartDate);
   const [upperDateLimit, setUpperDateLimit] = useState(defaultEndDate);
   const [loading, setLoading] = useState(true);
@@ -72,26 +66,18 @@ const Home = () => {
         display: true,
       },
       datalabels: {
-        anchor: "end", // Place the labels outside the bar
-        align: "start", // Align the labels to the top
-        color: "#000", // Label color
-        formatter: (value) => value, // Format value as plain number
+        anchor: "end",
+        align: "start",
+        color: "#000",
+        formatter: (value) => value,
       },
     },
   };
 
   const lineData = {
     labels: [
-      "2015",
-      "2016",
-      "2017",
-      "2018",
-      "2019",
-      "2020",
-      "2021",
-      "2022",
-      "2023",
-      "2024",
+      "2015", "2016", "2017", "2018", "2019",
+      "2020", "2021", "2022", "2023", "2024",
     ],
     datasets: [
       {
@@ -126,7 +112,6 @@ const Home = () => {
         backgroundColor: "rgba(54, 162, 235, 0.5)",
         borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 1,
-        setLoading: loading,
       },
     ],
   };
@@ -135,12 +120,11 @@ const Home = () => {
     labels: ageGroupData,
     datasets: [
       {
-        label: "Students Attendance to Date",
+        label: "Students by Age Group",
         data: studentAgeGroupCount,
         backgroundColor: "rgba(54, 162, 235, 0.5)",
         borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 1,
-        setLoading: loading,
       },
     ],
   };
@@ -149,29 +133,34 @@ const Home = () => {
     labels: genderGroup,
     datasets: [
       {
-        label: "Students Attendance to Date",
+        label: "Students by Gender",
         data: studentGenderCount,
         backgroundColor: "rgba(54, 162, 235, 0.5)",
         borderColor: "rgba(54, 162, 235, 1)",
         borderWidth: 1,
-        setLoading: loading,
       },
     ],
   };
 
   const fetchAttendanceGraphData = async () => {
     const apiHost = process.env.REACT_APP_API_HOST;
-
-    const apiUrl = `${apiHost}/api/attendance_report_for_graph/${lowerDateLimit}/${upperDateLimit}`;
+    const startStr = lowerDateLimit.format('YYYY-MM-DD');
+    const endStr = upperDateLimit.format('YYYY-MM-DD');
+    const apiUrl = `${apiHost}/api/attendance_report_for_graph/${startStr}/${endStr}`;
 
     let headers = {
       "Content-Type": "application/json",
       Authorization: token,
     };
 
-    const response = await axios.get(apiUrl, { headers });
-    setStudentAttendanceCount(response.data.data.attendanceCount);
-    setAttendanceDate(response.data.data.attendanceDate);
+    try {
+      const response = await axios.get(apiUrl, { headers });
+      setStudentAttendanceCount(response.data.data.attendanceCount);
+      setAttendanceDate(response.data.data.attendanceDate);
+    } catch (error) {
+      console.error("Failed to fetch attendance graph data:", error);
+      message.error("Failed to load attendance chart data");
+    }
   };
 
   useEffect(() => {
@@ -181,49 +170,51 @@ const Home = () => {
   useEffect(() => {
     const fetchAssigneeGraphData = async () => {
       const apiHost = process.env.REACT_APP_API_HOST;
-
       const apiUrl = `${apiHost}/api/students-assign-graph-data`;
-
       let headers = {
         "Content-Type": "application/json",
         Authorization: token,
       };
-
-      const response = await axios.get(apiUrl, { headers });
-      setStudentAssigneeCount(response.data.data.studentCount);
-      setAssignedTeacherNames(response.data.data.teachers);
+      try {
+        const response = await axios.get(apiUrl, { headers });
+        setStudentAssigneeCount(response.data.data.studentCount);
+        setAssignedTeacherNames(response.data.data.teachers);
+      } catch (error) {
+        console.error("Failed to fetch assignee graph data:", error);
+      }
     };
 
     const fetchStudentAgeGroupData = async () => {
       const apiHost = process.env.REACT_APP_API_HOST;
-
       const apiUrl = `${apiHost}/api/students-age-group-data`;
-
       let headers = {
         "Content-Type": "application/json",
         Authorization: token,
       };
-
-      const response = await axios.get(apiUrl, { headers });
-      setStudentAgeGroupCount(response.data.data.studentCount);
-      setAgeGroupData(response.data.data.ageGroup);
+      try {
+        const response = await axios.get(apiUrl, { headers });
+        setStudentAgeGroupCount(response.data.data.studentCount);
+        setAgeGroupData(response.data.data.ageGroup);
+      } catch (error) {
+        console.error("Failed to fetch age group data:", error);
+      }
     };
 
     const fetchStudentGenderGroupData = async () => {
       const apiHost = process.env.REACT_APP_API_HOST;
-
       const apiUrl = `${apiHost}/api/students-gender-group-data`;
-
       let headers = {
         "Content-Type": "application/json",
         Authorization: token,
       };
-
-      const response = await axios.get(apiUrl, { headers });
-      setStudentGenderCount(response.data.data.studentCount);
-      setGenderGroup(response.data.data.genderGroup);
+      try {
+        const response = await axios.get(apiUrl, { headers });
+        setStudentGenderCount(response.data.data.studentCount);
+        setGenderGroup(response.data.data.genderGroup);
+      } catch (error) {
+        console.error("Failed to fetch gender group data:", error);
+      }
     };
-    
 
     const fetchCounts = async () => {
       try {
@@ -251,7 +242,6 @@ const Home = () => {
       }
     };
 
-    fetchAttendanceGraphData();
     fetchAssigneeGraphData();
     fetchCounts();
     fetchStudentAgeGroupData();
@@ -259,26 +249,25 @@ const Home = () => {
   }, []);
 
   const handleStartDateChange = (date, dateString) => {
-    if (new Date(dateString) > new Date(upperDateLimit)) {
+    if (!date) return;
+    if (date > upperDateLimit) {
       message.error("Start date should be less than end date");
-      setLowerDateLimit(moment(defaultStartDate));
-    } else {
-      const defaultStartDate = moment(dateString);
-      setLowerDateLimit(moment(defaultStartDate));
+      return;
     }
+    setLowerDateLimit(date);
   };
 
   const handleEndDateChange = (date, dateString) => {
-    if (new Date(dateString) < new Date(lowerDateLimit)) {
+    if (!date) return;
+    if (date < lowerDateLimit) {
       message.error("End date should be greater than start date");
-      setUpperDateLimit(moment(defaultEndDate));
-    } else {
-      setUpperDateLimit(moment(dateString));
+      return;
     }
+    setUpperDateLimit(date);
   };
 
   return (
-    <div style={{ margin: "30px" }}>
+    <div style={{ padding: "20px", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
       <div className="container">
         <div className="card">
           <Card title={<div>Total Teachers</div>} bordered={true} hoverable>
@@ -380,14 +369,12 @@ const Home = () => {
                 onChange={handleStartDateChange}
                 placeholder="Start Date"
                 value={dayjs(lowerDateLimit)}
-                defaultValue={defaultStartDate}
                 allowClear={false}
               />
               <DatePicker
                 onChange={handleEndDateChange}
                 placeholder="End Date"
                 value={dayjs(upperDateLimit)}
-                defaultValue={defaultEndDate}
                 allowClear={false}
               />
             </div>

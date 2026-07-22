@@ -22,6 +22,7 @@ import moment from "moment";
 import { pageSize } from "./constants";
 import TableView from "../components/TableView";
 import '../css/Teacher.css'; // Import the CSS file
+import { debounce } from "lodash";
 
 const { Option } = Select;
 const { Text } = Typography;
@@ -42,21 +43,17 @@ const Teacher = observer(() => {
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [totalTeacherCount, setTotalteacherCount] = useState(0);
+  const [searchKey, setSearchKey] = useState(null);
 
   const token = localStorage.getItem("token");
 
   const columns = [
     {
-      title: "First Name",
+      title: "Name",
       dataIndex: "teacher_first_name",
-      key: "teacher_first_name",
+      key: "teacher_name",
       sorter: true,
-    },
-    {
-      title: "Last Name",
-      dataIndex: "teacher_last_name",
-      key: "teacher_last_name",
-      sorter: true,
+      render: (_, record) => `${record.teacher_first_name} ${record.teacher_last_name}`,
     },
     {
       title: "Email",
@@ -139,9 +136,14 @@ const Teacher = observer(() => {
   };
 
   const handleTeacherSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, sortField, sortOrder, value);
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key);
   };
+
+  const debouncedSearchHandler = debounce(handleTeacherSearchChange, 500);
 
   const deleteTeacherData = async () => {
     const apiHost = process.env.REACT_APP_API_HOST;
@@ -152,7 +154,7 @@ const Teacher = observer(() => {
           message.success("Teacher deleted");
           setDeleteModalVisibility(false);
           setDataToDelete({});
-          fetchData(0, pageSize);
+          fetchData(0, pageSize, sortField, sortOrder, searchKey);
           return response.json();
         } else {
           throw new Error("Failed to delete teacher.");
@@ -194,7 +196,7 @@ const Teacher = observer(() => {
       .then((response) => {
         if (response.status === 200) {
           message.success("Teacher created");
-          fetchData(0, pageSize);
+          fetchData(0, pageSize, sortField, sortOrder, searchKey);
           return response.json();
         } else {
           response.json().then((data) => {
@@ -224,7 +226,7 @@ const Teacher = observer(() => {
         reqData(updateProfileUrl, values).then((response) => {
           if (response.status === 200) {
             message.success("Teacher updated");
-            fetchData(offset, pageSize);
+            fetchData(offset, pageSize, sortField, sortOrder, searchKey);
             return response.json();
           } else {
             message.success(response.error);
@@ -264,7 +266,7 @@ const Teacher = observer(() => {
 
       let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
       if (searchKey && searchKey.length > 0) {
-        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+        apiUrl = apiUrl + `&searchKey=${encodeURIComponent(searchKey)}`;
       }
 
       if (sortField) {
@@ -286,6 +288,7 @@ const Teacher = observer(() => {
         setTeachers(response.data.data.teachers);
       } else {
         setTeachers([]);
+        setTotalteacherCount(0);
       }
     } catch (error) {
       console.error("Error during API call:", error);
@@ -514,17 +517,21 @@ const Teacher = observer(() => {
       </Modal>
 
       <div className="main-container">
-        <Space style={{ marginBottom: 16 }}>
-        <Search
-            className="search-class"
-            placeholder="Search teachers"
-            enterButton
-            onChange={(e) => handleTeacherSearchChange(e.target.value)}
-          />
-        </Space>
-        <Button type="primary" className="button-class" onClick={openModal} icon={<PlusOutlined />}>
-          Add Teacher
-        </Button>
+        <div className="table-toolbar">
+          <div className="table-toolbar-left">
+            <Search
+              className="search-class"
+              placeholder="Search teachers"
+              enterButton
+              onChange={(e) => debouncedSearchHandler(e.target.value)}
+            />
+          </div>
+          <div className="table-toolbar-right">
+            <Button type="primary" onClick={openModal} icon={<PlusOutlined />}>
+              Add Teacher
+            </Button>
+          </div>
+        </div>
       <div className="table-container">
         <TableView
           data={teachers}
@@ -537,6 +544,8 @@ const Teacher = observer(() => {
           setOffset={setOffset}
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
+          searchKey={searchKey}
+          hideOnMobile={["teacher_gender", "teacher_address"]}
         />
       </div>
       </div>

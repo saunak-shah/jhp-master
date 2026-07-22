@@ -13,4 +13,4 @@ export const allowModules = {
     Program: 10,
 }
 
-export const ATTENDANCE_DAYS = 2;
+export const ATTENDANCE_DAYS = 6;

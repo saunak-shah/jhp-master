@@ -39,8 +39,12 @@ class AuthStore {
     const storedUser = localStorage.getItem("user");
 
     this.isAuthenticated = isAuthenticated;
-    if (storedUser) {
-      this.user = JSON.parse(storedUser);
+    if (storedUser && storedUser !== "undefined") {
+      try {
+        this.user = JSON.parse(storedUser);
+      } catch {
+        localStorage.removeItem("user");
+      }
     }
   }
 

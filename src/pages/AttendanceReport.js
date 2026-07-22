@@ -187,7 +187,7 @@ const exportMenu = (
   };
 
   useEffect(() => {
-    fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
   }, [selectedGenderValue, selectedTeacherValue]);
 
   useEffect(() => {
@@ -203,6 +203,10 @@ const exportMenu = (
       setLoading(true);
 
       let apiUrl = `/api/attendance_report?limit=${limit}&offset=${offset}`;
+      if (searchKey && searchKey.length > 0) {
+        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+      }
+
       if (lowerDateLimit) {
         apiUrl = apiUrl + `&lowerDateLimit=${lowerDateLimit}`;
       }
@@ -210,6 +214,15 @@ const exportMenu = (
       if (upperDateLimit) {
         apiUrl = apiUrl + `&upperDateLimit=${upperDateLimit}`;
       }
+
+      if (selectedTeacherValue) {
+        apiUrl = apiUrl + `&teacherId=${selectedTeacherValue}`;
+      }
+
+      if (selectedGenderValue) {
+        apiUrl = apiUrl + `&gender=${selectedGenderValue}`;
+      }
+
       let date = moment().format();
       let reqObj = {
         limit: 20,
@@ -450,6 +463,7 @@ const exportMenu = (
         </Flex>
       </Flex>
 
+      <div className="table-container">
       <TableView
         style={{ margin: "20px" }}
         data={applicants}
@@ -462,7 +476,9 @@ const exportMenu = (
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
       />
+      </div>
 
       <Drawer
         title="Custom Export"

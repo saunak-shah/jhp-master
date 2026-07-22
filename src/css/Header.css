@@ -3,7 +3,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%; /* Ensure the header spans the full width */
+  width: 100%;
+  padding: 0 16px !important;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 
@@ -53,7 +56,7 @@
 }
 
 .ant-dropdown-link{
-  margin-right: 70px;
+  margin-right: 16px;
   color: white;
 }
 

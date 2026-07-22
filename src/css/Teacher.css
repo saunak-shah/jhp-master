@@ -1,38 +1,165 @@
+/* ===========================
+   Table Container
+   =========================== */
 .table-container {
   width: 100%;
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS devices */
-  }
-  
-  .custom-checkbox .ant-checkbox {
-    width: 20px; /* Adjust width */
-    height: 20px; /* Adjust height */
-  }
-  
-  .custom-checkbox .ant-checkbox-inner {
-    width: 20px;
-    height: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ant-table {
+  text-align: left;
+}
+
+.ant-table-thead > tr > th,
+.ant-table-tbody > tr > td {
+  text-align: left;
+}
+
+.table-card {
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* ===========================
+   Custom Checkbox (Attendance)
+   =========================== */
+.custom-checkbox .ant-checkbox {
+  width: 20px;
+  height: 20px;
+}
+
+.custom-checkbox .ant-checkbox-inner {
+  width: 20px;
+  height: 20px;
+}
+
+/* ===========================
+   Attendance Report Search
+   =========================== */
+.att-report-search {
+  flex: 1;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+/* ===========================
+   Table Toolbar
+   =========================== */
+.table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.table-toolbar-left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.table-toolbar-right {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+/* ===========================
+   Tablet (max-width: 992px)
+   =========================== */
+@media (max-width: 992px) {
+  .table-container {
+    margin-left: 8px;
+    margin-right: 8px;
   }
 
-  .att-report-search{
-    flex: "auto";
-    min-width: 250;
-    max-width: fit-content;
+  .table-toolbar {
+    gap: 6px;
   }
-  
-  @media (max-width: 768px) { /* Adjustments for tablets and mobile devices */
-    .table-container {
-      display: flex;
-      flex-grow: 1;
-      width: 100%;
-      margin: 0 0 0 25px;
-    }
-    .ant-space {
-      flex-wrap: wrap;
-    }
-    .ant-select,
-    .ant-picker {
-      width: 100% !important;
-    }
+
+  .table-toolbar-right {
+    width: 100%;
+    justify-content: flex-start;
   }
-  
+}
+
+/* ===========================
+   Mobile (max-width: 768px)
+   =========================== */
+@media (max-width: 768px) {
+  .table-container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .table-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .table-toolbar-left,
+  .table-toolbar-right {
+    margin-left: 0;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .table-toolbar .ant-select,
+  .table-toolbar .ant-picker,
+  .table-toolbar .ant-input-search {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .ant-space {
+    flex-wrap: wrap;
+  }
+
+  .ant-select,
+  .ant-picker {
+    width: 100% !important;
+  }
+
+  .ant-table {
+    font-size: 12px;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 6px 4px !important;
+  }
+
+  .ant-card-body {
+    padding: 8px;
+  }
+
+  .att-report-search {
+    min-width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ===========================
+   Small Mobile (max-width: 576px)
+   =========================== */
+@media (max-width: 576px) {
+  .table-toolbar-right {
+    flex-direction: column;
+  }
+
+  .table-toolbar-right .ant-btn {
+    width: 100%;
+  }
+
+  .ant-table-pagination {
+    margin: 8px 0 0 !important;
+  }
+}
