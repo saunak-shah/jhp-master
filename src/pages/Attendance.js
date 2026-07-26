@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Checkbox,
@@ -8,7 +8,8 @@ import {
   message,
   Space,
   Select,
-  DatePicker
+  DatePicker,
+  Input
 } from "antd";
 import moment from "moment";
 import { post } from "../global/api";
@@ -44,6 +45,8 @@ const StaffAttendance = () => {
   const [lastSelectedDays, setLastSelectedDays] = useState([]);
   const [currentStudent, setCurrentStudent] = useState(null);
   const [isViewModalVisible, setViewModalVisible] = useState(false);
+  const [searchKey, setSearchKey] = useState(null);
+  const debounceTimerRef = useRef(null);
 
   // const [dates, setDates] = useState(null);
   const [dates, setDates] = useState([
@@ -105,7 +108,8 @@ const StaffAttendance = () => {
     limit,
     sortField = "first_name",
     sortOrder = "asc",
-    teacherId
+    teacherId,
+    searchKeyValue = null
   ) => {
     try {
       setLoading(true);
@@ -118,6 +122,10 @@ const StaffAttendance = () => {
 
 
       let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerDate}&upperDateLimit=${upperDate}&limit=${limit}&offset=${offset}`;
+
+      if (searchKeyValue && searchKeyValue.length > 0) {
+        apiURL += `&searchKey=${searchKeyValue}`;
+      }
 
       if (teacherId && teacherId !== "None") {
         apiURL += `&teacherId=${teacherId}`;
@@ -216,7 +224,7 @@ const StaffAttendance = () => {
       setLastSelectedDays(defaultRange);
     }
   
-    fetchData(offset, pageSize, sortField, sortOrder, teacherId);
+    fetchData(offset, pageSize, sortField, sortOrder, teacherId, searchKey);
   }, [dates]);
 
   useEffect(() => {
@@ -225,7 +233,7 @@ const StaffAttendance = () => {
   }, []);
 
   const handleFetchData = (offset, limit, sortField, sortOrder) => {
-    fetchData(offset, limit, sortField, sortOrder, teacherId);
+    fetchData(offset, limit, sortField, sortOrder, teacherId, searchKey);
   };
 
   const handleCheckboxChange = (key, index, checked) => {
@@ -268,7 +276,18 @@ const StaffAttendance = () => {
     setSelectedValue(newTeacherId);
     setOffset(0);
     setCurrentPage(1);
-    fetchData(0, pageSize, sortField, sortOrder, newTeacherId);
+    fetchData(0, pageSize, sortField, sortOrder, newTeacherId, searchKey);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchKey(value);
+    clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      setOffset(0);
+      setCurrentPage(1);
+      fetchData(0, pageSize, sortField, sortOrder, teacherId, value);
+    }, 500);
   };
 
   const handleStudentView = (record) => {
@@ -292,7 +311,7 @@ const StaffAttendance = () => {
     const endpoint = "/api/attendance";
     const res = await post(endpoint, payload);
     if (res.status === 200) {
-      fetchData(offset, pageSize, sortField, sortOrder, teacherId);
+      fetchData(offset, pageSize, sortField, sortOrder, teacherId, searchKey);
       message.success(`Attendance filled successfully.`);
     } else {
       message.error(`Failed to update attendance.`);
@@ -380,7 +399,24 @@ const StaffAttendance = () => {
         isViewModalVisible={isViewModalVisible}
         setViewModalVisibility={setViewModalVisible}
       />
-        {master_role_id !== 2 ? (
+        <div className="table-toolbar" style={{ marginTop: "10px" }}>
+          <div className="table-toolbar-left">
+            <Input.Search
+              placeholder="Search by name"
+              onChange={handleSearchChange}
+              style={{ width: 250 }}
+              allowClear
+            />
+          </div>
+          <div className="table-toolbar-right">
+            <RangePicker
+              value={dates}
+              onChange={handleDateChange}
+              disabledDate={disabledDate}
+            />
+          </div>
+        </div>
+        {master_role_id !== 2 && (
           <div className="table-toolbar" style={{ marginTop: "10px" }}>
             <div className="table-toolbar-left">
               <span>Filter by teacher:</span>
@@ -408,16 +444,7 @@ const StaffAttendance = () => {
                 ))}
               </Select>
             </div>
-            <div className="table-toolbar-right">
-              <RangePicker
-                value={dates}
-                onChange={handleDateChange}
-                disabledDate={disabledDate}
-              />
-            </div>
           </div>
-        ) : (
-          ""
         )}
         <div className="table-container">
           <Form onFinish={onFinish}>
