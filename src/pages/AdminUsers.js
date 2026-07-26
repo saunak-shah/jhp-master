@@ -235,7 +235,6 @@ const UserTable = observer(() => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
         searchKey={searchKey}
-        hideOnMobile={["gender"]}
       />
       </div>
     </div>

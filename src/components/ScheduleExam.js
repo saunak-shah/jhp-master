@@ -335,7 +335,6 @@ const ScheduleExam = () => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
         searchKey={searchKey}
-        hideOnMobile={["registration_starting_date", "registration_closing_date", "location", "total_marks", "created_at"]}
       />
       </div>
       <AddExamForm

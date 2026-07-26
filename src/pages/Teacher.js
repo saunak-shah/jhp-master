@@ -545,7 +545,6 @@ const Teacher = observer(() => {
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
           searchKey={searchKey}
-          hideOnMobile={["teacher_gender", "teacher_address"]}
         />
       </div>
       </div>

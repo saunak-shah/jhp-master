@@ -287,7 +287,6 @@ const ProgramApplicantsView = () => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
         searchKey={searchKey}
-        hideOnMobile={["reg_id", "age"]}
       />
       </div>
     </div>

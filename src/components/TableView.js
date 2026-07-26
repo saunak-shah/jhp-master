@@ -1,7 +1,6 @@
 import { Card, Table } from "antd";
 import React, { useMemo } from "react";
 import { pageSize } from "../pages/constants";
-import useWindowSize from "../hooks/useWindowSize";
 
 function TableView({
   data,
@@ -15,14 +14,7 @@ function TableView({
   setCurrentPage,
   fetchData,
   searchKey,
-  hideOnMobile,
 }) {
-  const { isMobile } = useWindowSize();
-
-  const filteredColumns = useMemo(() => {
-    if (!isMobile || !hideOnMobile || hideOnMobile.length === 0) return columns;
-    return columns.filter((col) => !hideOnMobile.includes(col.dataIndex));
-  }, [columns, isMobile, hideOnMobile]);
 
   const handleChange = (pagination, filters, sorter) => {
     const newSortField = sorter.field;
@@ -41,24 +33,22 @@ function TableView({
     <Card className="table-card">
       <Table
         dataSource={data}
-        columns={filteredColumns}
+        columns={columns}
         bordered={true}
         onChange={handleChange}
         loading={loading}
-        size={isMobile ? "small" : "middle"}
+        size={"middle"}
         pagination={{
           current: currentPage,
           pageSize: pageSize,
           total: totalCount,
           showSizeChanger: false,
-          showTotal: isMobile
-            ? (total) => `${total} items`
-            : (total, range) => `Showing ${range[0]}-${range[1]} of ${total} items`,
-          simple: isMobile,
+          showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} items`,
+          simple: false,
         }}
         scroll={{
           y: "calc(100vh - 320px)",
-          x: filteredColumns.length > 5 ? "max-content" : undefined,
+          x: columns.length > 5 ? "max-content" : undefined,
         }}
       />
     </Card>

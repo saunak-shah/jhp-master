@@ -279,7 +279,6 @@ const Exam = () => {
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
           searchKey={searchKey}
-          hideOnMobile={["file_url", "created_at"]}
         />
       </div>
       <AddCourseForm

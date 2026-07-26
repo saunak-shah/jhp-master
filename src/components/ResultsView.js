@@ -213,7 +213,6 @@ const ResultsView = () => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
         searchKey={searchKey}
-        hideOnMobile={["course_passing_score", "course_score"]}
       />
       </div>
     </div>

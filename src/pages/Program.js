@@ -351,7 +351,6 @@ const Program = () => {
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
           searchKey={searchKey}
-          hideOnMobile={["file_url", "program_description", "registration_starting_date", "registration_closing_date", "created_at"]}
         />
       </div>
       <AddProgramForm

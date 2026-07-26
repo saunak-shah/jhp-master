@@ -487,7 +487,6 @@ const ApplicantsView = () => {
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
         searchKey={searchKey}
-        hideOnMobile={["reg_id", "total_marks", "passing_score", "created_at"]}
       />
       </div>
     </div>
