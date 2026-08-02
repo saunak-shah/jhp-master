@@ -62,15 +62,8 @@ const UserTable = observer(() => {
   const [selectedStudentForProgram, setSelectedStudentForProgram] =
     useState(null);
 
-  const defaultToDate = moment(
-    moment(new Date()).format("YYYY-MM-DD"),
-    "YYYY-MM-DD"
-  ).endOf("day");
-
-  const defaultFromDate = moment().startOf("month").startOf("day");
-
-  const [fromDate, setFromDate] = useState(defaultFromDate);
-  const [toDate, setToDate] = useState(defaultToDate);
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
   const [minAge, setMinAge] = useState(null);
   const [maxAge, setMaxAge] = useState(null);
 
@@ -367,8 +360,6 @@ const UserTable = observer(() => {
       if (selectedStatusValue) {
         apiUrl += `&status=${selectedStatusValue}`;
       }
-      console.log(fromDate);
-      console.log(toDate);
       if (fromDate) {
         apiUrl += `&fromDate=${fromDate}`;
       }
@@ -535,14 +526,14 @@ const UserTable = observer(() => {
             <DatePicker
               style={{ maxWidth: "150px" }}
               placeholder="From date"
-              value={dayjs(fromDate)}
+              value={fromDate ? dayjs(fromDate) : null}
               allowClear={true}
               onChange={(date) => handleFromDateChange(date)}
             />
             <DatePicker
               style={{ maxWidth: "150px" }}
               placeholder="To date"
-              value={dayjs(toDate)}
+              value={toDate ? dayjs(toDate) : null}
               allowClear={true}
               onChange={(date) => handleToDateChange(date)}
             />
