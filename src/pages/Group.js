@@ -9,6 +9,7 @@ import '../css/Teacher.css'; // Import the CSS file
 import { deleteData } from "../global/api";
 import { post } from "../global/api";
 import AddGroup from "../components/AddGroup";
+import { debounce } from "lodash";
 
 const Group = observer(() => {
   const { Search } = Input;
@@ -26,10 +27,21 @@ const Group = observer(() => {
   const master_role_id = Number(localStorage.getItem("master_role_id"));
   const [isEdit, setIsEdit] = useState(false);
   const [currentGroup, setCurrentGroup] = useState(null);
+  const [searchKey, setSearchKey] = useState(null);
 
 
   const [form] = Form.useForm();
-  
+
+  const handleGroupSearchChange = (value) => {
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key);
+  };
+
+  const debouncedSearchHandler = debounce(handleGroupSearchChange, 500);
+
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
     setDataToDelete("");
@@ -49,7 +61,7 @@ const Group = observer(() => {
 
     const res = await post(endpoint, group);
     if (res.status === 200) {
-      fetchData(0, pageSize);
+      fetchData(0, pageSize, sortField, sortOrder, searchKey);
       message.success(`Group ${isEdit ? "updated" : "added"} successfully.`);
       setIsModalVisible(false);
     } else {
@@ -66,7 +78,7 @@ const Group = observer(() => {
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
       const limit = 100;
-      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
+      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=0`;
 
       const headers = {
         "Content-Type": "application/json",
@@ -94,7 +106,7 @@ const Group = observer(() => {
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
       const limit = 100;
-      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
+      let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=0`;
 
       const headers = {
         "Content-Type": "application/json",
@@ -122,7 +134,7 @@ const Group = observer(() => {
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);
     setDataToDelete({});
-    fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
   };
 
   const columns = [
@@ -196,6 +208,7 @@ const Group = observer(() => {
         setGroups(response.data.data.groups);
       } else {
         setGroups([]);
+        setTotalGroupsCount(0);
       }
     } catch (error) {
       console.error("Error during API call:", error);
@@ -221,24 +234,28 @@ const Group = observer(() => {
       >
         <p>Are you sure you want to delete this user?</p>
       </Modal>
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          className="search-class"
-          placeholder="Search Group"
-          enterButton
-          // onChange={(e) => debouncedSearchHandler(e.target.value)}
-        />
-      </Space>
-      {master_role_id != 2 ? (
-        <Button className="button-class"
-        type="primary"
-        block
-        icon={<PlusOutlined />}
-        onClick={addGroup}
-      >
-        Add Group
-      </Button>
-      ) : ''}
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            className="search-class"
+            placeholder="Search Group"
+            enterButton
+            onChange={(e) => debouncedSearchHandler(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          {master_role_id != 2 ? (
+            <Button
+              type="primary"
+              block
+              icon={<PlusOutlined />}
+              onClick={addGroup}
+            >
+              Add Group
+            </Button>
+          ) : ''}
+        </div>
+      </div>
       
       <div className="table-container">
       <TableView
@@ -252,6 +269,7 @@ const Group = observer(() => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
       />
       </div>
       <AddGroup

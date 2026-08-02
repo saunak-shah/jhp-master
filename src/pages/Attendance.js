@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Form,
   Checkbox,
@@ -8,7 +8,8 @@ import {
   message,
   Space,
   Select,
-  DatePicker
+  DatePicker,
+  Input
 } from "antd";
 import moment from "moment";
 import { post } from "../global/api";
@@ -44,6 +45,8 @@ const StaffAttendance = () => {
   const [lastSelectedDays, setLastSelectedDays] = useState([]);
   const [currentStudent, setCurrentStudent] = useState(null);
   const [isViewModalVisible, setViewModalVisible] = useState(false);
+  const [searchKey, setSearchKey] = useState(null);
+  const debounceTimerRef = useRef(null);
 
   // const [dates, setDates] = useState(null);
   const [dates, setDates] = useState([
@@ -68,21 +71,16 @@ const StaffAttendance = () => {
 
   const handleDateChange = (val) => {
     if (!val) return;
-    // if (val && val.length > 0) {
       const startDate = val[0];
       let endDate = dayjs(val[1]); // Ensure endDate is a Day.js object
-      // console.log("Start Date:", startDate.format("YYYY-MM-DD"));
-      // Calculate the new default end date
       const newDate = startDate.add(ATTENDANCE_DAYS, "day");
 
       if (endDate.isAfter(newDate)) {
         endDate = newDate;
       }
-      // console.log("Final End Date:", endDate.format("YYYY-MM-DD"));
       setDates([startDate, endDate]);
-      console.log("teacherIdteacherId", teacherId)
-      // fetchData(0, 10, "first_name", "asc", teacherId);
-    // }
+      setOffset(0);
+      setCurrentPage(1);
   };
 
   /* let daysLength = ATTENDANCE_DAYS;
@@ -110,7 +108,8 @@ const StaffAttendance = () => {
     limit,
     sortField = "first_name",
     sortOrder = "asc",
-    teacherId
+    teacherId,
+    searchKeyValue = null
   ) => {
     try {
       setLoading(true);
@@ -123,6 +122,10 @@ const StaffAttendance = () => {
 
 
       let apiURL = `${apiHost}/api/attendance/?lowerDateLimit=${lowerDate}&upperDateLimit=${upperDate}&limit=${limit}&offset=${offset}`;
+
+      if (searchKeyValue && searchKeyValue.length > 0) {
+        apiURL += `&searchKey=${searchKeyValue}`;
+      }
 
       if (teacherId && teacherId !== "None") {
         apiURL += `&teacherId=${teacherId}`;
@@ -212,9 +215,8 @@ const StaffAttendance = () => {
         range.push(start.add(i, "day").format("DD/MM/YYYY"));
       }
       
-      setLastSelectedDays(range); // Update state when date range changes
+      setLastSelectedDays(range);
     } else {
-      // Default to last 2 days + today when no date selected
       const defaultRange = [];
       for (let i = 2; i >= 0; i--) {
         defaultRange.push(dayjs().subtract(i, "day").format("DD/MM/YYYY"));
@@ -222,14 +224,16 @@ const StaffAttendance = () => {
       setLastSelectedDays(defaultRange);
     }
   
-    // fetchData(offset, pageSize);
-    fetchData(offset, pageSize, sortField, sortOrder, teacherId);
-    fetchTeachersData();
-    getTotalCount();
+    fetchData(offset, pageSize, sortField, sortOrder, teacherId, searchKey);
   }, [dates]);
 
+  useEffect(() => {
+    fetchTeachersData();
+    getTotalCount();
+  }, []);
+
   const handleFetchData = (offset, limit, sortField, sortOrder) => {
-    fetchData(offset, limit, sortField, sortOrder, teacherId);
+    fetchData(offset, limit, sortField, sortOrder, teacherId, searchKey);
   };
 
   const handleCheckboxChange = (key, index, checked) => {
@@ -267,12 +271,23 @@ const StaffAttendance = () => {
     );
   };
 
-  const handleFilterChange = (teacherId) => {
-    setTeacherId(teacherId);
-    setSelectedValue(teacherId);
+  const handleFilterChange = (newTeacherId) => {
+    setTeacherId(newTeacherId);
+    setSelectedValue(newTeacherId);
     setOffset(0);
-    fetchData(0, pageSize, null, null, teacherId);
     setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, newTeacherId, searchKey);
+  };
+
+  const handleSearchChange = (e) => {
+    const value = e.target.value;
+    setSearchKey(value);
+    clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      setOffset(0);
+      setCurrentPage(1);
+      fetchData(0, pageSize, sortField, sortOrder, teacherId, value);
+    }, 500);
   };
 
   const handleStudentView = (record) => {
@@ -296,7 +311,7 @@ const StaffAttendance = () => {
     const endpoint = "/api/attendance";
     const res = await post(endpoint, payload);
     if (res.status === 200) {
-      fetchData(offset, pageSize, null, null, teacherId);
+      fetchData(offset, pageSize, sortField, sortOrder, teacherId, searchKey);
       message.success(`Attendance filled successfully.`);
     } else {
       message.error(`Failed to update attendance.`);
@@ -384,43 +399,53 @@ const StaffAttendance = () => {
         isViewModalVisible={isViewModalVisible}
         setViewModalVisibility={setViewModalVisible}
       />
-        {master_role_id !== 2 ? (
-          <Space style={{ float: "right", marginTop: "10px" }}>
-            Filter by teacher:
-            <Select
-              onChange={handleFilterChange}
-              showSearch={true}
-              placeholder="Select Teacher"
-              optionFilterProp="children"
-              value={selectedValue}
-              filterOption={(input, option) =>
-                (option?.children ?? "")
-                  .toLowerCase()
-                  .includes(input.toLowerCase())
-              }
-              style={{ width: 200 }}
-            >
-              <Option key={"None"} value={undefined}>
-                None
-              </Option>
-
-              {teachers.map((teacher, index) => (
-                <Option key={index} value={teacher.teacher_id}>
-                  {teacher.teacher_first_name + " " + teacher.teacher_last_name}
+        <div className="table-toolbar" style={{ marginTop: "10px" }}>
+          <div className="table-toolbar-left">
+            <Input.Search
+              placeholder="Search by name"
+              onChange={handleSearchChange}
+              style={{ width: 250 }}
+              allowClear
+            />
+          </div>
+          <div className="table-toolbar-right">
+            <RangePicker
+              value={dates}
+              onChange={handleDateChange}
+              disabledDate={disabledDate}
+            />
+          </div>
+        </div>
+        {master_role_id !== 2 && (
+          <div className="table-toolbar" style={{ marginTop: "10px" }}>
+            <div className="table-toolbar-left">
+              <span>Filter by teacher:</span>
+              <Select
+                onChange={handleFilterChange}
+                showSearch={true}
+                placeholder="Select Teacher"
+                optionFilterProp="children"
+                value={selectedValue}
+                filterOption={(input, option) =>
+                  (option?.children ?? "")
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                style={{ width: 200 }}
+              >
+                <Option key={"None"} value={undefined}>
+                  None
                 </Option>
-              ))}
-            </Select>
-          </Space>
-        ) : (
-          ""
+
+                {teachers.map((teacher, index) => (
+                  <Option key={index} value={teacher.teacher_id}>
+                    {teacher.teacher_first_name + " " + teacher.teacher_last_name}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </div>
         )}
-        <Space style={{ float: "right", marginTop: "10px" }}>
-        <RangePicker
-          value={dates}
-          onChange={handleDateChange} // Trigger API call when dates change
-          disabledDate={disabledDate}
-        />
-        </Space>
         <div className="table-container">
           <Form onFinish={onFinish}>
             <TableView
@@ -436,12 +461,11 @@ const StaffAttendance = () => {
               // fetchData={fetchData}
               fetchData={handleFetchData} // Pass the wrapper instead of fetchData
             />
-            <div className="button-container">
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
               <Form.Item>
                 <Button
                   type="primary"
                   htmlType="submit"
-                  style={{ margin: "30px", float: "right" }}
                 >
                   Submit
                 </Button>

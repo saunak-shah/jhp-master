@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button, Space, Modal, Input, message, Tag } from "antd";
-import { useNavigate, useParams } from "react-router-dom"; // Import useNavigate instead of useHistory
+import { useNavigate, useParams } from "react-router-dom";
 import {
   DeleteOutlined,
   DownloadOutlined,
@@ -12,6 +12,7 @@ import TableView from "./TableView";
 import { pageSize } from "../pages/constants";
 import axios from "axios";
 import { deleteData } from "../global/api";
+import debounce from "lodash/debounce";
 
 const ProgramApplicantsView = () => {
   const [applicants, setApplicants] = useState([]);
@@ -24,6 +25,7 @@ const ProgramApplicantsView = () => {
   const [offset, setOffset] = useState(0);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const [searchKey, setSearchKey] = useState("");
 
   const token = localStorage.getItem("token") || "";
   const { programId } = useParams(); // Use useParams to get programId from the route
@@ -82,6 +84,7 @@ const ProgramApplicantsView = () => {
       setApplicants(response.data.data.registrations);
     } else {
       setApplicants([]);
+      setTotalApplicantsCount(0);
     }
 
     setLoading(false);
@@ -147,7 +150,7 @@ const ProgramApplicantsView = () => {
     const endpoint = `/api/programs/registration/${applicantId}`;
     const res = await deleteData(endpoint, dataToDelete);
     if(res.status === 200){
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey);
     } else{
       message.error(res.message);
     }
@@ -155,10 +158,15 @@ const ProgramApplicantsView = () => {
     setDataToDelete({});
   };
 
-  const handleApplicantsSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, sortField, sortOrder, value);
-  };
+  const handleSearchChange = useCallback(
+    debounce((value) => {
+      const key = value.length > 0 ? value : null;
+      setSearchKey(key);
+      setOffset(0);
+      setCurrentPage(1);
+    }, 500),
+    []
+  );
 
   useEffect(() => {
     fetchData(offset, pageSize);
@@ -237,29 +245,28 @@ const ProgramApplicantsView = () => {
         <p>Are you sure you want to delete this record?</p>
       </Modal>
       
-      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
-        <Search
-          style={{ marginTop: 0, marginLeft: 10 }}
-          placeholder="Search applicants"
-          enterButton
-          onChange={(e) => handleApplicantsSearchChange(e.target.value)}
-        />
-
-        <Button
-          type="primary"
-          style={{
-            margin: "20px",
-          }}
-          onClick={() => exportDataToExcel()}
-          icon={<DownloadOutlined />}
-        >
-          Export To Excel
-        </Button>
-      </Space>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            placeholder="Search applicants"
+            enterButton
+            onChange={(e) => handleSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Button
+            type="primary"
+            onClick={() => exportDataToExcel()}
+            icon={<DownloadOutlined />}
+          >
+            Export To Excel
+          </Button>
+        </div>
+      </div>
       <Button
         type="default"
         style={{
-          margin: "20px",
+          margin: "0 0 16px 0",
         }}
         onClick={() => navigate(-1)}
         icon={<LeftOutlined />}
@@ -267,6 +274,7 @@ const ProgramApplicantsView = () => {
         Back
       </Button>
 
+      <div className="table-container">
       <TableView
         data={applicants}
         columns={columns}
@@ -278,7 +286,9 @@ const ProgramApplicantsView = () => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
       />
+      </div>
     </div>
   );
 };

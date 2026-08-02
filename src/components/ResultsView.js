@@ -17,6 +17,7 @@ const ResultsView = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalApplicantsCount, setTotalApplicantsCount] = useState(0);
   const [offset, setOffset] = useState(0);
+  const [searchKey, setSearchKey] = useState(null);
 
   const token = localStorage.getItem("token") || "";
   const { examId } = useParams(); // Use useParams to get examId from the route
@@ -64,6 +65,7 @@ const ResultsView = () => {
       setApplicants(response.data.data.result);
     } else {
       setApplicants([]);
+      setTotalApplicantsCount(0);
     }
 
     setLoading(false);
@@ -117,8 +119,11 @@ const ResultsView = () => {
   };
 
   const handleResultSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, value);
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key);
   };
 
   useEffect(() => {
@@ -166,29 +171,28 @@ const ResultsView = () => {
 
   return (
     <div>
-      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
-        <Search
-          style={{ marginTop: 0, marginLeft: 10 }}
-          placeholder="Search applicants"
-          enterButton
-          onChange={(e) => handleResultSearchChange(e.target.value)}
-        />
-
-        <Button
-          type="primary"
-          style={{
-            margin: "20px",
-          }}
-          onClick={() => exportDataToExcel()}
-          icon={<DownloadOutlined />}
-        >
-          Export To Excel
-        </Button>
-      </Space>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            placeholder="Search applicants"
+            enterButton
+            onChange={(e) => handleResultSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Button
+            type="primary"
+            onClick={() => exportDataToExcel()}
+            icon={<DownloadOutlined />}
+          >
+            Export To Excel
+          </Button>
+        </div>
+      </div>
       <Button
         type="default"
         style={{
-          margin: "20px",
+          margin: "0 0 16px 0",
         }}
         onClick={() => navigate(-1)}
         icon={<LeftOutlined />}
@@ -196,6 +200,7 @@ const ResultsView = () => {
         Back
       </Button>
 
+      <div className="table-container">
       <TableView
         data={applicants}
         columns={columns}
@@ -207,7 +212,9 @@ const ResultsView = () => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
       />
+      </div>
     </div>
   );
 };

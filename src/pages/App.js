@@ -40,7 +40,7 @@ const App = observer(() => {
 
   return (
     <Router>
-      <div className="app-container" style={{ width: "100%"}}>
+      <div className="app-container">
         {authStore.isAuthenticated ? (
           <div className="main-content">
             <Header />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Input, Button, Space, message, Form, Modal } from "antd";
+import { Input, Button, Space, message, Form, Modal, Tooltip } from "antd";
 import AddCourseForm from "../components/AddCourseForm"; // Make sure the path is correct
 import {
   EditOutlined,
@@ -31,6 +31,7 @@ const Exam = () => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
   const master_role_id = Number(localStorage.getItem("master_role_id"));
+  const [searchKey, setSearchKey] = useState(null);
   
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
@@ -102,7 +103,7 @@ const Exam = () => {
               icon={<DatabaseOutlined />}
               onClick={() => navigate(`/exam/schedule/${record.course_id}`)}
             >
-              Schecule Exam
+              Schedule
             </Button>
           </Space>
         );
@@ -111,8 +112,11 @@ const Exam = () => {
   ];
 
   const handleCourseSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, sortField, sortOrder, value);
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key);
   };
 
   // Debounce search key handler
@@ -134,7 +138,7 @@ const Exam = () => {
 
     const res = await post(endpoint, course);
     if (res.status === 200) {
-      fetchData(0, pageSize);
+      fetchData(0, pageSize, sortField, sortOrder, searchKey);
       message.success(`Course ${isEdit ? "updated" : "added"} successfully.`);
       setIsModalVisible(false);
     } else {
@@ -164,7 +168,7 @@ const Exam = () => {
     const endpoint = `/api/courses/${dataToDelete.course_id}`;
     const res = await deleteData(endpoint, dataToDelete);
     if(res.status === 200){
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey);
     } else{
       message.error(res.message);
     }
@@ -180,7 +184,7 @@ const Exam = () => {
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/courses?limit=${limit}&offset=${offset}`;
       if (searchKey && searchKey.length > 0) {
-        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+        apiUrl = apiUrl + `&searchKey=${encodeURIComponent(searchKey)}`;
       }
 
       if (sortField) {
@@ -208,6 +212,7 @@ const Exam = () => {
           setTotalCoursesCount(rawData.data.totalCount);
         } else {
           setCourses([]);
+          setTotalCoursesCount(0);
         }
       } else {
         console.error("Error fetching data:", response.statusText);
@@ -225,7 +230,7 @@ const Exam = () => {
   }, []); // Only fetch when searchKey changes after debounce
 
 
-  return (
+    return (
     <div className="main-container">
 
       <Modal
@@ -240,22 +245,27 @@ const Exam = () => {
       </Modal>
 
 
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          className="search-class"
-          placeholder="Search exams"
-          enterButton
-          onChange={(e) => debouncedSearchHandler(e.target.value)}
-        />
-      </Space>
-      <Button className="button-class"
-        type="primary"
-        block
-        icon={<PlusOutlined />}
-        onClick={addCourse}
-      >
-        Add Course
-      </Button>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            className="search-class"
+            placeholder="Search exams"
+            enterButton
+            onChange={(e) => debouncedSearchHandler(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Button
+            type="primary"
+            block
+            icon={<PlusOutlined />}
+            onClick={addCourse}
+          >
+            Add Course
+          </Button>
+        </div>
+      </div>
+
       <div className="table-container">
         <TableView
           data={courses}
@@ -268,6 +278,7 @@ const Exam = () => {
           setOffset={setOffset}
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
+          searchKey={searchKey}
         />
       </div>
       <AddCourseForm

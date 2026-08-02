@@ -31,6 +31,7 @@ const Program = () => {
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
   const [selectedStatusValue, setSelectedStatusValue] = useState(true);
+  const [searchKey, setSearchKey] = useState(null);
 
   const navigate = useNavigate();
 
@@ -140,8 +141,11 @@ const Program = () => {
   ];
 
   const handleProgramSearchChange = async (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(0, pageSize, selectedStatusValue, sortField, sortOrder, value);
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key, selectedStatusValue);
   };
 
   // Debounce search key handler
@@ -165,7 +169,7 @@ const Program = () => {
     } else {
       message.error(`${res.message}`);
     }
-    fetchData(0, pageSize, selectedStatusValue);
+    fetchData(0, pageSize, sortField, sortOrder, searchKey, selectedStatusValue);
     setLoading(false);
   };
 
@@ -190,7 +194,7 @@ const Program = () => {
     const endpoint = `/api/programs/${dataToDelete.program_id}`;
     const res = await deleteData(endpoint, dataToDelete);
     if (res.status === 200) {
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey, selectedStatusValue);
     } else {
       message.error(res.message);
     }
@@ -203,17 +207,18 @@ const Program = () => {
   const fetchData = async (
     offset,
     limit,
-    status = true,
     sortField = "program_id",
     sortOrder = "asc",
-    searchKey = null
+    searchKey = null,
+    status = null
   ) => {
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
-      let apiUrl = `${apiHost}/api/programs?limit=${limit}&offset=${offset}&is_program_active=${Boolean(status)}`;
+      const activeStatus = status !== null ? status : selectedStatusValue;
+      let apiUrl = `${apiHost}/api/programs?limit=${limit}&offset=${offset}&is_program_active=${Boolean(activeStatus)}`;
       if (searchKey && searchKey.length > 0) {
-        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+        apiUrl = apiUrl + `&searchKey=${encodeURIComponent(searchKey)}`;
       }
 
       if (sortField) {
@@ -268,15 +273,16 @@ const Program = () => {
   };
 
   const handleProgramStatusFilterChange = (status) => {
-    setSelectedStatusValue(status);
+    const value = status !== undefined ? status : true;
+    setSelectedStatusValue(value);
     setOffset(0);
     setCurrentPage(1);
-    fetchData(0, pageSize, status);
+    fetchData(0, pageSize, sortField, sortOrder, searchKey, value);
   };
 
   useEffect(() => {
     fetchData(0, pageSize);
-  }, []); // Only fetch when searchKey changes after debounce
+  }, []);
 
   return (
     <div className="main-container">
@@ -291,46 +297,47 @@ const Program = () => {
         <p>Are you sure you want to delete this record?</p>
       </Modal>
 
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          className="search-class"
-          placeholder="Search programs"
-          enterButton
-          onChange={(e) => debouncedSearchHandler(e.target.value)}
-        />
-      </Space>
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            className="search-class"
+            placeholder="Search programs"
+            enterButton
+            onChange={(e) => debouncedSearchHandler(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <Select
+            onChange={handleProgramStatusFilterChange}
+            showSearch={true}
+            placeholder="Select Status"
+            optionFilterProp="children"
+            value={selectedStatusValue}
+            allowClear={true}
+            filterOption={(input, option) =>
+              (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+            style={{ maxWidth: "120px" }}
+          >
+            <Option key={"1"} value={true}>
+              Active
+            </Option>
+            <Option key={"2"} value={false}>
+              Inactive
+            </Option>
+          </Select>
 
-      <Space style={{ marginTop: 20, marginRight: 20, float: "right" }}>
-        <Select
-          onChange={handleProgramStatusFilterChange}
-          showSearch={true}
-          placeholder="Select Status"
-          optionFilterProp="children"
-          value={selectedStatusValue}
-          allowClear={true}
-          filterOption={(input, option) =>
-            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-          style={{ width: "100%", maxWidth: "120px" }}
-        >
-          <Option key={"1"} value={true}>
-            Active
-          </Option>
-          <Option key={"2"} value={false}>
-            Inactive
-          </Option>
-        </Select>
+          <Button
+            type="primary"
+            block
+            icon={<PlusOutlined />}
+            onClick={addProgram}
+          >
+            Add Program
+          </Button>
+        </div>
+      </div>
 
-        <Button
-          className="button-class"
-          type="primary"
-          block
-          icon={<PlusOutlined />}
-          onClick={addProgram}
-        >
-          Add Program
-        </Button>
-      </Space>
       <div className="table-container">
         <TableView
           data={programs}
@@ -343,6 +350,7 @@ const Program = () => {
           setOffset={setOffset}
           setCurrentPage={setCurrentPage}
           fetchData={fetchData}
+          searchKey={searchKey}
         />
       </div>
       <AddProgramForm

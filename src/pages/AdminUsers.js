@@ -24,6 +24,7 @@ const UserTable = observer(() => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [isDeleteModalVisible, setDeleteModalVisibility] = useState(false);
   const [dataToDelete, setDataToDelete] = useState({});
+  const [searchKey, setSearchKey] = useState(null);
   
   const handleDeleteCancel = () => {
     setDeleteModalVisibility(false);
@@ -32,12 +33,12 @@ const UserTable = observer(() => {
 
   const token = localStorage.getItem("token");
 
-  const handleFilterChange = (teacherId) => {
-    setTeacherId(teacherId);
-    setSelectedValue(teacherId);
+  const handleFilterChange = (newTeacherId) => {
+    setTeacherId(newTeacherId);
+    setSelectedValue(newTeacherId);
     setOffset(0);
-    fetchData(offset, pageSize);
     setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, searchKey, newTeacherId);
   };
 
   const handleDelete = (record) => {
@@ -50,7 +51,7 @@ const UserTable = observer(() => {
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);
     setDataToDelete({});
-    fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
   };
 
   const columns = [
@@ -95,22 +96,26 @@ const UserTable = observer(() => {
   ];
 
   const handleUserSearchChange = (value) => {
-    value = value.length > 0 ? value : null;
-    fetchData(offset, pageSize, sortField, sortOrder, value);
+    const key = value.length > 0 ? value : null;
+    setSearchKey(key);
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, key);
   };
 
-  const fetchData = async (offset, limit, sortField = "student_id", sortOrder = "asc", searchKey = null) => {  
+  const fetchData = async (offset, limit, sortField = "student_id", sortOrder = "asc", searchKey = null, teacherIdParam = null) => {  
     setLoading(true);
     try {
       const apiHost = process.env.REACT_APP_API_HOST;
+      const activeTeacherId = teacherIdParam !== null ? teacherIdParam : teacherId;
       let apiUrl;
-      if (teacherId) {
-        apiUrl = `${apiHost}/api/teachers/assignees/${teacherId}?limit=${limit}&offset=${offset}`;
+      if (activeTeacherId) {
+        apiUrl = `${apiHost}/api/teachers/assignees/${activeTeacherId}?limit=${limit}&offset=${offset}`;
       } else {
         apiUrl = `${apiHost}/api/students?limit=${limit}&offset=${offset}`;
       }
       if (searchKey && searchKey.length > 0) {
-        apiUrl = apiUrl + `&searchKey=${searchKey}`;
+        apiUrl = apiUrl + `&searchKey=${encodeURIComponent(searchKey)}`;
       }
 
       if (sortField) {
@@ -127,6 +132,7 @@ const UserTable = observer(() => {
         setUsers(response.data.data.users);
       } else {
         setUsers([]);
+        setTotalUserCount(0);
       }
     } catch (error) {
       console.error("Error during API call:", error);
@@ -137,7 +143,7 @@ const UserTable = observer(() => {
 
   const fetchTeachersData = async () => {
     try {
-      const limit = 20;
+      const limit = 100;
       const offset = 0;
       const apiHost = process.env.REACT_APP_API_HOST;
       let apiUrl = `${apiHost}/api/teachers?limit=${limit}&offset=${offset}`;
@@ -183,38 +189,39 @@ const UserTable = observer(() => {
         <p>Are you sure you want to delete this user?</p>
       </Modal>
 
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          style={{ marginTop: 16, marginLeft: 10 }}
-          placeholder="Search users"
-          enterButton
-          onChange={(e) => handleUserSearchChange(e.target.value)}
-        />
-      </Space>
-      <Space style={{ float: "right", marginTop: '10px'}}>
-        Filter by teacher:
-        <Select
-          onChange={handleFilterChange}
-          showSearch={true}
-          placeholder="Select Teacher"
-          optionFilterProp="children"
-          value={selectedValue}
-          filterOption={(input, option) =>
-            (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
-          }
-          style={{ width: 200 }}
-        >
-          <Option key={"None"} value={undefined}>
-            None
-          </Option>
-
-          {teachers.map((teacher, index) => (
-            <Option key={index} value={teacher.teacher_id}>
-              {teacher.teacher_first_name + ' ' +teacher.teacher_last_name}
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            placeholder="Search users"
+            enterButton
+            onChange={(e) => handleUserSearchChange(e.target.value)}
+          />
+        </div>
+        <div className="table-toolbar-right">
+          <span>Filter by teacher:</span>
+          <Select
+            onChange={handleFilterChange}
+            showSearch={true}
+            placeholder="Select Teacher"
+            optionFilterProp="children"
+            value={selectedValue}
+            filterOption={(input, option) =>
+              (option?.children ?? "").toLowerCase().includes(input.toLowerCase())
+            }
+            style={{ width: 200 }}
+          >
+            <Option key={"None"} value={undefined}>
+              None
             </Option>
-          ))}
-        </Select>
-      </Space>
+
+            {teachers.map((teacher, index) => (
+              <Option key={index} value={teacher.teacher_id}>
+                {teacher.teacher_first_name + ' ' +teacher.teacher_last_name}
+              </Option>
+            ))}
+          </Select>
+        </div>
+      </div>
       <div className="table-container">
       <TableView
         data={users}
@@ -227,6 +234,7 @@ const UserTable = observer(() => {
         setOffset={setOffset}
         setCurrentPage={setCurrentPage}
         fetchData={fetchData}
+        searchKey={searchKey}
       />
       </div>
     </div>

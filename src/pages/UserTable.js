@@ -9,6 +9,7 @@ import {
   message,
   DatePicker,
   Tag,
+  InputNumber,
 } from "antd";
 import { observer } from "mobx-react-lite";
 import axios from "axios";
@@ -68,8 +69,10 @@ const UserTable = observer(() => {
 
   const defaultFromDate = moment().startOf("month").startOf("day");
 
-  const [fromDate, setFromDate] = useState();
-  const [toDate, setToDate] = useState();
+  const [fromDate, setFromDate] = useState(defaultFromDate);
+  const [toDate, setToDate] = useState(defaultToDate);
+  const [minAge, setMinAge] = useState(null);
+  const [maxAge, setMaxAge] = useState(null);
 
   const [form] = Form.useForm();
 
@@ -117,39 +120,59 @@ const UserTable = observer(() => {
     await deleteData(endpoint, dataToDelete);
     setDeleteModalVisibility(false);
     setDataToDelete({});
-    fetchData(offset, pageSize);
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
   };
 
   const handleFromDateChange = async (date) => {
     if (!date) {
       setFromDate(null);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey, null);
-      return;
-    }
-
-    if (toDate && date > toDate) {
+    } else if (toDate && date > toDate) {
       message.error("From date should be smaller than to date");
-      setFromDate(fromDate);
+      return;
     } else {
       setFromDate(date);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
     }
+    setOffset(0);
+    setCurrentPage(1);
   };
 
   const handleToDateChange = async (date) => {
     if (!date) {
       setToDate(null);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
-      return;
-    }
-
-    if (fromDate && date < fromDate) {
+    } else if (fromDate && date < fromDate) {
       message.error("To date should be greater than from date");
-      setToDate(toDate);
+      return;
     } else {
       setToDate(date);
-      await fetchData(0, pageSize, sortField, sortOrder, searchKey);
     }
+    setOffset(0);
+    setCurrentPage(1);
+  };
+
+  const handleMinAgeChange = (value) => {
+    if (value != null && maxAge != null && value > maxAge) {
+      message.error("Min age cannot be greater than max age");
+      return;
+    }
+    setMinAge(value);
+    setOffset(0);
+    setCurrentPage(1);
+  };
+
+  const handleMaxAgeChange = (value) => {
+    if (value != null && minAge != null && value < minAge) {
+      message.error("Max age cannot be less than min age");
+      return;
+    }
+    setMaxAge(value);
+    setOffset(0);
+    setCurrentPage(1);
+  };
+
+  const handleApplyFilters = () => {
+    setOffset(0);
+    setCurrentPage(1);
+    fetchData(0, pageSize, sortField, sortOrder, searchKey);
   };
 
   const handleChangeAssignee = (record) => {
@@ -166,7 +189,7 @@ const UserTable = observer(() => {
 
     // api implement
     if (res.status === 200) {
-      fetchData(offset, pageSize);
+      fetchData(offset, pageSize, sortField, sortOrder, searchKey);
       message.success("Data updated successfully.");
     } else {
       message.error("There is some error.");
@@ -354,6 +377,16 @@ const UserTable = observer(() => {
         apiUrl += `&toDate=${toDate}`;
       }
 
+      if (minAge != null || maxAge != null) {
+        const today = dayjs();
+        if (maxAge != null) {
+          apiUrl += `&birthDateFrom=${encodeURIComponent(today.subtract(maxAge, "year").startOf("day").format())}`;
+        }
+        if (minAge != null) {
+          apiUrl += `&birthDateTo=${encodeURIComponent(today.subtract(minAge, "year").endOf("day").format())}`;
+        }
+      }
+
       const headers = {
         "Content-Type": "application/json",
         Authorization: token,
@@ -448,6 +481,8 @@ const UserTable = observer(() => {
     fromDate,
     toDate,
     searchKey,
+    minAge,
+    maxAge,
   ]);
 
   return (
@@ -486,38 +521,46 @@ const UserTable = observer(() => {
         <p>Are you sure you want to delete this user?</p>
       </Modal>
 
-      <Space style={{ marginBottom: 16 }}>
-        <Search
-          className="search-class"
-          placeholder="Search users"
-          enterButton
-          onChange={(e) => handleUserSearchChange(e.target.value)}
-        />
-      </Space>
-      {master_role_id !== 2 ? (
-        <Space style={{ float: "right", marginTop: "10px" }}>
-          <Space
-            style={{
-              display: "flex",
-              flexWrap: "wrap",
-              gap: "8px",
-              justifyContent: "space-between",
-              width: "100%",
-            }}
-          >
+      <div className="table-toolbar">
+        <div className="table-toolbar-left">
+          <Search
+            className="search-class"
+            placeholder="Search users"
+            enterButton
+            onChange={(e) => handleUserSearchChange(e.target.value)}
+          />
+        </div>
+        {master_role_id !== 2 ? (
+          <div className="table-toolbar-right">
             <DatePicker
-              style={{ width: "100%", maxWidth: "150px" }}
+              style={{ maxWidth: "150px" }}
               placeholder="From date"
-              defaultValue={dayjs(defaultFromDate)}
+              value={dayjs(fromDate)}
               allowClear={true}
               onChange={(date) => handleFromDateChange(date)}
             />
             <DatePicker
-              style={{ width: "100%", maxWidth: "150px" }}
+              style={{ maxWidth: "150px" }}
               placeholder="To date"
-              defaultValue={dayjs(defaultToDate)}
+              value={dayjs(toDate)}
               allowClear={true}
               onChange={(date) => handleToDateChange(date)}
+            />
+            <InputNumber
+              placeholder="Min Age"
+              min={0}
+              max={maxAge != null ? maxAge : 150}
+              value={minAge}
+              onChange={handleMinAgeChange}
+              style={{ width: 100 }}
+            />
+            <InputNumber
+              placeholder="Max Age"
+              min={minAge != null ? minAge : 0}
+              max={150}
+              value={maxAge}
+              onChange={handleMaxAgeChange}
+              style={{ width: 100 }}
             />
             <Select
               onChange={handleGenderFilterChange}
@@ -531,7 +574,7 @@ const UserTable = observer(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              style={{ width: "100%", maxWidth: "120px" }}
+              style={{ maxWidth: "120px" }}
             >
               <Option key={"M"} value={"Male"}>
                 Male
@@ -553,7 +596,7 @@ const UserTable = observer(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              style={{ width: "100%", maxWidth: "120px" }}
+              style={{ maxWidth: "120px" }}
             >
               <Option key={"1"} value={"Pending"}>
                 Pending
@@ -562,9 +605,7 @@ const UserTable = observer(() => {
                 Approve
               </Option>
             </Select>
-          </Space>
 
-          <Space>
             <Select
               onChange={handleTeacherFilterChange}
               showSearch
@@ -577,17 +618,14 @@ const UserTable = observer(() => {
                   .toLowerCase()
                   .includes(input.toLowerCase())
               }
-              style={{ width: "100%", maxWidth: "180px" }}
+              style={{ maxWidth: "180px" }}
             >
-              {/* Static options */}
               <Option key="None" value="None">
                 None
               </Option>
               <Option key="0" value="0">
                 No Assignee
               </Option>
-
-              {/* Dynamic teacher options */}
               {teachers?.map((teacher) => {
                 const name = `${teacher.teacher_first_name || ""} ${
                   teacher.teacher_last_name || ""
@@ -599,21 +637,24 @@ const UserTable = observer(() => {
                 );
               })}
             </Select>
+
             <Button
               type="primary"
-              style={{
-                margin: "20px",
-              }}
+              onClick={handleApplyFilters}
+            >
+              Apply Filters
+            </Button>
+
+            <Button
+              type="primary"
               onClick={() => exportDataToExcel()}
               icon={<DownloadOutlined />}
             >
               Export Students
             </Button>
-          </Space>
-        </Space>
-      ) : (
-        ""
-      )}
+          </div>
+        ) : null}
+      </div>
 
       <div className="table-container">
         <TableView
