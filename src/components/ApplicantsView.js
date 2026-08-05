@@ -229,7 +229,7 @@ const ApplicantsView = () => {
   useEffect(() => {
     fetchData(offset, pageSize, sortField, sortOrder, searchKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacherId]);
+  }, [teacherId, searchKey]);
 
   const exportToExcel = (data, fileName) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
