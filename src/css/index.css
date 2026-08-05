@@ -133,6 +133,20 @@ code {
   }
 }
 
+.ant-table-thead > tr > th {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-table-tbody > tr > td {
+  overflow-wrap: break-word;
+}
+
+.ant-table-tbody .ant-space {
+  flex-wrap: wrap;
+}
+
 @media (max-width: 768px) {
   .table-container {
     margin-left: 0;
