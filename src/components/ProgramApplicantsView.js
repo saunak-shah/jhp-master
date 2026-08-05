@@ -173,6 +173,11 @@ const ProgramApplicantsView = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    fetchData(offset, pageSize, sortField, sortOrder, searchKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchKey]);
+
   const exportToExcel = (data, fileName) => {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
