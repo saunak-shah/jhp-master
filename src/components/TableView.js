@@ -2,6 +2,17 @@ import { Card, Table } from "antd";
 import React, { useMemo } from "react";
 import { pageSize } from "../pages/constants";
 
+const estimateColumnWidth = (col) => {
+  if (col.width) {
+    return col.width;
+  }
+  if (col.key === "action" || col.dataIndex === "action") {
+    return 300;
+  }
+  const titleLength = String(col.title ?? "").length;
+  return Math.max(titleLength * 9 + 36, 120);
+};
+
 function TableView({
   data,
   columns,
@@ -15,6 +26,10 @@ function TableView({
   fetchData,
   searchKey,
 }) {
+  const scrollX = useMemo(
+    () => columns.reduce((sum, col) => sum + estimateColumnWidth(col), 0),
+    [columns]
+  );
 
   const handleChange = (pagination, filters, sorter) => {
     const newSortField = sorter.field;
@@ -46,9 +61,10 @@ function TableView({
           showTotal: (total, range) => `Showing ${range[0]}-${range[1]} of ${total} items`,
           simple: false,
         }}
+        tableLayout="fixed"
         scroll={{
           y: "calc(100vh - 320px)",
-          x: columns.length > 5 ? "max-content" : undefined,
+          x: scrollX,
         }}
       />
     </Card>

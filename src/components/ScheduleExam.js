@@ -189,7 +189,7 @@ const ScheduleExam = () => {
 
   useEffect(() => {
     fetchData(offset, pageSize, sortField, sortOrder, searchKey);
-  }, [selectedStatusValue]);
+  }, [selectedStatusValue, searchKey]);
 
   const columns = [
     { title: "Exam Name", dataIndex: "exam_name", key: "exam_name", ellipsis: true, width: 150 },
