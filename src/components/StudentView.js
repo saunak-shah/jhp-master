@@ -1,11 +1,68 @@
-import { Col, Modal, Row, Typography } from "antd";
+import { useEffect, useState } from "react";
+import { Col, Modal, Row, Spin, Typography, message } from "antd";
+import axios from "axios";
 import moment from "moment";
+import { useNavigate } from "react-router-dom";
 const { Text } = Typography;
 export const StudentView = ({
   data,
   isViewModalVisible,
   setViewModalVisibility,
 }) => {
+  const navigate = useNavigate();
+  const [exams, setExams] = useState(null);
+  const [examsLoading, setExamsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isViewModalVisible || !data?.student_id) {
+      setExams(null);
+      setExamsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const fetchExams = async () => {
+      setExams(null);
+      setExamsLoading(true);
+      try {
+        const apiHost = process.env.REACT_APP_API_HOST;
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          `${apiHost}/api/students/${data.student_id}/exams`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: token,
+            },
+          }
+        );
+        if (!cancelled) {
+          setExams(response.data.data || []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          message.error("Failed to load exams");
+        }
+      } finally {
+        if (!cancelled) {
+          setExamsLoading(false);
+        }
+      }
+    };
+
+    fetchExams();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isViewModalVisible, data?.student_id]);
+
+  const handleExamClick = (scheduleId) => {
+    setViewModalVisibility(false);
+    navigate(`/applicants/${scheduleId}`);
+  };
+
   return (
     <Modal
       title="Student Details"
@@ -101,6 +158,27 @@ export const StudentView = ({
           </Col>
           <Col span={16}>
             <Text>{data.created_at}</Text>
+          </Col>
+
+          {/* Exams */}
+          <Col span={8}>
+            <Text strong>Exams:</Text>
+          </Col>
+          <Col span={16}>
+            {examsLoading ? (
+              <Spin size="small" />
+            ) : exams === null ? null : exams.length === 0 ? (
+              <Text>No exams registered</Text>
+            ) : (
+              exams.map((exam) => (
+                <div key={exam.schedule_id}>
+                  <a onClick={() => handleExamClick(exam.schedule_id)}>
+                    {exam.exam_schedule?.exam_name}
+                  </a>
+                  <Text type="secondary">{` (${exam.course?.course_name})`}</Text>
+                </div>
+              ))
+            )}
           </Col>
         </Row>
       )}
